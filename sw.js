@@ -3,65 +3,66 @@ const CACHE_NAME = 'doi-xe-v1';
 
 // Các file cần cache khi cài đặt
 const STATIC_ASSETS = [
-  './sửa dấu cách.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+    './',
+    './index.html',
+    './manifest.json',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 // ===== INSTALL: Cache tài nguyên tĩnh =====
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
-  self.skipWaiting();
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(STATIC_ASSETS);
+        })
+    );
+    self.skipWaiting();
 });
 
 // ===== ACTIVATE: Xóa cache cũ =====
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
-  );
-  self.clients.claim();
+    event.waitUntil(
+        caches.keys().then((keys) => {
+            return Promise.all(
+                keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+            );
+        })
+    );
+    self.clients.claim();
 });
 
 // ===== FETCH: Chiến lược Network-First =====
 // Ưu tiên lấy dữ liệu mới từ mạng, fallback về cache nếu offline
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+    const url = new URL(event.request.url);
 
-  // Các request tới Google Apps Script (API): luôn lấy từ mạng, KHÔNG cache
-  if (url.hostname.includes('script.google.com') || url.hostname.includes('googleapis.com')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
+    // Các request tới Google Apps Script (API): luôn lấy từ mạng, KHÔNG cache
+    if (url.hostname.includes('script.google.com') || url.hostname.includes('googleapis.com')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
 
-  // Các tài nguyên tĩnh (HTML, icons, CSS): Network-first, fallback cache
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Clone và lưu vào cache nếu thành công
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Offline: lấy từ cache
-        return caches.match(event.request).then((cached) => {
-          if (cached) return cached;
-          // Nếu không có cache: trả về trang offline
-          return new Response(
-            `<!DOCTYPE html>
+    // Các tài nguyên tĩnh (HTML, icons, CSS): Network-first, fallback cache
+    event.respondWith(
+        fetch(event.request)
+            .then((response) => {
+                // Clone và lưu vào cache nếu thành công
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Offline: lấy từ cache
+                return caches.match(event.request).then((cached) => {
+                    if (cached) return cached;
+                    // Nếu không có cache: trả về trang offline
+                    return new Response(
+                        `<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -87,9 +88,9 @@ self.addEventListener('fetch', (event) => {
   </div>
 </body>
 </html>`,
-            { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-          );
-        });
-      })
-  );
+                        { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+                    );
+                });
+            })
+    );
 });
