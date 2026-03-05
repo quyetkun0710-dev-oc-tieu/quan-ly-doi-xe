@@ -1613,6 +1613,14 @@
           <div class="app-name">Lịch làm việc</div>
         </div>
 
+        <div class="app-card" data-tag="nhiemvu" onclick="openTag('nhiemvu')">
+          <div class="app-icon" style="position: relative;">
+            🎯
+            <span id="badgeNhiemVu" class="notification-badge" style="display: none;">0</span>
+          </div>
+          <div class="app-name">Nhiệm vụ</div>
+        </div>
+
       </div>
     </div>
     <!-- ================= START TAG: LỊCH LÀM VIỆC ================= -->
@@ -3102,6 +3110,113 @@
       </div>
     </div>
 
+    <!-- ================= START TAG: NHIỆM VỤ ================= -->
+    <div id="nhiemvu" class="hidden form-box"
+      style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
+      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">🎯 GIAO / NHẬN NHIỆM VỤ</h2>
+      <div class="box" style="margin-bottom: 20px;">
+        <h3 class="subtitle">🔍 Quản lý Nhiệm vụ</h3>
+        <div class="field">
+          <label class="label">Tìm theo Mã NV / Biển số xe</label>
+          <div class="control" style="display: flex; gap: 10px;">
+            <input class="input" type="text" id="search_nhiemvu_key" placeholder="Nhập mã nhân viên hoặc biển số xe..."
+              style="flex: 1;">
+            <button class="button is-info" onclick="searchNhiemVu()">Tra cứu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM GIAO NHIỆM VỤ -->
+      <form id="nhiemvuForm" class="box is-relative">
+        <!-- 1️⃣ THÔNG TIN CƠ BẢN -->
+        <h3 class="subtitle">1️⃣ Giao việc</h3>
+        <div class="columns is-mobile is-multiline">
+          <div class="column is-12-mobile is-6-tablet">
+            <label class="label">Người giao (Mã NV quản lý)</label>
+            <input class="input" type="text" name="nguoi_giao" id="nv_nguoi_giao" placeholder="VD: QL01" required>
+          </div>
+          <div class="column is-12-mobile is-6-tablet">
+            <label class="label">Giao cho (Mã NV/Biển số)</label>
+            <input class="input" type="text" name="nguoi_nhan" id="nv_nguoi_nhan"
+              placeholder="Nhập biển số hoặc mã NV nhận việc" required>
+          </div>
+          <div class="column is-12-mobile is-6-tablet">
+            <label class="label">Loại nhiệm vụ</label>
+            <div class="select is-fullwidth">
+              <select name="loai_nhiem_vu" required>
+                <option value=""></option>
+                <option>Sửa chữa - Bảo dưỡng</option>
+                <option>Tăng cường</option>
+                <option>Làm thêm giờ</option>
+                <option>Kiểm tra xe</option>
+                <option>Khác</option>
+              </select>
+            </div>
+          </div>
+          <div class="column is-12-mobile is-6-tablet">
+            <label class="label">Trạng thái</label>
+            <div class="select is-fullwidth">
+              <select name="trang_thai" required>
+                <option value="Mới giao" selected>Mới giao</option>
+                <option value="Đang thực hiện">Đang thực hiện</option>
+                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                <option value="Hủy">Hủy</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2️⃣ NỘI DUNG VÀ THỜI GIAN -->
+        <h3 class="subtitle">2️⃣ Chi tiết công việc</h3>
+        <div class="columns is-mobile is-multiline">
+          <div class="column is-12">
+            <label class="label">Nội dung chi tiết</label>
+            <textarea class="textarea" name="noi_dung" placeholder="Mô tả cụ thể công việc cần làm..."
+              required></textarea>
+          </div>
+          <div class="column is-12-mobile is-6-tablet">
+            <label class="label">Ngày bắt đầu dự kiến</label>
+            <input class="input" type="date" name="ngay_bat_dau" required>
+          </div>
+          <div class="column is-12-mobile is-6-tablet">
+            <label class="label">Hạn hoàn thành</label>
+            <input class="input" type="date" name="han_hoan_thanh">
+          </div>
+        </div>
+
+        <!-- 3️⃣ GHI CHÚ BÁO CÁO CỦA TÀI XẾ -->
+        <h3 class="subtitle">3️⃣ Báo cáo kết quả (Dành cho người nhận)</h3>
+        <div class="columns is-mobile is-multiline">
+          <div class="column is-12">
+            <label class="label">Ghi chú / Báo cáo thực hiện</label>
+            <textarea class="textarea" name="ghi_chu_ket_qua"
+              placeholder="Người nhận cập nhật tiến độ hoặc kết quả ở đây..."></textarea>
+          </div>
+        </div>
+
+        <input type="hidden" name="created_at">
+        <div class="form-spacer"></div>
+        <button class="floating-save-btn">💾 LƯU NHIỆM VỤ</button>
+      </form>
+    </div>
+
+    <!-- ================= TAG: BẢNG KẾT QUẢ NHIỆM VỤ ================= -->
+    <div id="nhiemvu_table" class="hidden form-box"
+      style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
+      <button class="floating-back-btn" onclick="backToNhiemVu()">
+        ⬅ Quay lại Nhiệm vụ
+      </button>
+      <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">📋 DANH SÁCH NHIỆM VỤ</h2>
+      <div class="table-container shadow-table-container">
+        <table class="table is-bordered is-striped is-fullwidth styled-table" id="nhiemvuResultTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- ================= END TAG NHIỆM VỤ ================= -->
+
     <!-- ================= TAG: ĐỊNH MỨC (REMOVED INDEPENDENT TAG) ================= -->
     <!-- ================= WARNING MODAL ================= -->
     <div class="modal" id="warningModal" style="z-index: 99999;">
@@ -3159,9 +3274,9 @@
       let USER_ROLE = null; // manager | admin | taixe
       let USER_MNV = null;
       const ROLE_PERMISSION = {
-        manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec"],
-        admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec"],
-        taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec"]
+        manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu"],
+        admin: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu"],
+        taixe: ["nhatky", "fuel", "lichlamviec", "nhiemvu"]
       };
 
       const ALL_TAGS = [
@@ -3179,7 +3294,8 @@
         "baocao",
         "kehoachbaoduong",
         "fuelgrid",
-        "lichlamviec"
+        "lichlamviec",
+        "nhiemvu"
       ];
       /* ================= LOGIN ================= */
       const LOGIN_API = "https://script.google.com/macros/s/AKfycbw3MTRDfoEpxL8JJQxgmYYO6YKRIUZLnuHzt5ff5lCWQYhHwRYTAvlcRndXBU5ydgj1Zg/exec";
@@ -4050,6 +4166,15 @@ Hết hạn: ${w.ngay_he} <br>
           ?.classList.remove("hidden");
         window.scrollTo({ top: 0 });
       }
+      function backToNhiemVu() {
+        ALL_TAGS.forEach(t => {
+          document.getElementById(t)?.classList.add("hidden");
+        });
+        document
+          .getElementById("nhiemvu")
+          ?.classList.remove("hidden");
+        window.scrollTo({ top: 0 });
+      }
       /* ================= SUBMIT FORM (FormData) ================= */
       function submitForm(tag, form) {
         const fd = new FormData(form);
@@ -4163,6 +4288,10 @@ Hết hạn: ${w.ngay_he} <br>
         e.preventDefault();
         submitForm("danhgia", e.target);
       });
+      document.getElementById("nhiemvuForm")?.addEventListener("submit", e => {
+        e.preventDefault();
+        submitForm("nhiemvu", e.target);
+      });
       /* ================= SEARCH BUTTON ================= */
       function searchXe() {
         const bienSo =
@@ -4253,6 +4382,27 @@ Hết hạn: ${w.ngay_he} <br>
           "ma_nv",
           key,
           "danhgiaResultTable"
+        );
+        window.scrollTo({ top: 0 });
+      }
+      function searchNhiemVu() {
+        const key =
+          document.getElementById("search_nhiemvu_key").value;
+        if (!key) return showAlert("Thiếu từ khóa", "is-warning");
+        ALL_TAGS.forEach(t => {
+          document.getElementById(t)?.classList.add("hidden");
+        });
+        document
+          .getElementById("nhiemvu_table")
+          ?.classList.remove("hidden");
+
+        // Cùng gọi hàm loadTableByKey (vì data sẽ được backend xử lý)
+        // Backend có thể search the key on cả ma_nv hoặc bien_so_xe
+        loadTableByKey(
+          "nhiemvu",
+          "key",
+          key,
+          "nhiemvuResultTable"
         );
         window.scrollTo({ top: 0 });
       }
