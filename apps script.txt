@@ -1,0 +1,1605 @@
+const SPREADSHEET_ID = "1vSwsHGcupxKmC1vjUL5NTWZ260WXDSEcGD2eZgZm0eo"; // ID MỚI CỦA BẠN
+const BACKGROUND_SS_ID = "14L8YauOm-lvWAeIuDwoTKjXQ77aIRApPrkiZP3XMldA"; // ID FILE ẢNH CỦA BẠN
+const ACCOUNT_SS_ID = "1i0CFkUWJoY18C-DKIlavRpbsYYVIM4fpKtIYGkdPZ-A"; // ID FILE ACCOUNT MỚI
+
+/* ================= UTIL ================= */
+function getSheetByTag(tag) {
+  const MAP = {
+    xe: "Xe",
+    taixe: "TaiXe",
+    nhatky: "NhatKy",
+    baoduong: "BaoDuong",
+    fuel: "NhienLieu",
+    danhgia: "DanhGia",
+    setting: "Setting",
+    dinhmuc: "định mức",
+    dangkylich: "DangKyLich",
+    nhiemvu: "nhiemvu"
+  };
+
+  if (!MAP[tag]) {
+    throw `Tag không hợp lệ: ${tag}`;
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const targetName = MAP[tag];
+  let sh = ss.getSheetByName(targetName);
+
+  // Nếu không tìm thấy chính xác, thử tìm kiếm linh hoạt (không phân biệt hoa thường)
+  if (!sh) {
+    const allSheets = ss.getSheets();
+    const targetLower = targetName.toLowerCase().normalize("NFC");
+    sh = allSheets.find(s => {
+      const sName = s.getName().toLowerCase().normalize("NFC");
+      return sName === targetLower || sName === "dinh muc"; // Hỗ trợ cả không dấu
+    });
+  }
+
+  if (!sh) {
+    throw `Không tìm thấy sheet "${targetName}". Vui lòng tạo 1 sheet mới tên là "${targetName}" trong file Google Sheet của bạn!`;
+  }
+
+  return sh;
+}
+
+function getHeaders(sh) {
+  return sh
+    .getRange(1, 1, 1, sh.getLastColumn())
+    .getValues()[0].map(h => String(h).trim());
+}
+
+function now() {
+  return Utilities.formatDate(
+    new Date(),
+    "Asia/Ho_Chi_Minh",
+    "yyyy-MM-dd HH:mm:ss"
+  );
+}
+
+/* ================= FORMAT ROW HELPER ================= */
+function formatRow(sh, rowIdx) {
+  const lastCol = sh.getLastColumn();
+  const range = sh.getRange(rowIdx, 1, 1, lastCol);
+  const headers = getHeaders(sh).map(h => h.toLowerCase());
+  
+  // 1. Font & Size
+  range.setFontFamily("Arial");
+  range.setFontSize(10);
+  range.setFontWeight("normal");
+  
+  // 2. Alignment
+  range.setVerticalAlignment("middle");
+  range.setHorizontalAlignment("center");
+  
+  // 3. Number Formatting
+  const sheetName = sh.getName();
+  
+  headers.forEach((h, i) => {
+    const cell = sh.getRange(rowIdx, i + 1);
+    
+    // Định dạng số cho các cột cụ thể
+    if (["tong_gio", "so_lit"].includes(h)) {
+      cell.setNumberFormat("#,##0.00");
+    } else if (["tong_km", "km_sau", "km_truoc", "km_chenh_lech", "don_gia", "thanh_tien", "tong_tien", "chi_phi", "tong_ngay"].includes(h)) {
+      cell.setNumberFormat("#,##0");
+    }
+
+
+    
+    // Nếu là ngày tháng (đã có định dạng trong sheet nhưng ép lại cho chắc nếu cần)
+    if (h.startsWith("ngay_") || h === "created_at" || h === "updated_at") {
+      // cell.setNumberFormat("dd/mm/yyyy HH:mm:ss"); 
+    }
+  });
+
+  // 4. Wrap text
+  range.setWrap(true);
+}
+
+function appendRowOnTop(sh, row) {
+  sh.insertRowAfter(1);
+  sh.getRange(2, 1, 1, row.length).setValues([row]);
+  formatRow(sh, 2); // Format the new row
+}
+
+/* ================= FORMAT ================= */
+const FORMAT_NUMBER_FIELDS = [
+  "tong_gio",
+  "tong_km",
+  "km_truoc",
+  "km_sau",
+  "km_chenh_lech",
+  "so_lit",
+  "don_gia",
+  "thanh_tien",
+  "tong_tien",
+  "chi_phi",
+  "tong_ngay"
+];
+
+function formatNumberDisplay(v) {
+  if (v === "" || v === null || v === undefined) return v;
+  if (!isNaN(v)) return Number(v).toLocaleString("vi-VN");
+  return v;
+}
+
+/* ================= DATE REMAIN ================= */
+function calcRemainDays(dateStr) {
+  if (!dateStr) return "";
+
+  const d = new Date(dateStr);
+  if (isNaN(d)) return "";
+
+  const t = new Date();
+  t.setHours(0, 0, 0, 0);
+  d.setHours(0, 0, 0, 0);
+
+  return Math.round((d - t) / 86400000);
+}
+
+/* ================= FUEL ================= */
+/* ================= DATA MAPPING HELPER ================= */
+function mapDataToRow(sh, data, headers) {
+  const sheetName = sh.getName();
+  const tag = Object.keys({
+    xe: "Xe",
+    taixe: "TaiXe",
+    nhatky: "NhatKy",
+    baoduong: "BaoDuong",
+    fuel: "NhienLieu",
+    danhgia: "DanhGia"
+  }).find(key => {
+    const MAP = {
+      xe: "Xe",
+      taixe: "TaiXe",
+      nhatky: "NhatKy",
+      baoduong: "BaoDuong",
+      fuel: "NhienLieu",
+      danhgia: "DanhGia",
+      dangkylich: "DangKyLich",
+      nhiemvu: "nhiemvu"
+    };
+    return MAP[key] === sheetName;
+  });
+
+  // Chuẩn hóa headers sang chữ thường để tìm kiếm chính xác
+  const hLower = headers.map(h => String(h).toLowerCase().trim());
+  const iDkiem = hLower.indexOf("ngay_dang_kiem");
+  const iPhuHieu = hLower.indexOf("ngay_phu_hieu");
+  const iBaoHiem = hLower.indexOf("ngay_bao_hiem");
+  const iDangKy = hLower.indexOf("ngay_dang_ky");
+
+  return headers.map((h, i) => {
+    const field = String(h).toLowerCase().trim();
+    if (field === "created_at") return data[h] || now();
+    if (field === "updated_at") return now();
+
+    // Công thức tính ngày còn lại cho Sheet Xe
+    if (sheetName === "Xe") {
+      if (field === "cb_dk" && iDangKy > -1) {
+        const offset = iDangKy - i;
+        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+      }
+      if (field === "cb_dkiem" && iDkiem > -1) {
+        const offset = iDkiem - i;
+        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+      }
+      if (field === "cb_ph" && iPhuHieu > -1) {
+        const offset = iPhuHieu - i;
+        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+      }
+      if (field === "cb_bh" && iBaoHiem > -1) {
+        const offset = iBaoHiem - i;
+        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+      }
+    }
+
+    let val = data[h] ?? "";
+
+    if (val === "") return val;
+
+    // ÉP KIỂU SỐ TUYỆT ĐỐI CHO CÁC TRƯỜNG SỐ
+    if (FORMAT_NUMBER_FIELDS.includes(h) && val !== "") {
+      const num = Number(String(val).replace(/,/g, ".")); 
+      if (!isNaN(num)) return num;
+    }
+
+    // Nếu là công thức cấu hình ở sheet Xe
+    if (typeof val === "string" && val.startsWith("=")) return val;
+
+    // Nếu là trường thời gian, ngày tháng
+    const hStr = h.toLowerCase();
+    const isDateOrTime = hStr.includes("ngay") || hStr.includes("date") || hStr.includes("time") || hStr === "created_at" || hStr === "updated_at";
+    
+    if (isDateOrTime) {
+      return val;
+    }
+
+    // Thêm nháy đơn cho các dạng dữ liệu khác để báo cho google sheet biết đây là Text
+    return "'" + val;
+  });
+}
+
+/* ================= FUEL ================= */
+function handleFuel(data) {
+  const sh = getSheetByTag("fuel");
+  const headers = getHeaders(sh);
+
+  let kmTruoc = 0;
+  if (data.bien_so_xe) {
+    const values = sh.getDataRange().getValues();
+    const h = values[0];
+    const iBS = h.indexOf("bien_so_xe");
+    const iKM = h.indexOf("km_sau");
+    for (let i = 1; i < values.length; i++) {
+      if (String(values[i][iBS]).trim() === String(data.bien_so_xe).trim()) {
+        if (values[i][iKM] !== "") {
+          kmTruoc = Number(values[i][iKM]) || 0;
+          break;
+        }
+      }
+    }
+  }
+
+  data.km_truoc = kmTruoc;
+  data.km_chenh_lech = Number(data.km_sau) >= kmTruoc ? Number(data.km_sau) - kmTruoc : "";
+
+  const row = mapDataToRow(sh, data, headers);
+  appendRowOnTop(sh, row);
+}
+
+/* ================= BẢO DƯỠNG ================= */
+function handleBaoDuong(data) {
+  const sh = getSheetByTag("baoduong");
+  const headers = getHeaders(sh);
+
+  let kmTruoc = 0;
+  if (data.bien_so_xe) {
+    const values = sh.getDataRange().getValues();
+    const h = values[0];
+    const iBS = h.indexOf("bien_so_xe");
+    const iKM = h.indexOf("km_sau");
+    for (let i = 1; i < values.length; i++) {
+      if (String(values[i][iBS]).trim() === String(data.bien_so_xe).trim()) {
+        if (values[i][iKM] !== "") {
+          kmTruoc = Number(values[i][iKM]) || 0;
+          break;
+        }
+      }
+    }
+  }
+
+  data.km_truoc = kmTruoc;
+  data.km_chenh_lech = Number(data.km_sau) >= kmTruoc ? Number(data.km_sau) - kmTruoc : "";
+
+  const row = mapDataToRow(sh, data, headers);
+  appendRowOnTop(sh, row);
+}
+
+/* ================= POST ================= */
+function doPost(e) {
+  try {
+    const data = e.parameter || {};
+    const action = data.action;
+
+    // ĐỔI MẬT KHẨU
+    if (action === "change_password") {
+      const user = String(data.user || "").trim().toUpperCase();
+      const oldPass = String(data.old_pass || "").trim();
+      const newPass = String(data.new_pass || "").trim();
+
+      if (!user || !oldPass || !newPass) throw "Thiếu thông tin đổi mật khẩu";
+
+      const accSS = SpreadsheetApp.openById(ACCOUNT_SS_ID);
+      const accSh = accSS.getSheets()[0];
+      const accData = accSh.getDataRange().getValues();
+      const accHeaders = accData.shift().map(h => String(h).toLowerCase().trim());
+
+      let iPass = accHeaders.findIndex(h => h.includes("pass") || h.includes("mật khẩu") || h.includes("mat khau"));
+
+      if (iPass === -1) throw "Bảng tài khoản không có cấu hình cột mật khẩu";
+
+      // Dò tài khoản ở BẤT KỲ CỘT NÀO của Sheet Account
+      const rowIndex = accData.findIndex(r => r.some(cell => String(cell).trim().toUpperCase() === user));
+
+      if (rowIndex === -1) throw "Không tìm thấy tài khoản để đổi mật khẩu";
+
+      const currentRow = accData[rowIndex];
+      const currentPass = String(currentRow[iPass]).trim();
+
+      if (currentPass !== oldPass) {
+        throw "Mật khẩu cũ không chính xác!";
+      }
+
+      // Ghi đè mật khẩu mới (thêm nháy đơn cho chắc ăn)
+      accSh.getRange(rowIndex + 2, iPass + 1).setValue("'" + newPass);
+
+      return json({ status: "success", message: "Đổi mật khẩu thành công!" });
+    }
+
+    const tag = data.tag;
+    if (!tag) throw "Thiếu tag";
+
+    if (tag === "xe" && !("tinh_trang_hoat_dong" in data)) {
+      data.tinh_trang_hoat_dong = "dang_hoat_dong";
+    }
+
+    // --- KIỂM TRA KEY BẮT BUỘC ---
+    const KEY_MAP = {
+      xe: "bien_so_xe",
+      taixe: "ma_nv",
+      nhatky: "bien_so_xe",
+      baoduong: "bien_so_xe",
+      fuel: "bien_so_xe",
+      danhgia: "ma_nv"
+      // Không thêm dangkylich, nhiemvu ở đây vì required key là optional (khi tạo mới chưa có id)
+    };
+
+    const requiredKey = KEY_MAP[tag];
+    if (requiredKey && (!data[requiredKey] || String(data[requiredKey]).trim() === "")) {
+      const label = requiredKey === "bien_so_xe" ? "Biển số xe" : "Mã nhân viên";
+      throw `Lỗi: Thiếu thông tin định danh (${label}) bắt buộc.`;
+    }
+    // ----------------------------
+
+    if (tag === "taixe") {
+      const hsFields = ["hs_cccd", "hs_gplx", "hs_suc_khoe", "hs_so_yeu", "hs_cu_tru", "hs_dan_su"];
+      hsFields.forEach(f => { data[f] = f in data; });
+    }
+
+    if (tag === "fuel") {
+      handleFuel(data);
+      SpreadsheetApp.flush();
+      return json({ status: "success", mode: "append_top" });
+    }
+
+    if (tag === "baoduong") {
+      handleBaoDuong(data);
+      SpreadsheetApp.flush();
+      return json({ status: "success", mode: "append_top" });
+    }
+
+    // ===== XỬ LÝ DANGKYLICH RIÊNG (ghi trực tiếp) =====
+    if (tag === "dangkylich") {
+      const shDkl = getSheetByTag(tag);
+      const nowStr = now();
+
+      // Đọc các trường từ request
+      const reqId       = String(data.id        || "").trim();
+      const reqMaNv     = String(data.ma_nv      || "").trim();
+      const reqHoTen    = String(data.ho_ten     || "").trim();
+      const reqThangNam = String(data.thang_nam  || "").trim();
+      const reqCacNgay  = String(data.cac_ngay   || "").trim();
+      const reqLoaiNghi = String(data.loai_nghi  || "").trim();
+      const reqLyDo     = String(data.ly_do      || "").trim();
+      const reqTrangThai= String(data.trang_thai || "Chờ duyệt").trim();
+      const reqNguoiDuyet = String(data.nguoi_duyet || "").trim();
+
+      if (reqId !== "") {
+        // CÓ ID → TÌM HÀNG VÀ UPDATE trang_thai + nguoi_duyet + updated_at
+        const allVals = shDkl.getDataRange().getValues();
+        const hdrs    = allVals.shift(); // bỏ header
+        const iId     = hdrs.indexOf("id");
+        const iTrangThai   = hdrs.indexOf("trang_thai");
+        const iNguoiDuyet  = hdrs.indexOf("nguoi_duyet");
+        const iUpdatedAt   = hdrs.indexOf("updated_at");
+
+        const rowIdx = allVals.findIndex(r => String(r[iId]).trim() === reqId);
+        if (rowIdx !== -1) {
+          const sheetRow = rowIdx + 2; // +1 vì shift header, +1 vì 1-indexed
+          if (iTrangThai  > -1) shDkl.getRange(sheetRow, iTrangThai  + 1).setValue("'" + reqTrangThai);
+          if (iNguoiDuyet > -1) shDkl.getRange(sheetRow, iNguoiDuyet + 1).setValue("'" + reqNguoiDuyet);
+          if (iUpdatedAt  > -1) shDkl.getRange(sheetRow, iUpdatedAt  + 1).setValue(nowStr);
+          SpreadsheetApp.flush();
+          return json({ status: "success", mode: "update" });
+        }
+        return json({ status: "error", message: "Không tìm thấy đơn ID: " + reqId });
+      }
+
+      // KHÔNG CÓ ID → TẠO MỚI
+      const autoId = "DKL_" + new Date().getTime();
+      // Thứ tự phải ĐÚNG theo header row của sheet:
+      // id | ma_nv | ho_ten | thang_nam | cac_ngay | loai_nghi | ly_do | trang_thai | nguoi_duyet | created_at | updated_at
+      const newRow = [
+        "'" + autoId,
+        "'" + reqMaNv,
+        "'" + reqHoTen,
+        "'" + reqThangNam,
+        "'" + reqCacNgay,
+        "'" + reqLoaiNghi,
+        "'" + reqLyDo,
+        "'" + reqTrangThai,
+        "'" + reqNguoiDuyet,
+        nowStr,
+        nowStr
+      ];
+      shDkl.insertRowAfter(1);
+      shDkl.getRange(2, 1, 1, newRow.length).setValues([newRow]);
+      SpreadsheetApp.flush();
+      return json({ status: "success", mode: "append_top", id: autoId });
+    }
+    // ===== XỬ LÝ NHIỆM VỤ RIÊNG (ghi trực tiếp tương tự DangKyLich) =====
+    if (tag === "nhiemvu") {
+      const shNv = getSheetByTag(tag);
+      const nowStr = now();
+
+      const reqId          = String(data.id || "").trim();
+      const reqNguoiGiao   = String(data.nguoi_giao || "").trim();
+      const reqNguoiNhan   = String(data.nguoi_nhan || "").trim();
+      const reqLoaiNv      = String(data.loai_nhiem_vu || "").trim();
+      const reqTrangThai   = String(data.trang_thai || "Mới giao").trim();
+      const reqNoiDung     = String(data.noi_dung || "").trim();
+      const reqNgayBD      = String(data.ngay_bat_dau || "").trim();
+      const reqHanHT       = String(data.han_hoan_thanh || "").trim();
+      const reqGhiChu      = String(data.ghi_chu_ket_qua || "").trim();
+
+      if (reqId !== "") {
+          // UPDATE
+          const allVals = shNv.getDataRange().getValues();
+          const hdrs    = allVals.shift();
+          const iId     = hdrs.indexOf("id");
+          
+          const rowIdx = allVals.findIndex(r => String(r[iId]).trim() === reqId);
+          if (rowIdx !== -1) {
+             const sheetRow = rowIdx + 2;
+             
+             const updateCols = {
+                  "nguoi_giao": reqNguoiGiao,
+                  "nguoi_nhan": reqNguoiNhan,
+                  "loai_nhiem_vu": reqLoaiNv,
+                  "trang_thai": reqTrangThai,
+                  "noi_dung": reqNoiDung,
+                  "ngay_bat_dau": reqNgayBD,
+                  "han_hoan_thanh": reqHanHT,
+                  "ghi_chu_ket_qua": reqGhiChu,
+                  "created_at": nowStr
+             };
+             for (const [k, v] of Object.entries(updateCols)) {
+                 const cIdx = hdrs.indexOf(k);
+                 if (cIdx > -1) shNv.getRange(sheetRow, cIdx + 1).setValue("'" + v);
+             }
+             SpreadsheetApp.flush();
+             return json({ status: "success", mode: "update" });
+          }
+      }
+      // CREATE
+      const autoId = "NV_" + new Date().getTime();
+      const newRow = [
+          "'" + autoId,
+          "'" + reqNguoiGiao,
+          "'" + reqNguoiNhan,
+          "'" + reqLoaiNv,
+          "'" + reqTrangThai,
+          "'" + reqNoiDung,
+          "'" + reqNgayBD,
+          "'" + reqHanHT,
+          "'" + reqGhiChu,
+          nowStr
+      ];
+      shNv.insertRowAfter(1);
+      shNv.getRange(2, 1, 1, newRow.length).setValues([newRow]);
+      SpreadsheetApp.flush();
+      return json({ status: "success", mode: "append_top", id: autoId });
+    }
+    // ===================================================
+
+    const sh = getSheetByTag(tag);
+    const headers = getHeaders(sh);
+
+    let keyName = KEY_MAP[tag] || "";
+    if (!["xe", "taixe"].includes(tag)) keyName = "";
+
+    const keyValue = keyName ? (data[keyName] || "").trim() : "";
+    let row = mapDataToRow(sh, data, headers);
+
+    if (keyName && keyValue) {
+      const values = sh.getDataRange().getValues();
+      const header = values.shift();
+      const iKey = header.indexOf(keyName);
+      const idx = values.findIndex(r => String(r[iKey]).trim().toLowerCase() === keyValue.toLowerCase());
+
+      if (idx !== -1) {
+        sh.getRange(idx + 2, 1, 1, row.length).setValues([row]);
+        formatRow(sh, idx + 2);
+        SpreadsheetApp.flush();
+        return json({ status: "success", mode: "update" });
+      }
+    }
+
+    if (["nhatky", "danhgia"].includes(tag)) {
+      appendRowOnTop(sh, row);
+      SpreadsheetApp.flush();
+      return json({ status: "success", mode: "append_top" });
+    }
+
+    sh.appendRow(row);
+    formatRow(sh, sh.getLastRow());
+    SpreadsheetApp.flush();
+    return json({ status: "success", mode: "append" });
+  } catch (err) {
+    return json({ status: "error", message: String(err) });
+  }
+}
+
+
+/* ================= SETUP HEADERS (CHẠY 1 LẦN) ================= */
+function setupSheetHeaders() {
+  const SCHEMAS = {
+    xe: ["bien_so_xe", "loai_xe", "tai_trong", "nam_sx", "so_khung", "so_may", "ma_loai", "thung_dai", "thung_rong", "thung_cao", "kich_thuoc_thung", "the_tich_thung", "khoi_luong_ban_than", "khoi_luong_cho_phep", "so_dang_ky", "ngay_dang_ky", "cb_dk", "so_dang_kiem", "ngay_dang_kiem", "cb_dkiem", "so_phu_hieu", "ngay_phu_hieu", "cb_ph", "so_bao_hiem", "ngay_bao_hiem", "cb_bh", "tinh_trang_hoat_dong", "loai_bien_so"],
+    taixe: ["ma_nv", "ho_ten", "nam_sinh", "gioi_tinh", "cccd", "sdt", "que_quan", "hang_gplx", "so_gplx", "ngay_trung_tuyen", "noi_cap", "han_gplx", "ngay_nhan_viec", "thu_viec", "chinh_thuc", "ghi_chu", "xe_phu_trach", "tuyen_phu_trach", "bl_ho_ten", "bl_quan_he", "bl_sdt", "bl_que_quan", "hs_cccd", "hs_gplx", "hs_suc_khoe", "hs_so_yeu", "hs_cu_tru", "hs_dan_su", "role"],
+    nhatky: ["bien_so_xe", "mnv", "tai_xe", "ngay_van_hanh", "chuyen_so", "loai_chuyen", "gio_xuat", "gio_ve", "tong_gio", "km_xuat", "km_ve", "tong_km", "suco_toggle", "van_de_phat_sinh", "tu_danh_gia", "de_xuat_pa", "ghi_chu", "created_at"],
+    baoduong: ["bien_so_xe", "loai_hinh", "km_sau", "moc_bao_duong", "ngay_bat_dau", "ngay_ket_thuc", "tong_ngay", "don_vi", "loai_don_vi", "hang_muc", "phat_sinh", "ket_qua", "loai_thanh_toan", "hoa_don", "tong_tien", "ghi_chu", "km_truoc", "km_chenh_lech", "created_at", "updated_at"],
+    fuel: ["bien_so_xe", "km_sau", "ngay_thuc_hien", "gio_thuc_hien", "loai", "so_lit", "don_gia", "thanh_tien", "don_vi", "hoa_don", "ghi_chu", "km_truoc", "km_chenh_lech", "created_at", "updated_at"],
+    danhgia: ["ma_nv", "ho_ten", "ngay", "loi", "muc_do", "so_lan", "ket_luan", "ghi_chu", "created_at"],
+    dangkylich: ["id", "ma_nv", "ho_ten", "thang_nam", "cac_ngay", "loai_nghi", "ly_do", "trang_thai", "nguoi_duyet", "created_at", "updated_at"],
+    nhiemvu: ["id", "nguoi_giao", "nguoi_nhan", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ghi_chu_ket_qua", "created_at"]
+  };
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  Object.keys(SCHEMAS).forEach(tag => {
+    let sh = ss.getSheetByName(
+      tag === "xe" ? "Xe" :
+      tag === "taixe" ? "TaiXe" :
+      tag === "nhatky" ? "NhatKy" :
+      tag === "baoduong" ? "BaoDuong" :
+      tag === "fuel" ? "NhienLieu" :
+      tag === "danhgia" ? "DanhGia" : 
+      tag === "dangkylich" ? "DangKyLich" : tag
+    );
+
+    if (!sh) {
+      sh = ss.insertSheet(
+        tag === "xe" ? "Xe" :
+        tag === "taixe" ? "TaiXe" :
+        tag === "nhatky" ? "NhatKy" :
+        tag === "baoduong" ? "BaoDuong" :
+        tag === "fuel" ? "NhienLieu" :
+        tag === "danhgia" ? "DanhGia" :
+        tag === "dangkylich" ? "DangKyLich" :
+        tag === "nhiemvu" ? "nhiemvu" : tag
+      );
+    }
+
+    if (sh.getLastRow() === 0) {
+      sh.appendRow(SCHEMAS[tag]);
+    }
+  });
+}
+
+/* ================= GET ================= */
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+    
+    // LẤY DANH SÁCH ẢNH NỀN
+    if (action === "get_backgrounds") {
+      try {
+        const ss = SpreadsheetApp.openById(BACKGROUND_SS_ID);
+        const sh = ss.getSheets()[0]; // Lấy sheet đầu tiên
+        const data = sh.getRange("A:B").getValues(); // Cột A: Key, B: URL
+        const bgMap = {};
+        data.forEach(r => {
+          if (r[0] && r[1]) {
+            bgMap[String(r[0]).trim().toLowerCase()] = String(r[1]).trim();
+          }
+        });
+        return jsonOut({ status: "success", data: bgMap });
+      } catch (err) {
+        return jsonOut({ status: "error", message: String(err) });
+      }
+    }
+
+    // LẤY THÔNG TIN TÀI KHOẢN CHI TIẾT
+    if (action === "get_account_profile") {
+      try {
+        const u = String(e.parameter.mnv || "").trim().toUpperCase(); // Sử dụng param mnv như tên username truyền vào
+        if (!u) throw new Error("Thiếu tài khoản đăng nhập");
+        
+        // 1. Lấy thông tin mapping từ bảng Account
+        const accSS = SpreadsheetApp.openById(ACCOUNT_SS_ID);
+        const accSh = accSS.getSheets()[0];
+        const accData = accSh.getDataRange().getValues();
+        if (accData.length < 2) throw new Error("Bảng dữ liệu tài khoản trống");
+        
+        const accHeaders = accData.shift().map(h => String(h).toLowerCase().trim());
+        let iAccUser = accHeaders.findIndex(h => h.includes("user") || h.includes("tài khoản") || h.includes("tai khoan"));
+        let iAccMnv = accHeaders.findIndex(h => h.includes("mnv") || h.includes("mã nv") || h.includes("ma nv") || h.includes("mã nhân viên") || h.includes("ma nhan vien"));
+        let iAccRole = accHeaders.findIndex(h => h.includes("role") || h.includes("quyền") || h.includes("quyen") || h.includes("chức vụ"));
+        
+        // Dò tài khoản ở BẤT KỲ CỘT NÀO của Sheet Account
+        const accRow = accData.find(r => r.some(cell => String(cell).trim().toUpperCase() === u));
+        
+        if (!accRow) throw new Error("Không tìm thấy thông tin tài khoản: " + u);
+        
+        const mappedUser = iAccUser > -1 ? String(accRow[iAccUser]).trim() : u;
+        const mappedRole = iAccRole > -1 ? String(accRow[iAccRole]).trim() : "driver";
+        const mappedMnv = iAccMnv > -1 ? String(accRow[iAccMnv]).trim().toUpperCase() : u;
+        
+        // 2. Tra cứu chi tiết Họ Tên, Năm Sinh, SĐT, Ngày gia nhập từ bảng Tài Xế
+        let hoTen = "Chưa cập nhật";
+        let ngaySinh = "Chưa cập nhật";
+        let sdt = "Chưa cập nhật";
+        let ngayGiaNhap = "Chưa cập nhật";
+        
+        try {
+          const shTaiXe = getSheetByTag("taixe"); // Trỏ đến bảng dữ liệu chính (SPREADSHEET_ID)
+          const dataTaiXe = shTaiXe.getDataRange().getDisplayValues(); // Dùng getDisplayValues để lấy định dạng ngày chuẩn
+          if (dataTaiXe.length > 1) {
+            const txHeaders = dataTaiXe.shift().map(h => String(h).trim().toLowerCase());
+            const iTxMnv = txHeaders.findIndex(h => h.includes("ma_nv") || h.includes("mã nv") || h.includes("mã nhân viên"));
+            const iTxName = txHeaders.findIndex(h => h.includes("ho_ten") || h.includes("họ tên") || h.includes("họ và tên"));
+            const iTxDob = txHeaders.findIndex(h => h.includes("nam_sinh") || h.includes("ngay_sinh") || h.includes("năm sinh") || h.includes("ngày sinh"));
+            const iTxSdt = txHeaders.findIndex(h => h.includes("sdt") || h.includes("điện thoại") || h.includes("dien thoai"));
+            const iTxNnv = txHeaders.findIndex(h => h.includes("ngay_nhan_viec") || h.includes("nhận việc") || h.includes("nhan viec") || h.includes("gia nhập"));
+            
+            if (iTxMnv > -1) {
+              const txRow = dataTaiXe.find(r => String(r[iTxMnv]).trim().toUpperCase() === mappedMnv);
+              if (txRow) {
+                if (iTxName > -1 && txRow[iTxName]) hoTen = String(txRow[iTxName]);
+                if (iTxDob > -1 && txRow[iTxDob]) ngaySinh = String(txRow[iTxDob]);
+                if (iTxSdt > -1 && txRow[iTxSdt]) sdt = String(txRow[iTxSdt]);
+                if (iTxNnv > -1 && txRow[iTxNnv]) ngayGiaNhap = String(txRow[iTxNnv]);
+              }
+            }
+          }
+        } catch (errTaixe) {
+          // Bỏ qua lỗi truy xuất sheet Taixe
+        }
+        
+        return jsonOut({ 
+          status: "success", 
+          data: {
+            user: mappedUser,
+            mnv: mappedMnv,
+            ho_ten: hoTen,
+            ngay_sinh: ngaySinh,
+            sdt: sdt,
+            ngay_gia_nhap: ngayGiaNhap,
+            role: mappedRole
+          } 
+        });
+      } catch (err) {
+        return jsonOut({ status: "error", message: String(err) });
+      }
+    }
+
+    // LẤY CẢNH BÁO (WARNINGS)
+    if (action === "get_warnings") {
+      return getWarnings();
+    }
+
+    // LẤY BÁO CÁO (REPORTS)
+    if (action === "get_report") {
+      return getReport(e);
+    }
+
+    // LẤY DỮ LIỆU CHO BẢNG KÊ NHIÊN LIỆU (GRID)
+    if (action === "get_log_grid") {
+      return getLogGrid(e);
+    }
+
+    // LẤY DỮ LIỆU CHO BẢNG KÊ KM VẬN HÀNH (CHI TIẾT)
+    if (action === "get_km_grid") {
+      return getKmGrid(e);
+    }
+
+    // LẤY KẾ HOẠCH BẢO DƯỠNG
+    if (action === "get_maintenance_plan") {
+      const data = getMaintenancePlanData();
+      return jsonOut({ status: "success", data: data });
+    }
+
+    // LẤY BẢNG ĐỊNH MỨC CÔNG KHAI
+    if (action === "get_quota") {
+      try {
+        const sh = getSheetByTag("dinhmuc");
+        const data = sh.getDataRange().getDisplayValues();
+        return jsonOut({ status: "success", data: data });
+      } catch (err) {
+        return jsonOut({ status: "error", message: String(err) });
+      }
+    }
+
+    const tag = e.parameter.tag;
+    if (!tag) return jsonOut([]);
+
+    const sh = getSheetByTag(tag);
+    const values = sh.getDataRange().getDisplayValues();
+
+    if (values.length < 2) return jsonOut([]);
+
+    const headersRaw = values.shift();
+    const headers = headersRaw.map(h => String(h).trim().toLowerCase());
+
+    let keyName = "";
+    if (["xe", "nhatky", "baoduong", "fuel"].includes(tag))
+      keyName = "bien_so_xe";
+    if (["taixe", "danhgia"].includes(tag))
+      keyName = "ma_nv";
+    if (tag === "dangkylich")
+      keyName = "id";
+    if (tag === "setting") keyName = "key";
+    
+    // Xử lý đặc biệt cho searchNhiemVu có thể truyền 'key' tự do
+    if (tag === "nhiemvu") {
+      keyName = "key"; 
+      // vì chúng ta sẽ so khớp 'nguoi_nhan' OẶC 'nguoi_giao'
+    }
+
+    // KIỂM TRA HEADER
+    if (tag !== "nhiemvu" && keyName && !headers.includes(keyName.toLowerCase())) {
+      return jsonOut([{
+        error: `Lỗi: Sheet "${tag}" thiếu cột "${keyName}". Các cột hiện có: ${headers.join(", ")}`
+      }]);
+    }
+
+    const keyValue = (e.parameter[keyName] || "").trim();
+    const keyLower = keyValue.toLowerCase();
+    
+    // Normalize string to ignore vietnamese accents for better search coverage
+    const removeAccents = (str) => String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const keyNoAccent = removeAccents(keyValue);
+
+    const list = values
+      .filter(r => {
+        if (["xe", "taixe", "dangkylich"].includes(tag) && !keyValue) return true;
+        if (!keyValue) return false;
+
+        if (tag === "taixe") {
+          const idxMaNV = headers.indexOf("ma_nv");
+          const idxHoTen = headers.indexOf("ho_ten");
+          
+          let matchMnv = false;
+          let matchHoTen = false;
+          
+          if (idxMaNV > -1) {
+            const mnvStr = String(r[idxMaNV]).trim().toLowerCase();
+            if (mnvStr.includes(keyLower) || removeAccents(mnvStr).includes(keyNoAccent)) matchMnv = true;
+          }
+          if (idxHoTen > -1) {
+            const hoTenStr = String(r[idxHoTen]).trim().toLowerCase();
+            if (hoTenStr.includes(keyLower) || removeAccents(hoTenStr).includes(keyNoAccent)) matchHoTen = true;
+          }
+          
+          return matchMnv || matchHoTen;
+        }
+        
+        if (tag === "nhiemvu") {
+          const idxNguoiGiao = headers.indexOf("nguoi_giao");
+          const idxNguoiNhan = headers.indexOf("nguoi_nhan");
+          
+          let matchNhiemVu = false;
+          if (idxNguoiGiao > -1) {
+            const giaoStr = String(r[idxNguoiGiao]).trim().toLowerCase();
+            if (giaoStr === keyLower || removeAccents(giaoStr) === keyNoAccent) matchNhiemVu = true;
+          }
+          if (idxNguoiNhan > -1) {
+            const nhanStr = String(r[idxNguoiNhan]).trim().toLowerCase();
+            if (nhanStr === keyLower || removeAccents(nhanStr) === keyNoAccent) matchNhiemVu = true;
+          }
+          return matchNhiemVu;
+        }
+
+        // Header index an toan (CÁC TAB KHÁC GIỮ NGUYÊN SO SÁNH CHÍNH XÁC)
+        const idx = headers.indexOf(keyName.toLowerCase());
+        if (idx === -1) return false;
+
+        return (
+          String(r[idx]).trim().toLowerCase() === keyLower
+        );
+      })
+      .map(r => {
+        const o = {};
+        headers.forEach((h, i) => {
+          o[h] = FORMAT_NUMBER_FIELDS.includes(h)
+            ? formatNumberDisplay(r[i])
+            : r[i];
+        });
+        return o;
+      });
+
+    return jsonOut(list);
+  } catch (err) {
+    return jsonOut([{ error: "Lỗi Server: " + String(err) }]);
+  }
+}
+
+/* ================= JSON ================= */
+function json(o) {
+  return ContentService
+    .createTextOutput(JSON.stringify(o))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function jsonOut(d) {
+  return ContentService
+    .createTextOutput(JSON.stringify(d))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+/* ================= WARNINGS & REPORTS ================= */
+function getWarnings() {
+  try {
+    const sh = getSheetByTag("xe");
+    const values = sh.getDataRange().getValues();
+    const headers = values.shift().map(h => String(h).trim().toLowerCase());
+    
+    // Index các cột ngày
+    const iBienSo = headers.indexOf("bien_so_xe");
+    const iDangKiem = headers.indexOf("ngay_dang_kiem");
+    const iPhuHieu = headers.indexOf("ngay_phu_hieu");
+    const iBaoHiem = headers.indexOf("ngay_bao_hiem");
+    
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    const warnings = [];
+    
+    values.forEach(r => {
+      const bsx = r[iBienSo];
+      if (!bsx) return;
+      
+      const checkDate = (dateVal, type) => {
+        if (!dateVal) return;
+        const d = new Date(dateVal);
+        if (isNaN(d)) return;
+        d.setHours(0,0,0,0);
+        
+        const diffTime = d - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        if (diffDays <= 7) {
+           warnings.push({
+             bien_so_xe: bsx,
+             loai: type,
+             ngay_he: d.toLocaleDateString("vi-VN"),
+             con_lai: diffDays
+           });
+        }
+      };
+      
+      if (iDangKiem > -1) checkDate(r[iDangKiem], "Đăng kiểm");
+      if (iPhuHieu > -1) checkDate(r[iPhuHieu], "Phù hiệu");
+      if (iBaoHiem > -1) checkDate(r[iBaoHiem], "Bảo hiểm");
+    });
+    
+    return jsonOut({ status: "success", data: warnings });
+  } catch (err) {
+    return jsonOut({ status: "error", message: String(err) });
+  }
+}
+
+function getReport(e) {
+  try {
+    const month = e && e.parameter ? parseInt(e.parameter.month) : null;
+    const year = e && e.parameter ? parseInt(e.parameter.year) : null;
+    const bsxFilter = e && e.parameter && e.parameter.bien_so_xe ? String(e.parameter.bien_so_xe).trim().toUpperCase() : null;
+
+    const checkDate = (dateVal) => {
+      if (!month || !year) return true; // Không lọc thì lấy hết
+      if (!dateVal) return false;
+
+      let d;
+      if (dateVal instanceof Date) {
+        d = dateVal;
+      } else {
+        // Thử parse string dd/mm/yyyy nếu cần
+        const parts = String(dateVal).split('/');
+        if (parts.length === 3) {
+          d = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+          d = new Date(dateVal);
+        }
+      }
+      
+      if (isNaN(d.getTime())) return false;
+      return (d.getMonth() + 1) === month && d.getFullYear() === year;
+    };
+
+    const checkBSX = (bsxVal) => {
+      if (!bsxFilter) return true;
+      if (!bsxVal) return false;
+      return String(bsxVal).trim().toUpperCase() === bsxFilter;
+    };
+
+    // DATA MAPS
+    const vehicleMap = {}; // Key: bien_so_xe
+    const driverMap = {};  // Key: mnv
+
+    // Thêm cache cho thông tin xe (Loại xe + Tải trọng) từ sheet Xe
+    const shXe = getSheetByTag("xe");
+    const valXe = shXe.getDataRange().getDisplayValues();
+    const headXe = valXe.shift().map(h => String(h).trim().toLowerCase());
+    const iXeBsx = headXe.indexOf("bien_so_xe");
+    const iXeLoai = headXe.indexOf("loai_xe");
+    const iXeTai = headXe.indexOf("tai_trong");
+    
+    const typeCapacityMap = {};
+    if (iXeBsx > -1) {
+      valXe.forEach(r => {
+         const bks = String(r[iXeBsx]).trim().toUpperCase();
+         const type = iXeLoai > -1 ? String(r[iXeLoai]).trim() : "";
+         const cap = iXeTai > -1 ? String(r[iXeTai]).trim() : "";
+         if (bks) {
+           typeCapacityMap[bks] = (type + " " + cap).trim().toLowerCase();
+         }
+      });
+    }
+
+    const initVehicle = (bsx) => {
+       if (!bsx) return;
+       const key = String(bsx).trim().toUpperCase();
+       if (!vehicleMap[key]) {
+         vehicleMap[key] = { 
+           bsx: key, 
+           type_capacity: typeCapacityMap[key] || "",
+           fuel_cost: 0, fuel_liters: 0, 
+           maintain_cost: 0, maintain_count: 0, 
+           op_km: 0, op_hours: 0, op_trips: 0 
+         };
+       }
+       return vehicleMap[key];
+     };
+     
+     const staffRoleMap = {};
+     try {
+       const accSS = SpreadsheetApp.openById(ACCOUNT_SS_ID);
+       const accSheet = accSS.getSheets()[0];
+       const accVals = accSheet.getDataRange().getValues();
+       if (accVals.length > 0) {
+         const accHead = accVals.shift().map(h => String(h).toLowerCase().trim());
+         const iAccMnv = accHead.indexOf("mnv");
+         const iAccRole = accHead.indexOf("role");
+         
+         accVals.forEach(r => {
+           const m = String(r[iAccMnv]).toUpperCase().trim();
+           if (m) staffRoleMap[m] = String(r[iAccRole] || "driver").toLowerCase().trim();
+         });
+       }
+     } catch (errAcc) {
+       console.log("Không thể truy cập ACCOUNT_SS_ID: " + errAcc);
+     }
+
+     const initDriver = (mnv, name) => {
+        if (!mnv) return;
+        const key = String(mnv).trim().toUpperCase();
+        if (!driverMap[key]) {
+          driverMap[key] = { 
+            mnv: key, 
+            name: name || "", 
+            op_km: 0, op_hours: 0, op_trips: 0, 
+            violation_count: 0,
+            role: staffRoleMap[key] || "driver"
+          };
+        }
+       if (name && !driverMap[key].name) driverMap[key].name = name;
+       return driverMap[key];
+    };
+
+    // 1. NHIÊN LIỆU (Xe)
+    const shNhienLieu = getSheetByTag("fuel");
+    const valNhienLieu = shNhienLieu.getDataRange().getValues();
+    const headNhienLieu = valNhienLieu.shift().map(h => String(h).trim().toLowerCase());
+    const iTienNL = headNhienLieu.indexOf("thanh_tien");
+    const iLitNL = headNhienLieu.indexOf("so_lit");
+    const iNgayNL = headNhienLieu.indexOf("ngay_thuc_hien");
+    const iBsxNL = headNhienLieu.indexOf("bien_so_xe");
+    
+    let totalFuelCost = 0;
+    let totalFuelLiters = 0;
+
+    valNhienLieu.forEach(r => {
+      const bsx = r[iBsxNL];
+      if (checkDate(r[iNgayNL]) && checkBSX(bsx)) {
+        const cost = (Number(r[iTienNL]) || 0);
+        const lit = (Number(r[iLitNL]) || 0);
+        
+        totalFuelCost += cost;
+        totalFuelLiters += lit;
+
+        // Detail
+        const v = initVehicle(bsx);
+        if (v) {
+          v.fuel_cost += cost;
+          v.fuel_liters += lit;
+        }
+      }
+    });
+    
+    // 2. BẢO DƯỠNG & SỬA CHỮA (Xe)
+    const shBaoDuong = getSheetByTag("baoduong");
+    const valBaoDuong = shBaoDuong.getDataRange().getValues();
+    const headBaoDuong = valBaoDuong.shift().map(h => String(h).trim().toLowerCase());
+    const iTienBD = headBaoDuong.indexOf("tong_tien");
+    const iNgayBD = headBaoDuong.indexOf("ngay_bat_dau");
+    const iBsxBD = headBaoDuong.indexOf("bien_so_xe");
+    const iLoaiBD = headBaoDuong.indexOf("loai_hinh");
+    
+    let totalBDCost = 0, totalBDCount = 0;
+    let totalSCCost = 0, totalSCCount = 0;
+
+    valBaoDuong.forEach(r => {
+      const bsx = r[iBsxBD];
+      if (checkDate(r[iNgayBD]) && checkBSX(bsx)) {
+        const cost = (Number(r[iTienBD]) || 0);
+        const type = String(r[iLoaiBD] || "").trim();
+
+        if (type === "Bảo dưỡng") {
+          totalBDCost += cost;
+          totalBDCount++;
+        } else if (type === "Sửa chữa") {
+          totalSCCost += cost;
+          totalSCCount++;
+        }
+        
+        // Detail Xe (Vẫn cộng chung vào maintain_cost để highlight tổng quan)
+        const v = initVehicle(bsx);
+        if (v) {
+          v.maintain_cost += cost;
+          v.maintain_count++;
+        }
+      }
+    });
+
+    // 3. VẬN HÀNH (Xe + Tài xế)
+    const shNhatKy = getSheetByTag("nhatky");
+    const valNhatKy = shNhatKy.getDataRange().getValues();
+    const headNhatKy = valNhatKy.shift().map(h => String(h).trim().toLowerCase());
+    const iKmNK = headNhatKy.indexOf("tong_km");
+    const iGioNK = headNhatKy.indexOf("tong_gio");
+    const iNgayNK = headNhatKy.indexOf("ngay_van_hanh");
+    const iBsxNK = headNhatKy.indexOf("bien_so_xe");
+    const iMnvNK = headNhatKy.indexOf("mnv");
+    const iTenNK = headNhatKy.indexOf("tai_xe");
+
+    let totalKM = 0;
+    let totalHours = 0;
+    let totalTrips = 0;
+
+    valNhatKy.forEach(r => {
+      const bsx = r[iBsxNK];
+      if (checkDate(r[iNgayNK]) && checkBSX(bsx)) {
+        const km = (Number(r[iKmNK]) || 0);
+        const h = (Number(r[iGioNK]) || 0);
+        
+        totalKM += km;
+        totalHours += h;
+        totalTrips++;
+
+        // Detail Xe
+        const v = initVehicle(bsx);
+        if (v) {
+          v.op_km += km;
+          v.op_hours += h;
+          v.op_trips++;
+        }
+
+        // Detail Tài xế
+        if (iMnvNK > -1) {
+            const d = initDriver(r[iMnvNK], (iTenNK > -1 ? r[iTenNK] : ""));
+            if (d) {
+              d.op_km += km;
+              d.op_hours += h;
+              d.op_trips++;
+            }
+        }
+      }
+    });
+
+    // 4. VI PHẠM (Tài xế)
+    const shDanhGia = getSheetByTag("danhgia");
+    const valDanhGia = shDanhGia.getDataRange().getValues();
+    const headDanhGia = valDanhGia.shift().map(h => String(h).trim().toLowerCase());
+    const iNgayDG = headDanhGia.indexOf("ngay");
+    const iMnvDG = headDanhGia.indexOf("ma_nv");
+    const iTenDG = headDanhGia.indexOf("ho_ten");
+    const iBsxDG = headDanhGia.indexOf("bien_so_xe");
+
+    let totalViolations = 0;
+    valDanhGia.forEach(r => {
+        if (checkDate(r[iNgayDG])) {
+            const rowBsx = iBsxDG > -1 ? r[iBsxDG] : null;
+            if (checkBSX(rowBsx)) {
+              totalViolations++;
+              if (iMnvDG > -1) {
+                  const d = initDriver(r[iMnvDG], (iTenDG > -1 ? r[iTenDG] : ""));
+                  if (d) {
+                    d.violation_count++;
+                  }
+              }
+            }
+        }
+    });
+    
+    // 5. Lấy ĐỊNH MỨC để so sánh bằng Loại xe + Tải trọng
+    let quotaMap = {};
+    try {
+      const shQuota = getSheetByTag("dinhmuc");
+      const valQuota = shQuota.getDataRange().getValues();
+      if (valQuota.length > 1) {
+        const headQuota = valQuota.shift().map(h => String(h).trim().toLowerCase().normalize("NFC"));
+        
+        let iLoaiQ = headQuota.findIndex(h => h.includes("loại") || h.includes("loai") || h.includes("xe"));
+        let iTaiQ = headQuota.findIndex(h => h.includes("tải") || h.includes("tai") || h.includes("trọng") || h.includes("trong"));
+        let iValQ = headQuota.findIndex(h => h.includes("định mức") || h.includes("dinh muc") || h.includes("l/100") || h.includes("lít") || h.includes("lit") || h.includes("khoán") || h.includes("khoan"));
+        
+        // Fallbacks nếu header không tìm thấy chính xác
+        if (iLoaiQ === -1) iLoaiQ = 0; // Thường Loại Xe đứng đầu
+        if (iTaiQ === -1) iTaiQ = iLoaiQ + 1; // Thường Tải trọng đứng sau loại xe
+        if (iValQ === -1) iValQ = iTaiQ + 1; // Thường Định mức đứng sau tải trọng
+
+        if (iLoaiQ > -1 && iValQ > -1) {
+          valQuota.forEach(r => {
+            const type = String(r[iLoaiQ] || "").trim().toLowerCase();
+            const cap = iTaiQ > -1 ? String(r[iTaiQ] || "").trim().toLowerCase() : "";
+            // Ghép lại giống cách ghép ở iXeBsx (VD: "hino" + " " + "4")
+            const typeCap = (type + " " + cap).trim().toLowerCase();
+            
+            let rawVal = r[iValQ];
+            let qVal = 0;
+            
+            if (typeof rawVal === 'number') {
+              qVal = rawVal;
+            } else if (rawVal) {
+              const strVal = String(rawVal).replace(/,/g, ".").replace(/[^0-9.-]/g, "");
+              qVal = parseFloat(strVal) || 0;
+            }
+            if (typeCap && typeCap !== "") {
+              quotaMap[typeCap] = qVal;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.log("Bỏ qua định mức do: " + e);
+    }
+
+    // 6. Tính toán kết quả chênh lệch cho từng xe
+    Object.values(vehicleMap).forEach(v => {
+      // Tìm quota bằng key là Loại Xe + Tải Trọng
+      const searchKey = v.type_capacity;
+      
+      // Fallback matching: Tìm key trong quotaMap mà có chứa trong searchKey (hoặc ngược lại)
+      let quota = 0;
+      if (quotaMap[searchKey]) {
+        quota = quotaMap[searchKey];
+      } else {
+        // Tìm kiếm linh hoạt hơn
+        for (const k in quotaMap) {
+          if (searchKey && k && (searchKey.includes(k) || k.includes(searchKey))) {
+            quota = quotaMap[k];
+            break;
+          }
+        }
+      }
+      
+      v.quota_l100 = quota;
+      
+      // Tính định mức thực tế
+      if (v.op_km > 0 && v.fuel_liters > 0) {
+        v.actual_l100 = (v.fuel_liters / v.op_km) * 100;
+      } else {
+        v.actual_l100 = 0;
+      }
+      
+      if (quota > 0 && v.actual_l100 > 0) {
+        v.variance = v.actual_l100 - quota;
+      } else {
+        v.variance = 0;
+      }
+    });
+    
+    return jsonOut({
+      status: "success",
+      data: {
+        fuel_cost: totalFuelCost,
+        fuel_liters: totalFuelLiters,
+        bd_cost: totalBDCost,
+        bd_count: totalBDCount,
+        sc_cost: totalSCCost,
+        sc_count: totalSCCount,
+        op_km: totalKM,
+        op_hours: totalHours,
+        op_trips: totalTrips,
+        violation_count: totalViolations,
+        // LIST DETAILS
+        vehicles: Object.values(vehicleMap),
+        drivers: Object.values(driverMap)
+      }
+    });
+  } catch (err) {
+    return jsonOut({ status: "error", message: String(err) });
+  }
+}
+function formatTime(v) {
+  if (!v) return "";
+  if (v instanceof Date) return Utilities.formatDate(v, "GMT+7", "HH:mm");
+  const d = new Date(v);
+  if (!isNaN(d.getTime())) return Utilities.formatDate(d, "GMT+7", "HH:mm");
+  return String(v);
+}
+
+function getLogGrid(e) {
+  try {
+    const bsxInput = (e.parameter.bien_so_xe || "").trim().toUpperCase();
+    const month = parseInt(e.parameter.month);
+    const year = parseInt(e.parameter.year);
+    
+    if (!month || !year) throw "Thiếu thông số (Tháng, Năm)";
+
+    const shNK = getSheetByTag("nhatky");
+    const valNK = shNK.getDataRange().getValues();
+    const headNK = valNK.shift().map(h => String(h).trim().toLowerCase());
+    const iBsxNK = headNK.indexOf("bien_so_xe");
+    const iNgayNK = headNK.indexOf("ngay_van_hanh");
+    const iKmXuat = headNK.indexOf("km_xuat");
+    const iKmVe = headNK.indexOf("km_ve");
+    const iTongKmNK = headNK.indexOf("tong_km"); // thêm: lấy tổng km từng chuyến
+
+    const shNL = getSheetByTag("fuel");
+    const valNL = shNL.getDataRange().getValues();
+    const headNL = valNL.shift().map(h => String(h).trim().toLowerCase());
+    const iBsxNL = headNL.indexOf("bien_so_xe");
+    const iNgayNL = headNL.indexOf("ngay_thuc_hien");
+    const iGioNL = headNL.indexOf("gio_thuc_hien");
+    const iLitNL = headNL.indexOf("so_lit");
+    const iTienNL = headNL.indexOf("thanh_tien");
+    const iKmSauNL = headNL.indexOf("km_sau");
+    const iDonGiaNL = headNL.indexOf("don_gia");
+    const iGhiChuNL = headNL.indexOf("ghi_chu");
+
+    const result = {}; 
+
+    const parseDateObj = (v) => {
+      if (!v) return new Date(NaN);
+      if (v instanceof Date) return v;
+      const parts = String(v).split('/');
+      if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+      return new Date(v);
+    };
+
+    const checkMonthYear = (v) => {
+      const d = parseDateObj(v);
+      return !isNaN(d.getTime()) && (d.getMonth() + 1) === month && d.getFullYear() === year;
+    };
+
+    // 1. Nhật ký
+    valNK.forEach(r => {
+      const bsx = String(r[iBsxNK]).trim().toUpperCase();
+      if (bsxInput && bsx !== bsxInput) return;
+      if (!checkMonthYear(r[iNgayNK])) return;
+      const day = parseDateObj(r[iNgayNK]).getDate();
+
+      let kmx = r[iKmXuat] !== "" ? Number(r[iKmXuat]) : null;
+      let kmv = r[iKmVe] !== "" ? Number(r[iKmVe]) : null;
+      const tongKm = iTongKmNK > -1 && r[iTongKmNK] !== "" ? (Number(String(r[iTongKmNK]).replace(/,/g, '.')) || 0) : 0;
+
+      if (!result[bsx]) result[bsx] = {};
+      if (!result[bsx][day]) {
+        // Chuyến đầu tiên trong ngày: khởi tạo entry
+        result[bsx][day] = [{
+          km_dau: kmx,
+          km_cuoi: kmv,
+          km_tong: tongKm, // Cộng dồn tổng KM các chuyến trong ngày
+          fuels: []
+        }];
+      } else {
+        // Chuyến thứ 2+ trong ngày: gộp vào entry đầu tiên (1 cột/ngày)
+        let entry = result[bsx][day][0];
+        // km_dau = KM xuất nhỏ nhất (đầu ngày)
+        if (kmx !== null && (entry.km_dau === null || kmx < entry.km_dau)) {
+          entry.km_dau = kmx;
+        }
+        // km_cuoi = KM về lớn nhất (cuối ngày)
+        if (kmv !== null && (entry.km_cuoi === null || kmv > entry.km_cuoi)) {
+          entry.km_cuoi = kmv;
+        }
+        // km_tong = CỘNG DỒN tổng KM tất cả chuyến (KHÔNG dùng km_cuoi - km_dau)
+        entry.km_tong = (entry.km_tong || 0) + tongKm;
+      }
+    });
+
+    // 2. Nhiên liệu
+    valNL.forEach(r => {
+      const bsx = String(r[iBsxNL]).trim().toUpperCase();
+      if (bsxInput && bsx !== bsxInput) return;
+      if (!checkMonthYear(r[iNgayNL])) return;
+      const day = parseDateObj(r[iNgayNL]).getDate();
+
+      if (!result[bsx]) result[bsx] = {};
+      if (!result[bsx][day]) result[bsx][day] = [{ km_dau: null, km_cuoi: null, fuels: [] }];
+
+      let targetIdx = result[bsx][day].findIndex(e => e.fuels.length === 0);
+      if (targetIdx === -1) {
+        // Create new column "Lần 2", "Lần 3" only when there's an actual fuel addition
+        result[bsx][day].push({ km_dau: null, km_cuoi: null, fuels: [] });
+        targetIdx = result[bsx][day].length - 1;
+      }
+
+      result[bsx][day][targetIdx].fuels.push({
+        gio: formatTime(r[iGioNL]),
+        lit: r[iLitNL],
+        tong: r[iTienNL],
+        km_khi_do: r[iKmSauNL],
+        don_gia: r[iDonGiaNL],
+        ghi_chu: iGhiChuNL > -1 ? r[iGhiChuNL] : ""
+      });
+    });
+
+    // Xây dựng columns động
+    const colConfigs = [];
+    const numDays = new Date(year, month, 0).getDate();
+    for (let d = 1; d <= numDays; d++) {
+      let maxEntries = 1;
+      Object.keys(result).forEach(bsx => {
+        if (result[bsx][d] && result[bsx][d].length > maxEntries) maxEntries = result[bsx][d].length;
+      });
+      for (let i = 0; i < maxEntries; i++) {
+        colConfigs.push({ day: d, idx: i, label: i === 0 ? String(d) : `${d} lần ${i + 1}` });
+      }
+    }
+
+    const shXe = getSheetByTag("xe");
+    const valXe = shXe.getDataRange().getDisplayValues();
+    const headXe = valXe.shift().map(h => String(h).trim().toLowerCase());
+    const iBsxXe = headXe.indexOf("bien_so_xe");
+    const iLoaiXe = headXe.indexOf("loai_xe");
+    const iTaiTrong = headXe.indexOf("tai_trong");
+    const xeMap = {};
+    valXe.forEach(r => {
+      const bks = String(r[iBsxXe]).trim().toUpperCase();
+      if (bks) {
+        const loai = r[iLoaiXe] || "";
+        const taiTrong = iTaiTrong > -1 ? (r[iTaiTrong] || "") : "";
+        xeMap[bks] = (loai + " " + taiTrong).trim();
+      }
+    });
+
+    return jsonOut({ status: "success", data: result, columns: colConfigs, bsx: bsxInput, xeInfo: xeMap });
+  } catch (err) {
+    return jsonOut({ status: "error", message: String(err) });
+  }
+}
+
+/**
+ * Bảng kê KM vận hành: nhóm theo (bien_so_xe, tai_xe), hiển thị tong_km từng ngày
+ */
+function getKmGrid(e) {
+  try {
+    const bsxInput = (e.parameter.bien_so_xe || "").trim().toUpperCase();
+    const month = parseInt(e.parameter.month);
+    const year = parseInt(e.parameter.year);
+
+    if (!month || !year) throw "Thiếu thông số (Tháng, Năm)";
+
+    const shNK = getSheetByTag("nhatky");
+    const valNK = shNK.getDataRange().getValues();
+    const headNK = valNK.shift().map(h => String(h).trim().toLowerCase());
+
+    const iBsx = headNK.indexOf("bien_so_xe");
+    const iNgay = headNK.indexOf("ngay_van_hanh");
+    const iTongKm = headNK.indexOf("tong_km");
+    const iTaiXe = headNK.indexOf("tai_xe");    // Họ tên tài xế
+    const iMnv = headNK.indexOf("mnv");
+
+    if (iBsx === -1 || iNgay === -1) throw "Sheet NhatKy thiếu cột bien_so_xe hoặc ngay_van_hanh";
+
+    const numDays = new Date(year, month, 0).getDate();
+
+    const parseDateObj = (v) => {
+      if (!v) return new Date(NaN);
+      if (v instanceof Date) return v;
+      const parts = String(v).split('/');
+      if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+      return new Date(v);
+    };
+
+    const checkMonthYear = (v) => {
+      const d = parseDateObj(v);
+      return !isNaN(d.getTime()) && (d.getMonth() + 1) === month && d.getFullYear() === year;
+    };
+
+    // Map: key = "BSX||TEN" -> { bsx, ten, days: { 1: km, 3: km, ... }, total: 0 }
+    const rowMap = {};
+    const rowOrder = []; // giữ thứ tự xuất hiện
+
+    valNK.forEach(r => {
+      const bsx = String(r[iBsx] || "").trim().toUpperCase();
+      if (!bsx) return;
+      if (bsxInput && bsx !== bsxInput) return;
+      if (!checkMonthYear(r[iNgay])) return;
+
+      const ten = iTaiXe > -1 ? String(r[iTaiXe] || "").trim() : "";
+      const mnv = iMnv > -1 ? String(r[iMnv] || "").trim().toUpperCase() : "";
+      const km = Number(r[iTongKm]) || 0;
+      const day = parseDateObj(r[iNgay]).getDate();
+
+      const key = bsx + "||" + ten;
+      if (!rowMap[key]) {
+        rowMap[key] = { bsx, ten, mnv, days: {}, total: 0 };
+        rowOrder.push(key);
+      }
+      // Cộng dồn km nếu nhiều chuyến trong ngày
+      rowMap[key].days[day] = (rowMap[key].days[day] || 0) + km;
+      rowMap[key].total += km;
+    });
+
+    // Tạo mảng rows theo thứ tự xuất hiện, sắp xếp theo BSX rồi theo tên
+    rowOrder.sort((a, b) => {
+      const ra = rowMap[a];
+      const rb = rowMap[b];
+      if (ra.bsx !== rb.bsx) return ra.bsx.localeCompare(rb.bsx);
+      return ra.ten.localeCompare(rb.ten);
+    });
+
+    const rows = rowOrder.map(k => rowMap[k]);
+
+    // Tạo danh sách cột ngày (1->numDays)
+    const days = [];
+    for (let d = 1; d <= numDays; d++) days.push(d);
+
+    return jsonOut({
+      status: "success",
+      rows: rows,
+      days: days,
+      month: month,
+      year: year,
+      numDays: numDays
+    });
+
+  } catch (err) {
+    return jsonOut({ status: "error", message: String(err) });
+  }
+}
+
+/**
+ * Hàm tổng hợp kế hoạch bảo dưỡng cho Tab mới (Tái thiết kế theo mẫu ảnh)
+ */
+function getMaintenancePlanData() {
+  const ss = SpreadsheetApp.getActive();
+  
+  const nhatkySheet = getSheetByTag("nhatky");
+  const baoduongSheet = getSheetByTag("baoduong");
+  const xeSheet = getSheetByTag("xe");
+  
+  if (!nhatkySheet || !baoduongSheet || !xeSheet) return { status: "error", message: "Không tìm thấy sheet" };
+
+  const nhatkyData = nhatkySheet.getDataRange().getValues();
+  const baoduongData = baoduongSheet.getDataRange().getValues();
+  const xeData = xeSheet.getDataRange().getDisplayValues();
+  
+  const nhatkyHeaders = nhatkyData[0].map(h => String(h).toLowerCase().trim());
+  const baoduongHeaders = baoduongData[0].map(h => String(h).toLowerCase().trim());
+  const xeHeaders = xeData[0].map(h => String(h).toLowerCase().trim());
+  
+  const idxNkBienSo = nhatkyHeaders.indexOf("bien_so_xe");
+  const idxNkKmSau = nhatkyHeaders.indexOf("km_ve");
+  
+  const idxBdBienSo = baoduongHeaders.indexOf("bien_so_xe");
+  const idxBdKmSau = baoduongHeaders.indexOf("km_sau");
+  const idxBdNgay = baoduongHeaders.indexOf("ngay_bat_dau");
+  const idxBdDonVi = baoduongHeaders.indexOf("don_vi");
+
+  const idxXeBienSo = xeHeaders.indexOf("bien_so_xe");
+  const idxXeLoaiXe = xeHeaders.indexOf("loai_xe");
+  const idxXeTaiTrong = xeHeaders.indexOf("tai_trong");
+
+  // 1. KM hiện tại lớn nhất và KM Trung bình ngày từ Nhật ký
+  const latestKmMap = {};
+  const kmStatsMap = {}; // bks -> { totalKm: sum, days: Set }
+  const idxNkTongKm = nhatkyHeaders.indexOf("tong_km");
+  const idxNkNgayVh = nhatkyHeaders.indexOf("ngay_van_hanh");
+
+  for (let i = 1; i < nhatkyData.length; i++) {
+    const bks = String(nhatkyData[i][idxNkBienSo]).trim().toUpperCase();
+    if (!bks) continue;
+
+    // KM lớn nhất
+    const kmVe = parseFloat(nhatkyData[i][idxNkKmSau]) || 0;
+    if (!latestKmMap[bks] || kmVe > latestKmMap[bks]) {
+      latestKmMap[bks] = kmVe;
+    }
+
+    // KM trung bình ngày
+    const tongKm = parseFloat(nhatkyData[i][idxNkTongKm]) || 0;
+    const ngayVh = nhatkyData[i][idxNkNgayVh];
+    
+    if (!kmStatsMap[bks]) {
+      kmStatsMap[bks] = { totalKm: 0, days: new Set() };
+    }
+    kmStatsMap[bks].totalKm += tongKm;
+    if (ngayVh) {
+      // Chuẩn hóa ngày để đếm ngày duy nhất
+      const dStr = ngayVh instanceof Date ? ngayVh.toDateString() : String(ngayVh).trim();
+      if (dStr) kmStatsMap[bks].days.add(dStr);
+    }
+  }
+
+  // 2. Thông tin xe từ sheet Xe
+  const xeInfoMap = {};
+  for (let i = 1; i < xeData.length; i++) {
+    const bks = String(xeData[i][idxXeBienSo]).trim().toUpperCase();
+    if (bks) {
+      xeInfoMap[bks] = {
+        loai_xe: xeData[i][idxXeLoaiXe],
+        tai_trong: xeData[i][idxXeTaiTrong]
+      };
+    }
+  }
+
+  // 3. Lấy 2 kỳ bảo dưỡng gần nhất từ Bảo dưỡng
+  const serviceHistoryMap = {}; // bks -> [ {km, ngay, ...} ]
+  for (let i = 1; i < baoduongData.length; i++) {
+    const bks = String(baoduongData[i][idxBdBienSo]).trim().toUpperCase();
+    if (!bks) continue;
+    
+    const km = parseFloat(baoduongData[i][idxBdKmSau]) || 0;
+    const ngay = baoduongData[i][idxBdNgay];
+    
+    if (!serviceHistoryMap[bks]) serviceHistoryMap[bks] = [];
+    serviceHistoryMap[bks].push({
+      km: km,
+      ngay: ngay
+    });
+  }
+
+  const result = [];
+  Object.keys(serviceHistoryMap).forEach(bks => {
+    // Sắp xếp lịch sử theo ngày giảm dần
+    const history = serviceHistoryMap[bks].sort((a, b) => new Date(b.ngay) - new Date(a.ngay));
+    
+    const L1 = history[0]; // Kỳ bảo dưỡng gần nhất (Kỳ hiện tại)
+    const L2 = history[1] || { km: "", ngay: "" }; // Kỳ bảo dưỡng trước đó
+
+    const currentKm = latestKmMap[bks] || L1.km;
+    const xeInfo = xeInfoMap[bks] || { loai_xe: "", tai_trong: "" };
+    
+    // Tính KM TB ngày
+    let avgKmDay = 0;
+    if (kmStatsMap[bks] && kmStatsMap[bks].days.size > 0) {
+      avgKmDay = kmStatsMap[bks].totalKm / kmStatsMap[bks].days.size;
+    }
+
+    // Tính kế hoạch tiếp theo từ L1
+    const kmPlan = L1.km + 10000; // Định mức bảo dưỡng định kỳ mỗi 10,000km
+    const kmRemain = kmPlan - currentKm;
+    
+    let dateRemain = 0;
+    let datePlan = new Date(L1.ngay);
+    datePlan.setFullYear(datePlan.getFullYear() + 1); // Mặc định 1 năm nếu không có dữ liệu chạy xe
+
+    if (avgKmDay > 0) {
+      // Số ngày còn lại lý thuyết = KM còn lại / KM trung bình mỗi ngày
+      // Nếu kmRemain < 0 (đã quá hạn) -> dateRemain sẽ âm
+      dateRemain = Math.round(kmRemain / avgKmDay);
+      
+      // Ngày KH dự kiến = Hôm nay + Số ngày còn lại
+      const projectedDate = new Date();
+      projectedDate.setDate(projectedDate.getDate() + dateRemain);
+      datePlan = projectedDate;
+    } else {
+      // Nếu xe không chạy hoặc không có dữ liệu nhật ký, tính theo thời hạn 1 năm từ lần cuối
+      dateRemain = Math.ceil((datePlan - new Date()) / (1000 * 60 * 60 * 24));
+    }
+
+    result.push({
+      bks: bks,
+      loai_xe: xeInfo.loai_xe,
+      trong_tai: xeInfo.tai_trong,
+      avg_km_day: Math.round(avgKmDay),
+      // Kỳ trước
+      km_L2: L2.km,
+      ngay_L2: L2.ngay,
+      // Kế hoạch kỳ này
+      km_L1: L1.km,
+      ngay_L1: L1.ngay,
+      km_plan: kmPlan,
+      ngay_plan: datePlan,
+      // Cảnh báo
+      km_remain: kmRemain,
+      days_remain: dateRemain
+    });
+  });
+
+  return result;
+}

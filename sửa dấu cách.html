@@ -3115,7 +3115,9 @@
       style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
       <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
       <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">🎯 GIAO / NHẬN NHIỆM VỤ</h2>
-      <div class="box" style="margin-bottom: 20px;">
+
+      <!-- 🔍 TRA CỨU (Manager + Admin thấy) -->
+      <div id="nhiemvu_search_box" class="box" style="margin-bottom: 20px;">
         <h3 class="subtitle">🔍 Quản lý Nhiệm vụ</h3>
         <div class="field">
           <label class="label">Tìm theo Mã NV / Biển số xe</label>
@@ -3127,81 +3129,98 @@
         </div>
       </div>
 
-      <!-- FORM GIAO NHIỆM VỤ -->
-      <form id="nhiemvuForm" class="box is-relative">
-        <!-- 1️⃣ THÔNG TIN CƠ BẢN -->
-        <h3 class="subtitle">1️⃣ Giao việc</h3>
-        <div class="columns is-mobile is-multiline">
-          <div class="column is-12-mobile is-6-tablet">
-            <label class="label">Người giao (Mã NV quản lý)</label>
-            <input class="input" type="text" name="nguoi_giao" id="nv_nguoi_giao" placeholder="VD: QL01" required>
+      <!-- BẢNG NHIỆM VỤ CỦA TÀI XẾ (chỉ taixe thấy, hiện trực tiếp tại đây) -->
+      <div id="nhiemvu_taixe_area" class="hidden" style="margin-bottom: 20px;">
+        <div class="box">
+          <h3 class="subtitle">📋 Nhiệm vụ của bạn</h3>
+          <div class="table-container" style="overflow-x: auto;">
+            <table id="nhiemvuTaixeTable" class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
           </div>
-          <div class="column is-12-mobile is-6-tablet">
-            <label class="label">Giao cho (Mã NV/Biển số)</label>
-            <input class="input" type="text" name="nguoi_nhan" id="nv_nguoi_nhan"
-              placeholder="Nhập biển số hoặc mã NV nhận việc" required>
-          </div>
-          <div class="column is-12-mobile is-6-tablet">
-            <label class="label">Loại nhiệm vụ</label>
-            <div class="select is-fullwidth">
-              <select name="loai_nhiem_vu" required>
-                <option value=""></option>
-                <option>Sửa chữa - Bảo dưỡng</option>
-                <option>Tăng cường</option>
-                <option>Làm thêm giờ</option>
-                <option>Kiểm tra xe</option>
-                <option>Khác</option>
-              </select>
+        </div>
+      </div>
+
+      <!-- FORM GIAO NHIỆM VỤ (Manager + Admin thấy, Tài xế chỉ thấy khi báo cáo) -->
+      <div id="nhiemvu_form_box">
+        <form id="nhiemvuForm" class="box is-relative">
+          <input type="hidden" name="id" id="nv_id">
+          <!-- 1️⃣ THÔNG TIN CƠ BẢN -->
+          <h3 class="subtitle" id="nhiemvu_form_title">1️⃣ Giao việc</h3>
+          <div class="columns is-mobile is-multiline" id="nhiemvu_assign_fields">
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Người giao (Mã NV quản lý)</label>
+              <input class="input" type="text" name="nguoi_giao" id="nv_nguoi_giao" placeholder="VD: QL01" required
+                readonly>
+            </div>
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Giao cho (Mã NV/Biển số)</label>
+              <input class="input" type="text" name="nguoi_nhan" id="nv_nguoi_nhan"
+                placeholder="Nhập biển số hoặc mã NV nhận việc" required>
+            </div>
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Loại nhiệm vụ</label>
+              <div class="select is-fullwidth">
+                <select name="loai_nhiem_vu" required>
+                  <option value=""></option>
+                  <option>Sửa chữa - Bảo dưỡng</option>
+                  <option>Tăng cường</option>
+                  <option>Làm thêm giờ</option>
+                  <option>Kiểm tra xe</option>
+                  <option>Khác</option>
+                </select>
+              </div>
+            </div>
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Trạng thái</label>
+              <div class="select is-fullwidth">
+                <select name="trang_thai" required>
+                  <option value="Mới giao" selected>Mới giao</option>
+                  <option value="Đang thực hiện">Đang thực hiện</option>
+                  <option value="Đã hoàn thành">Đã hoàn thành</option>
+                  <option value="Hủy">Hủy</option>
+                </select>
+              </div>
             </div>
           </div>
-          <div class="column is-12-mobile is-6-tablet">
-            <label class="label">Trạng thái</label>
-            <div class="select is-fullwidth">
-              <select name="trang_thai" required>
-                <option value="Mới giao" selected>Mới giao</option>
-                <option value="Đang thực hiện">Đang thực hiện</option>
-                <option value="Đã hoàn thành">Đã hoàn thành</option>
-                <option value="Hủy">Hủy</option>
-              </select>
+
+          <!-- 2️⃣ NỘI DUNG VÀ THỜI GIAN -->
+          <h3 class="subtitle">2️⃣ Chi tiết công việc</h3>
+          <div class="columns is-mobile is-multiline">
+            <div class="column is-12">
+              <label class="label">Nội dung chi tiết</label>
+              <textarea class="textarea" name="noi_dung" placeholder="Mô tả cụ thể công việc cần làm..."
+                required></textarea>
+            </div>
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Ngày bắt đầu dự kiến</label>
+              <input class="input" type="date" name="ngay_bat_dau" required>
+            </div>
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Hạn hoàn thành</label>
+              <input class="input" type="date" name="han_hoan_thanh">
             </div>
           </div>
-        </div>
 
-        <!-- 2️⃣ NỘI DUNG VÀ THỜI GIAN -->
-        <h3 class="subtitle">2️⃣ Chi tiết công việc</h3>
-        <div class="columns is-mobile is-multiline">
-          <div class="column is-12">
-            <label class="label">Nội dung chi tiết</label>
-            <textarea class="textarea" name="noi_dung" placeholder="Mô tả cụ thể công việc cần làm..."
-              required></textarea>
+          <!-- 3️⃣ GHI CHÚ BÁO CÁO CỦA TÀI XẾ -->
+          <h3 class="subtitle">3️⃣ Báo cáo kết quả (Dành cho người nhận)</h3>
+          <div class="columns is-mobile is-multiline">
+            <div class="column is-12">
+              <label class="label">Ghi chú / Báo cáo thực hiện</label>
+              <textarea class="textarea" name="ghi_chu_ket_qua"
+                placeholder="Người nhận cập nhật tiến độ hoặc kết quả ở đây..."></textarea>
+            </div>
           </div>
-          <div class="column is-12-mobile is-6-tablet">
-            <label class="label">Ngày bắt đầu dự kiến</label>
-            <input class="input" type="date" name="ngay_bat_dau" required>
-          </div>
-          <div class="column is-12-mobile is-6-tablet">
-            <label class="label">Hạn hoàn thành</label>
-            <input class="input" type="date" name="han_hoan_thanh">
-          </div>
-        </div>
 
-        <!-- 3️⃣ GHI CHÚ BÁO CÁO CỦA TÀI XẾ -->
-        <h3 class="subtitle">3️⃣ Báo cáo kết quả (Dành cho người nhận)</h3>
-        <div class="columns is-mobile is-multiline">
-          <div class="column is-12">
-            <label class="label">Ghi chú / Báo cáo thực hiện</label>
-            <textarea class="textarea" name="ghi_chu_ket_qua"
-              placeholder="Người nhận cập nhật tiến độ hoặc kết quả ở đây..."></textarea>
-          </div>
-        </div>
-
-        <input type="hidden" name="created_at">
-        <div class="form-spacer"></div>
-        <button class="floating-save-btn">💾 LƯU NHIỆM VỤ</button>
-      </form>
+          <input type="hidden" name="created_at">
+          <div class="form-spacer"></div>
+          <button class="floating-save-btn" id="nhiemvu_save_btn">💾 LƯU NHIỆM VỤ</button>
+        </form>
+      </div>
     </div>
 
-    <!-- ================= TAG: BẢNG KẾT QUẢ NHIỆM VỤ ================= -->
+    <!-- ================= TAG: BẢNG KẾT QUẢ NHIỆM VỤ (Manager/Admin search result) ================= -->
     <div id="nhiemvu_table" class="hidden form-box"
       style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
       <button class="floating-back-btn" onclick="backToNhiemVu()">
@@ -4094,6 +4113,38 @@ Hết hạn: ${w.ngay_he} <br>
           const icon = document.getElementById('toggleIcon');
           if (icon) icon.textContent = "✏️";
         }
+
+        // ===== NHIỆM VỤ: PHÂN QUYỀN THEO ROLE =====
+        if (tagId === 'nhiemvu') {
+          const formBox = document.getElementById('nhiemvu_form_box');
+          const searchBox = document.getElementById('nhiemvu_search_box');
+          const taixeArea = document.getElementById('nhiemvu_taixe_area');
+          const nguoiGiaoInput = document.getElementById('nv_nguoi_giao');
+
+          if (USER_ROLE === 'taixe') {
+            // TÀI XẾ: Ẩn form giao việc + ô tìm kiếm, hiện bảng nhiệm vụ của mình
+            if (formBox) formBox.style.display = 'none';
+            if (searchBox) searchBox.style.display = 'none';
+            if (taixeArea) taixeArea.classList.remove('hidden');
+            // Tự động load nhiệm vụ của tài xế theo mã NV
+            if (USER_MNV) {
+              loadNhiemVuTaixe(USER_MNV);
+            }
+          } else {
+            // MANAGER / ADMIN: Hiện form giao việc + tìm kiếm, ẩn bảng tài xế
+            if (formBox) formBox.style.display = '';
+            if (searchBox) searchBox.style.display = '';
+            if (taixeArea) taixeArea.classList.add('hidden');
+            // Tự động điền "Người giao" = mã NV của người đang đăng nhập
+            if (nguoiGiaoInput && USER_MNV) {
+              nguoiGiaoInput.value = USER_MNV;
+            }
+            // Reset form về trạng thái tạo mới
+            document.getElementById('nv_id').value = '';
+            document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
+            document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU NHIỆM VỤ';
+          }
+        }
       }
       function animateHeaderTitle() {
         const titleBox = document.querySelector('.home-header .title-box h1');
@@ -4209,6 +4260,23 @@ Hết hạn: ${w.ngay_he} <br>
                   if (icon) icon.textContent = "✏️";
                   if (tag === 'xe') loadTableByKey("xe", "bien_so_xe", "", "xeTable");
                   if (tag === 'taixe') loadTableByKey("taixe", "ma_nv", "", "taixeTable");
+                }
+                // Xử lý riêng cho Nhiệm vụ
+                if (tag === 'nhiemvu') {
+                  if (USER_ROLE === 'taixe') {
+                    // Tài xế: Quay lại bảng nhiệm vụ
+                    const formBox = document.getElementById('nhiemvu_form_box');
+                    const taixeArea = document.getElementById('nhiemvu_taixe_area');
+                    if (formBox) formBox.style.display = 'none';
+                    if (taixeArea) taixeArea.classList.remove('hidden');
+                    if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
+                  } else {
+                    // Manager/Admin: Reset form, tự điền lại người giao
+                    document.getElementById('nv_id').value = '';
+                    document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
+                    document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU NHIỆM VỤ';
+                    if (USER_MNV) document.getElementById('nv_nguoi_giao').value = USER_MNV;
+                  }
                 }
               }, 300);
             } else {
@@ -4406,6 +4474,181 @@ Hết hạn: ${w.ngay_he} <br>
           "nhiemvuResultTable"
         );
         window.scrollTo({ top: 0 });
+      }
+
+      /* ===== NHIỆM VỤ: LOAD BẢNG CHO TÀI XẾ (có nút Nhận + Báo cáo) ===== */
+      function loadNhiemVuTaixe(maNV) {
+        const table = document.getElementById("nhiemvuTaixeTable");
+        if (!table) return;
+        const thead = table.querySelector("thead");
+        const tbody = table.querySelector("tbody");
+        thead.innerHTML = "";
+        tbody.innerHTML = '<tr><td colspan="100%" class="has-text-centered">⏳ Đang tải...</td></tr>';
+
+        const url = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(maNV)}&_t=${Date.now()}`;
+        fetch(url)
+          .then(res => res.json())
+          .then(list => {
+            thead.innerHTML = "";
+            tbody.innerHTML = "";
+            if (!Array.isArray(list) || list.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="100%" class="has-text-centered">Bạn chưa có nhiệm vụ nào</td></tr>';
+              return;
+            }
+            if (list.length === 1 && list[0].error) {
+              tbody.innerHTML = `<tr><td colspan="100%" class="has-text-danger">${list[0].error}</td></tr>`;
+              return;
+            }
+
+            // Header: Thao tác + các cột dữ liệu (bỏ id, created_at cho gọn)
+            const displayCols = ["nguoi_giao", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ghi_chu_ket_qua"];
+            const colLabels = {
+              nguoi_giao: "Người giao",
+              loai_nhiem_vu: "Loại NV",
+              trang_thai: "Trạng thái",
+              noi_dung: "Nội dung",
+              ngay_bat_dau: "Bắt đầu",
+              han_hoan_thanh: "Hạn HT",
+              ghi_chu_ket_qua: "Kết quả"
+            };
+            thead.innerHTML = "<tr><th>Thao tác</th>" +
+              displayCols.map(h => `<th>${colLabels[h] || h}</th>`).join("") +
+              "</tr>";
+
+            list.forEach(row => {
+              const tr = document.createElement("tr");
+              const trangThai = String(row.trang_thai || "").trim();
+
+              // === CỘT THAO TÁC ===
+              const tdAction = document.createElement("td");
+              tdAction.style.whiteSpace = "nowrap";
+
+              if (trangThai === "Mới giao") {
+                // Nút NHẬN NHIỆM VỤ
+                const btnNhan = document.createElement("button");
+                btnNhan.textContent = "✅ Nhận";
+                btnNhan.className = "button is-small is-success";
+                btnNhan.style.marginRight = "4px";
+                btnNhan.onclick = () => nhanNhiemVu(row);
+                tdAction.appendChild(btnNhan);
+              }
+
+              if (trangThai === "Đang thực hiện") {
+                // Nút BÁO CÁO KẾT QUẢ
+                const btnBaoCao = document.createElement("button");
+                btnBaoCao.textContent = "📝 Báo cáo";
+                btnBaoCao.className = "button is-small is-warning";
+                btnBaoCao.onclick = () => baoCaoNhiemVu(row);
+                tdAction.appendChild(btnBaoCao);
+              }
+
+              if (trangThai === "Đã hoàn thành") {
+                tdAction.innerHTML = '<span class="tag is-success is-light">✔ Xong</span>';
+              }
+              if (trangThai === "Hủy") {
+                tdAction.innerHTML = '<span class="tag is-danger is-light">✖ Hủy</span>';
+              }
+
+              tr.appendChild(tdAction);
+
+              // === CÁC CỘT DỮ LIỆU ===
+              displayCols.forEach(h => {
+                const td = document.createElement("td");
+                td.textContent = row[h] ?? "";
+                // Tô màu trạng thái
+                if (h === "trang_thai") {
+                  td.style.fontWeight = "bold";
+                  if (trangThai === "Mới giao") td.style.color = "#3273dc";
+                  if (trangThai === "Đang thực hiện") td.style.color = "#ff9900";
+                  if (trangThai === "Đã hoàn thành") td.style.color = "#23d160";
+                  if (trangThai === "Hủy") td.style.color = "#ff3860";
+                }
+                tr.appendChild(td);
+              });
+              tbody.appendChild(tr);
+            });
+            enablePinchZoom("nhiemvuTaixeTable");
+          })
+          .catch(() => {
+            tbody.innerHTML = '<tr><td colspan="100%" class="has-text-danger">Lỗi tải dữ liệu</td></tr>';
+          });
+      }
+
+      /* ===== TÀI XẾ: NHẬN NHIỆM VỤ → Chuyển trạng thái sang "Đang thực hiện" ===== */
+      function nhanNhiemVu(rowData) {
+        if (!confirm("Bạn xác nhận NHẬN nhiệm vụ này?")) return;
+
+        const fd = new FormData();
+        fd.append("tag", "nhiemvu");
+        fd.append("id", rowData.id || "");
+        fd.append("nguoi_giao", rowData.nguoi_giao || "");
+        fd.append("nguoi_nhan", rowData.nguoi_nhan || "");
+        fd.append("loai_nhiem_vu", rowData.loai_nhiem_vu || "");
+        fd.append("trang_thai", "Đang thực hiện");
+        fd.append("noi_dung", rowData.noi_dung || "");
+        fd.append("ngay_bat_dau", rowData.ngay_bat_dau || "");
+        fd.append("han_hoan_thanh", rowData.han_hoan_thanh || "");
+        fd.append("ghi_chu_ket_qua", rowData.ghi_chu_ket_qua || "");
+
+        fetch(SCRIPT_URL, { method: "POST", body: fd })
+          .then(res => res.json())
+          .then(r => {
+            if (r.status === "success") {
+              showAlert("✅ Đã nhận nhiệm vụ thành công!", "is-success");
+              // Reload bảng
+              if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
+            } else {
+              showAlert("Lỗi: " + (r.message || "Không thể nhận nhiệm vụ"), "is-danger");
+            }
+          })
+          .catch(() => showAlert("Lỗi kết nối server", "is-danger"));
+      }
+
+      /* ===== TÀI XẾ: MỞ FORM BÁO CÁO KẾT QUẢ ===== */
+      function baoCaoNhiemVu(rowData) {
+        // Hiện form ở chế độ báo cáo
+        const formBox = document.getElementById('nhiemvu_form_box');
+        const taixeArea = document.getElementById('nhiemvu_taixe_area');
+        if (formBox) formBox.style.display = '';
+        if (taixeArea) taixeArea.classList.add('hidden');
+
+        // Điền dữ liệu vào form
+        const form = document.getElementById('nhiemvuForm');
+        document.getElementById('nv_id').value = rowData.id || "";
+        form.querySelector('[name="nguoi_giao"]').value = rowData.nguoi_giao || "";
+        form.querySelector('[name="nguoi_nhan"]').value = rowData.nguoi_nhan || "";
+
+        const loaiSelect = form.querySelector('[name="loai_nhiem_vu"]');
+        if (loaiSelect) {
+          for (let opt of loaiSelect.options) {
+            if (opt.text === rowData.loai_nhiem_vu || opt.value === rowData.loai_nhiem_vu) {
+              opt.selected = true; break;
+            }
+          }
+        }
+
+        const trangThaiSelect = form.querySelector('[name="trang_thai"]');
+        if (trangThaiSelect) {
+          for (let opt of trangThaiSelect.options) {
+            if (opt.value === "Đã hoàn thành") { opt.selected = true; break; }
+          }
+        }
+
+        form.querySelector('[name="noi_dung"]').value = rowData.noi_dung || "";
+        form.querySelector('[name="ngay_bat_dau"]').value = rowData.ngay_bat_dau || "";
+        form.querySelector('[name="han_hoan_thanh"]').value = rowData.han_hoan_thanh || "";
+        form.querySelector('[name="ghi_chu_ket_qua"]').value = rowData.ghi_chu_ket_qua || "";
+
+        // Đổi tiêu đề + nút
+        document.getElementById('nhiemvu_form_title').textContent = '📝 Báo cáo kết quả nhiệm vụ';
+        document.getElementById('nhiemvu_save_btn').textContent = '📤 GỬI BÁO CÁO';
+
+        // Khóa các trường giao việc (tài xế không sửa được)
+        form.querySelector('[name="nguoi_giao"]').readOnly = true;
+        form.querySelector('[name="nguoi_nhan"]').readOnly = true;
+        form.querySelector('[name="noi_dung"]').readOnly = true;
+
+        form.scrollIntoView({ behavior: "smooth" });
       }
       /* ===== TÍNH SỐ NGÀY CÒN LẠI ===== */
       function calcRemainDays(dateStr) {
