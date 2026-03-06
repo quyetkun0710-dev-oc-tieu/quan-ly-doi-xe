@@ -2771,7 +2771,7 @@
         <input type="hidden" name="created_at">
         <div class="form-spacer"></div>
         <button class="floating-save-btn mt-4">
-          💾 Lưu đánh giá
+          💾 Lưu
         </button>
       </form>
     </div>
@@ -3216,7 +3216,7 @@
 
           <input type="hidden" name="created_at">
           <div class="form-spacer"></div>
-          <button class="floating-save-btn" id="nhiemvu_save_btn">💾 LƯU NHIỆM VỤ</button>
+          <button class="floating-save-btn" id="nhiemvu_save_btn">💾 LƯU</button>
         </form>
       </div>
 
@@ -4157,9 +4157,10 @@ Hết hạn: ${w.ngay_he} <br>
               nguoiGiaoInput.value = USER_MNV;
             }
             // Reset form về trạng thái tạo mới
+            document.getElementById('nhiemvuForm').reset();
             document.getElementById('nv_id').value = '';
             document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
-            document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU NHIỆM VỤ';
+            document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU';
             // Tự động load lịch sử giao nhiệm vụ
             loadNhiemVuHistory();
           }
@@ -4290,10 +4291,11 @@ Hết hạn: ${w.ngay_he} <br>
                     if (taixeArea) taixeArea.classList.remove('hidden');
                     if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
                   } else {
-                    // Manager/Admin: Reset form, tự điền lại người giao
+                    // Manager/Admin: Reset form
+                    form.reset();
                     document.getElementById('nv_id').value = '';
                     document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
-                    document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU NHIỆM VỤ';
+                    document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU';
                     if (USER_MNV) document.getElementById('nv_nguoi_giao').value = USER_MNV;
                   }
                   // Reload lịch sử giao nhiệm vụ
