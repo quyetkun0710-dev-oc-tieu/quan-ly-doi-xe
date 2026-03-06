@@ -1681,7 +1681,15 @@
     <div id="lichlamviec" class="hidden form-box"
       style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
       <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
-      <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">🗓️ LỊCH LÀM VIỆC TỰ ĐỘNG</h2>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-4" style="padding-left: 10px;">
+        <h2 class="title is-4 has-text-weight-bold mb-0">🗓️ LỊCH LÀM VIỆC TỰ ĐỘNG</h2>
+        <div>
+          <button class="button is-success is-small is-light"
+            onclick="exportTableToExcel('lichlamviec_table', 'Lich_Lam_Viec')">📁 Excel</button>
+          <button class="button is-danger is-small is-light"
+            onclick="exportElementToPDF('lichlamviec_table', 'Lich_Lam_Viec')">📄 PDF</button>
+        </div>
+      </div>
 
       <!-- Khung điều khiển tạo lịch -->
       <div class="box" style="margin-bottom: 20px;">
@@ -1815,7 +1823,15 @@
     <!-- ================= START TAG: THÔNG TIN XE ================= -->
     <div id="xe" class="hidden form-box">
       <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
-      <h2 class="title is-4 has-text-weight-bold">🚚 THÔNG TIN XE </h2>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
+        <h2 class="title is-4 has-text-weight-bold mb-0">🚚 THÔNG TIN XE </h2>
+        <div>
+          <button class="button is-success is-small is-light" onclick="exportTableToExcel('xeTable', 'Thong_Tin_Xe')">📁
+            Excel</button>
+          <button class="button is-danger is-small is-light" onclick="exportElementToPDF('xeTable', 'Thong_Tin_Xe')">📄
+            PDF</button>
+        </div>
+      </div>
       <!-- ========= TRA CỨU ========= -->
       <section class="box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -2001,7 +2017,15 @@
     <!-- ================= START TAG: THÔNG TIN TÀI XẾ ================= -->
     <div id="taixe" class="hidden form-box">
       <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
-      <h2 class="title is-4">👨‍✈️ THÔNG TIN TÀI XẾ</h2>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
+        <h2 class="title is-4 mb-0">👨‍✈️ THÔNG TIN TÀI XẾ</h2>
+        <div>
+          <button class="button is-success is-small is-light"
+            onclick="exportTableToExcel('taixeTable', 'Thong_Tin_Tai_Xe')">📁 Excel</button>
+          <button class="button is-danger is-small is-light"
+            onclick="exportElementToPDF('taixeTable', 'Thong_Tin_Tai_Xe')">📄 PDF</button>
+        </div>
+      </div>
       <!-- ===== TRA CỨU ===== -->
       <section class="box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -2703,7 +2727,16 @@
       <button class="floating-back-btn" type="button" onclick="backHome()">
         ⬅ Quay lại
       </button>
-      <h2 class="title is-4">📅 KẾ HOẠCH BẢO DƯỠNG ĐỊNH KỲ</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"
+        class="mt-4">
+        <h2 class="title is-4 mb-0">📅 KẾ HOẠCH BẢO DƯỠNG ĐỊNH KỲ</h2>
+        <div>
+          <button class="button is-success is-small is-light"
+            onclick="exportTableToExcel('maintenancePlanTable', 'Ke_Hoach_Bao_Duong')">📁 Excel</button>
+          <button class="button is-danger is-small is-light"
+            onclick="exportElementToPDF('maintenancePlanTable', 'Ke_Hoach_Bao_Duong')">📄 PDF</button>
+        </div>
+      </div>
       <div class="table-container" style="background: rgba(255,255,255,0.95) !important; border-radius: 12px;">
         <table class="table is-bordered is-striped is-fullwidth" id="maintenancePlanTable">
           <thead>
@@ -3086,6 +3119,14 @@
           <button class="button is-info is-fullwidth mt-2" onclick="openFuelLogGrid()">
             🔍 Tra cứu bảng kê
           </button>
+          <div class="is-flex is-justify-content-flex-end mt-2">
+            <div>
+              <button class="button is-success is-small is-light"
+                onclick="exportTableToExcel('fuel_log_table', 'Bang_Ke_Nhien_Lieu')">📁 Excel</button>
+              <button class="button is-danger is-small is-light"
+                onclick="exportElementToPDF('fuel_log_table', 'Bang_Ke_Nhien_Lieu')">📄 PDF</button>
+            </div>
+          </div>
         </section>
 
         <!-- Container bảng với style đồng bộ -->
@@ -3145,6 +3186,14 @@
           <button class="button is-info is-fullwidth mt-2" onclick="openKmGrid()">
             🔍 Tra cứu KM vận hành
           </button>
+          <div class="is-flex is-justify-content-flex-end mt-2">
+            <div>
+              <button class="button is-success is-small is-light"
+                onclick="exportTableToExcel('km_log_table', 'Bang_Ke_KM')">📁 Excel</button>
+              <button class="button is-danger is-small is-light"
+                onclick="exportElementToPDF('km_log_table', 'Bang_Ke_KM')">📄 PDF</button>
+            </div>
+          </div>
         </section>
 
         <div class="table-container" style="background: rgba(255,255,255,0.95) !important; border-radius: 12px;">
@@ -3177,7 +3226,15 @@
       <!-- BẢNG NHIỆM VỤ CỦA TÀI XẾ (chỉ taixe thấy, hiện trực tiếp tại đây) -->
       <div id="nhiemvu_taixe_area" class="hidden" style="margin-bottom: 20px;">
         <div class="box">
-          <h3 class="subtitle">📋 Nhiệm vụ của bạn</h3>
+          <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+            <h3 class="subtitle mb-0">📋 Nhiệm vụ của bạn</h3>
+            <div>
+              <button class="button is-success is-small is-light"
+                onclick="exportTableToExcel('nhiemvuTaixeTable', 'Nhiem_Vu_Tai_Xe')">📁 Excel</button>
+              <button class="button is-danger is-small is-light"
+                onclick="exportElementToPDF('nhiemvuTaixeTable', 'Nhiem_Vu_Tai_Xe')">📄 PDF</button>
+            </div>
+          </div>
           <div class="table-container" style="overflow-x: auto;">
             <table id="nhiemvuTaixeTable" class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
               <thead></thead>
@@ -3284,7 +3341,15 @@
       <button class="floating-back-btn" onclick="backToNhiemVu()">
         ⬅ Quay lại Nhiệm vụ
       </button>
-      <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">📋 DANH SÁCH NHIỆM VỤ</h2>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-4" style="padding-left: 10px;">
+        <h2 class="title is-4 has-text-weight-bold mb-0">📋 DANH SÁCH NHIỆM VỤ</h2>
+        <div>
+          <button class="button is-success is-small is-light"
+            onclick="exportTableToExcel('nhiemvuResultTable', 'Danh_Sach_Nhiem_Vu')">📁 Excel</button>
+          <button class="button is-danger is-small is-light"
+            onclick="exportElementToPDF('nhiemvuResultTable', 'Danh_Sach_Nhiem_Vu')">📄 PDF</button>
+        </div>
+      </div>
       <div class="table-container shadow-table-container">
         <table class="table is-bordered is-striped is-fullwidth styled-table" id="nhiemvuResultTable">
           <thead></thead>
@@ -3979,6 +4044,42 @@ Hết hạn: ${w.ngay_he} <br>
       }
 
       /* ===== EXPORT EXCEL + PDF ===== */
+      function exportTableToExcel(tableId, filename) {
+        let table = document.getElementById(tableId);
+        if (!table) {
+          showAlert("Không tìm thấy dữ liệu bảng!", "is-warning");
+          return;
+        }
+
+        // Clone table to remove hidden columns if any
+        let cloneTable = table.cloneNode(true);
+        const wb = XLSX.utils.table_to_book(cloneTable, { sheet: "Sheet1" });
+        XLSX.writeFile(wb, `${filename}.xlsx`);
+      }
+
+      function exportElementToPDF(elementId, filename) {
+        const element = document.getElementById(elementId);
+        if (!element) {
+          showAlert("Không tìm thấy dữ liệu bảng!", "is-warning");
+          return;
+        }
+        const opt = {
+          margin: 0.3,
+          filename: `${filename}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        const originalBg = element.style.background;
+        element.style.background = '#ffffff';
+        html2pdf().set(opt).from(element).save().then(() => {
+          element.style.background = originalBg;
+        }).catch(err => {
+          element.style.background = originalBg;
+          showAlert("Lỗi xuất PDF", "is-danger");
+        });
+      }
+
       function exportReportToExcel() {
         if (!window.lastReportData) {
           showAlert("Vui lòng tải báo cáo trước khi xuất Excel!", "is-warning");
