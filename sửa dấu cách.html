@@ -856,13 +856,12 @@
       border-color: #00ffcc !important;
     }
 
-    /* Fixed Background for Mobile */
     #fixed-bg {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       background-size: contain;
       background-position: center top;
       z-index: -1;
@@ -4128,23 +4127,12 @@ Hết hạn: ${w.ngay_he} <br>
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat"
           };
-          if (window.matchMedia("(max-width: 1024px)").matches) {
-            // MOBILE: Luôn "Full ảnh" và Cố định (Fixed) dùng lớp nền riêng để mượt nhất
-            if (fixedBg) {
-              Object.assign(fixedBg.style, commonStyle);
-              fixedBg.style.display = "block";
-            }
-            document.body.style.backgroundImage = "none";
-            document.body.style.backgroundAttachment = "scroll"; // Reset body
-          } else {
-            // DESKTOP: "Scroll" cuộn theo nội dung
-            Object.assign(document.body.style, commonStyle);
-            document.body.style.backgroundAttachment = "scroll";
-            if (fixedBg) {
-              fixedBg.style.display = "none";
-              fixedBg.style.backgroundImage = "none";
-            }
+          if (fixedBg) {
+            Object.assign(fixedBg.style, commonStyle);
+            fixedBg.style.display = "block";
           }
+          document.body.style.backgroundImage = "none";
+          document.body.style.backgroundColor = "transparent";
         } else {
           document.body.style.background = "#f4f6f8";
           document.body.style.backgroundImage = "";
