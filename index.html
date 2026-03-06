@@ -2945,13 +2945,19 @@
             </div>
           </div>
 
-          <div class="column is-6-mobile is-4-tablet is-3-desktop">
+          <div class="column is-6-mobile is-4-tablet is-2-desktop">
             <div class="report-card is-warning-card">
               <p class="subtitle is-7">🔧 T. PHÍ SỬA CHỮA</p>
               <p class="report-number has-text-danger" id="rpt_sc_cost">0 ₫</p>
             </div>
           </div>
-          <div class="column is-6-mobile is-12-tablet is-3-desktop">
+          <div class="column is-6-mobile is-4-tablet is-2-desktop">
+            <div class="report-card is-warning-card">
+              <p class="subtitle is-7">🔧 LƯỢT SC</p>
+              <p class="report-number" id="rpt_sc_count">0</p>
+            </div>
+          </div>
+          <div class="column is-12-mobile is-4-tablet is-2-desktop">
             <div class="report-card is-danger-card"
               style="background: linear-gradient(145deg, rgba(255,245,245,0.95), rgba(255,235,235,0.95)); border-left-color: #ff3860;">
               <p class="subtitle is-7" style="color: #ff3860;">⚠️ LỖI VI PHẠM</p>
@@ -3792,9 +3798,9 @@ Hết hạn: ${w.ngay_he} <br>
               // MAINTAIN & REPAIR
               if (document.getElementById("rpt_bd_cost")) {
                 document.getElementById("rpt_bd_cost").textContent = fmt(d.data.bd_cost) + " ₫";
-                document.getElementById("rpt_bd_count").textContent = fmt(d.data.bd_count);
-                document.getElementById("rpt_sc_cost").textContent = fmt(d.data.sc_cost) + " ₫";
-                document.getElementById("rpt_sc_count").textContent = fmt(d.data.sc_count);
+                if (document.getElementById("rpt_bd_count")) document.getElementById("rpt_bd_count").textContent = fmt(d.data.bd_count);
+                if (document.getElementById("rpt_sc_cost")) document.getElementById("rpt_sc_cost").textContent = fmt(d.data.sc_cost) + " ₫";
+                if (document.getElementById("rpt_sc_count")) document.getElementById("rpt_sc_count").textContent = fmt(d.data.sc_count);
               }
               // OPERATION
               document.getElementById("rpt_op_km").textContent = fmt(d.data.op_km);
