@@ -23,6 +23,8 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       background-color: #f4f6f8;
@@ -2879,11 +2881,10 @@
           </div>
           <div class="level-right">
             <div class="level-item mb-2">
-              <button class="button is-success is-light mr-2"
-                onclick="alert('Tính năng Xuất Excel đang được phát triển!')">
+              <button class="button is-success is-light mr-2" id="btnExportExcel" onclick="exportReportToExcel()">
                 <span class="has-text-weight-bold">📁 Xuất Excel</span>
               </button>
-              <button class="button is-danger is-light" onclick="alert('Tính năng Xuất PDF đang được phát triển!')">
+              <button class="button is-danger is-light" id="btnExportPDF" onclick="exportReportToPDF()">
                 <span class="has-text-weight-bold">📄 Xuất PDF</span>
               </button>
             </div>
@@ -2891,8 +2892,9 @@
         </div>
       </div>
 
-      <!-- REPORT CARDS -->
-      <div class="box" style="background: rgba(255,255,255,0.95);">
+      <div id="baocao-export-zone" style="padding-top: 10px;">
+        <!-- REPORT CARDS -->
+        <div class="box" style="background: rgba(255,255,255,0.95);">
         <h3 class="subtitle is-6 mb-4 has-text-weight-bold has-text-grey">💡 CHỈ SỐ HOẠT ĐỘNG CHÍNH</h3>
         <div class="columns is-multiline is-mobile">
 
@@ -3781,6 +3783,8 @@ Hết hạn: ${w.ngay_he} <br>
           .then(res => res.json())
           .then(d => {
             if (d.status === "success") {
+              window.lastReportData = d.data; // Lưu lại data cho xuất Excel/PDF
+              
               // Helper format number
               const fmt = (n) => Number(n).toLocaleString("vi-VN");
               // Helper format hours -> xx giờ yy phút
@@ -3972,6 +3976,108 @@ Hết hạn: ${w.ngay_he} <br>
             }
           });
       }
+
+      /* ===== EXPORT EXCEL + PDF ===== */
+      function exportReportToExcel() {
+        if (!window.lastReportData) {
+          showAlert("Vui lòng tải báo cáo trước khi xuất Excel!", "is-warning");
+          return;
+        }
+        
+        const m = document.getElementById("rpt_month").value;
+        const y = document.getElementById("rpt_year").value;
+        const d = window.lastReportData;
+        const wb = XLSX.utils.book_new();
+        
+        // 1. Sheet Tổng quan (Dashboard)
+        const summaryData = [
+          ["BÁO CÁO HOẠT ĐỘNG ĐỘI XE", `Tháng ${m} - Năm ${y}`],
+          [],
+          ["CHỈ SỐ", "GIÁ TRỊ", "ĐƠN VỊ"],
+          ["Tổng số KM Vận Hành", d.op_km, "km"],
+          ["Tổng số Chuyến", d.op_trips, "chuyến"],
+          ["Tổng Giờ Hoạt Động", d.op_hours, "giờ"],
+          [],
+          ["Tổng Chi Phí Nhiên Liệu", d.fuel_cost, "VNĐ"],
+          ["Tổng Lít Dầu Tiêu Thụ", d.fuel_liters, "lít"],
+          [],
+          ["Tổng Phí Bảo Dưỡng", d.bd_cost, "VNĐ"],
+          ["Số lượt Bảo Dưỡng", d.bd_count, "lượt"],
+          ["Tổng Phí Sửa Chữa", d.sc_cost, "VNĐ"],
+          ["Số lượt Sửa Chữa", d.sc_count, "lượt"],
+          [],
+          ["Tổng Số Lỗi Vi Phạm", d.violation_count, "lỗi"],
+        ];
+        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+        XLSX.utils.book_append_sheet(wb, wsSummary, "Tong_Quan");
+
+        // 2. Sheet Chi Tiết Xe
+        if (d.vehicles && d.vehicles.length > 0) {
+          const isMgr = (USER_ROLE === "manager" || USER_ROLE === "admin");
+          const vHeader = ["Biển số", "K.M (km)", "Giờ", "Chuyến", "T.Tiền Dầu (VND)", "T.Lít Dầu (L)", "T.Tiền SCBD (VND)", "Tổng Lượt SCBD"];
+          if (isMgr) vHeader.push("Đ.Mức Khoán", "Đ.Mức T.Tế", "Chênh Lệch");
+          
+          const vData = [vHeader];
+          d.vehicles.forEach(v => {
+            const row = [v.bsx, v.op_km, v.op_hours, v.op_trips, v.fuel_cost, v.fuel_liters, v.maintain_cost, v.maintain_count];
+            if (isMgr) row.push(v.quota_l100 || 0, v.actual_l100 || 0, v.variance || 0);
+            vData.push(row);
+          });
+          const wsVehicles = XLSX.utils.aoa_to_sheet(vData);
+          XLSX.utils.book_append_sheet(wb, wsVehicles, "Chi_Tiet_Xe");
+        }
+
+        // 3. Sheet Chi Tiết Tài Xế
+        if (d.drivers && d.drivers.length > 0) {
+          const dHeader = ["Mã NV", "Họ Tên", "Chuyến", "K.M", "Giờ Chạy", "Vi Phạm"];
+          const dData = [dHeader];
+          d.drivers.forEach(dr => {
+            dData.push([dr.mnv, dr.name, dr.op_trips, dr.op_km, dr.op_hours, dr.violation_count]);
+          });
+          const wsDrivers = XLSX.utils.aoa_to_sheet(dData);
+          XLSX.utils.book_append_sheet(wb, wsDrivers, "Chi_Tiet_Tai_Xe");
+        }
+
+        // Xuất file
+        XLSX.writeFile(wb, `Bao_Cao_Doi_Xe_T${m}_${y}.xlsx`);
+      }
+
+      function exportReportToPDF() {
+        if (!window.lastReportData) {
+          showAlert("Vui lòng tải báo cáo trước khi xuất PDF!", "is-warning");
+          return;
+        }
+
+        const m = document.getElementById("rpt_month").value;
+        const y = document.getElementById("rpt_year").value;
+        const element = document.getElementById('baocao-export-zone');
+        
+        const opt = {
+          margin:       0.3,
+          filename:     `Bao_Cao_Doi_Xe_T${m}_${y}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        
+        const btnPDF = document.getElementById('btnExportPDF');
+        btnPDF.classList.add('is-loading');
+
+        // Force background white for export to prevent black text unreadable on transparent background
+        const originalBg = element.style.background;
+        element.style.background = '#ffffff';
+
+        html2pdf().set(opt).from(element).save().then(() => {
+          btnPDF.classList.remove('is-loading');
+          element.style.background = originalBg;
+        }).catch(err => {
+          console.error(err);
+          btnPDF.classList.remove('is-loading');
+          element.style.background = originalBg;
+          showAlert("Lỗi xuất PDF", "is-danger");
+        });
+      }
+
       function hideAllTags() {
         document.querySelectorAll(
           ".tag-nhatky, .tag-baoduong, .tag-nhienlieu, .tag-danhgia"
