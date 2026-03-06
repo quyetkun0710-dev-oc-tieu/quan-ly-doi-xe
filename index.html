@@ -73,11 +73,9 @@
       border: none !important;
     }
 
-    /* Hiệu ứng kính mờ dành cho Tab Báo cáo, Bảng kê nhiên liệu, Nhiệm vụ & Đánh giá */
+    /* Hiệu ứng kính mờ dành cho Tab Báo cáo & Bảng kê nhiên liệu */
     #baocao .box,
-    #fuelgrid .box,
-    #nhiemvu .box,
-    #danhgia .box {
+    #fuelgrid .box {
       background: rgba(255, 255, 255, 0.15) !important;
       backdrop-filter: blur(15px) !important;
       -webkit-backdrop-filter: blur(15px) !important;
@@ -2709,12 +2707,12 @@
           </div>
         </div>
       </section>
-      <form id="danhgiaForm" class="box is-relative">
+      <form id="danhgiaForm">
+        <hr>
         <h3 class="subtitle">
           📋 Danh sách sẽ hiển thị sau khi bấm tra cứu
         </h3>
-        <div class="table-container"
-          style="background: rgba(255,255,255,0.95) !important; border-radius: 12px; padding: 10px;">
+        <div class="table-container">
           <table class="table is-bordered is-striped is-fullwidth" id="danhgiaTable">
             <thead></thead>
             <tbody></tbody>
@@ -2771,7 +2769,8 @@
         <h3 class="subtitle">4️⃣ Ghi chú</h3>
         <textarea class="textarea" name="ghi_chu"></textarea>
         <input type="hidden" name="created_at">
-        <button class="button is-primary is-fullwidth mt-4">
+        <div class="form-spacer"></div>
+        <button class="floating-save-btn mt-4">
           💾 Lưu đánh giá
         </button>
       </form>
@@ -3135,8 +3134,7 @@
       <div id="nhiemvu_taixe_area" class="hidden" style="margin-bottom: 20px;">
         <div class="box">
           <h3 class="subtitle">📋 Nhiệm vụ của bạn</h3>
-          <div class="table-container"
-            style="background: rgba(255,255,255,0.95) !important; border-radius: 12px; padding: 10px; overflow-x: auto;">
+          <div class="table-container" style="overflow-x: auto;">
             <table id="nhiemvuTaixeTable" class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
               <thead></thead>
               <tbody></tbody>
@@ -3243,8 +3241,7 @@
         ⬅ Quay lại Nhiệm vụ
       </button>
       <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">📋 DANH SÁCH NHIỆM VỤ</h2>
-      <div class="table-container shadow-table-container"
-        style="background: rgba(255,255,255,0.95) !important; border-radius: 12px; padding: 10px;">
+      <div class="table-container shadow-table-container">
         <table class="table is-bordered is-striped is-fullwidth styled-table" id="nhiemvuResultTable">
           <thead></thead>
           <tbody></tbody>
