@@ -73,9 +73,10 @@
       border: none !important;
     }
 
-    /* Hiệu ứng kính mờ dành cho Tab Báo cáo & Bảng kê nhiên liệu */
+    /* Hiệu ứng kính mờ dành cho Tab Báo cáo, Bảng kê nhiên liệu & Nhiệm vụ */
     #baocao .box,
-    #fuelgrid .box {
+    #fuelgrid .box,
+    #nhiemvu .box {
       background: rgba(255, 255, 255, 0.15) !important;
       backdrop-filter: blur(15px) !important;
       -webkit-backdrop-filter: blur(15px) !important;
@@ -3218,6 +3219,19 @@
           <button class="floating-save-btn" id="nhiemvu_save_btn">💾 LƯU NHIỆM VỤ</button>
         </form>
       </div>
+
+      <!-- 📜 LỊCH SỬ GIAO NHIỆM VỤ -->
+      <div id="nhiemvu_history_area" class="box" style="margin-top: 20px;">
+        <h3 class="subtitle" style="display: flex; align-items: center; gap: 8px;">
+          📜 Lịch sử giao nhiệm vụ
+          <button class="button is-small is-info is-light" onclick="loadNhiemVuHistory()" title="Tải lại">
+            🔄
+          </button>
+        </h3>
+        <div id="nhiemvu_history_list" style="max-height: 60vh; overflow-y: auto;">
+          <p class="has-text-centered has-text-grey">Đang tải...</p>
+        </div>
+      </div>
     </div>
 
     <!-- ================= TAG: BẢNG KẾT QUẢ NHIỆM VỤ (Manager/Admin search result) ================= -->
@@ -4120,11 +4134,13 @@ Hết hạn: ${w.ngay_he} <br>
           const searchBox = document.getElementById('nhiemvu_search_box');
           const taixeArea = document.getElementById('nhiemvu_taixe_area');
           const nguoiGiaoInput = document.getElementById('nv_nguoi_giao');
+          const historyArea = document.getElementById('nhiemvu_history_area');
 
           if (USER_ROLE === 'taixe') {
             // TÀI XẾ: Ẩn form giao việc + ô tìm kiếm, hiện bảng nhiệm vụ của mình
             if (formBox) formBox.style.display = 'none';
             if (searchBox) searchBox.style.display = 'none';
+            if (historyArea) historyArea.style.display = 'none';
             if (taixeArea) taixeArea.classList.remove('hidden');
             // Tự động load nhiệm vụ của tài xế theo mã NV
             if (USER_MNV) {
@@ -4134,6 +4150,7 @@ Hết hạn: ${w.ngay_he} <br>
             // MANAGER / ADMIN: Hiện form giao việc + tìm kiếm, ẩn bảng tài xế
             if (formBox) formBox.style.display = '';
             if (searchBox) searchBox.style.display = '';
+            if (historyArea) historyArea.style.display = '';
             if (taixeArea) taixeArea.classList.add('hidden');
             // Tự động điền "Người giao" = mã NV của người đang đăng nhập
             if (nguoiGiaoInput && USER_MNV) {
@@ -4143,6 +4160,8 @@ Hết hạn: ${w.ngay_he} <br>
             document.getElementById('nv_id').value = '';
             document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
             document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU NHIỆM VỤ';
+            // Tự động load lịch sử giao nhiệm vụ
+            loadNhiemVuHistory();
           }
         }
       }
@@ -4277,6 +4296,8 @@ Hết hạn: ${w.ngay_he} <br>
                     document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU NHIỆM VỤ';
                     if (USER_MNV) document.getElementById('nv_nguoi_giao').value = USER_MNV;
                   }
+                  // Reload lịch sử giao nhiệm vụ
+                  loadNhiemVuHistory();
                 }
               }, 300);
             } else {
@@ -4572,6 +4593,153 @@ Hết hạn: ${w.ngay_he} <br>
           .catch(() => {
             tbody.innerHTML = '<tr><td colspan="100%" class="has-text-danger">Lỗi tải dữ liệu</td></tr>';
           });
+      }
+
+      /* ===== LỊCH SỬ GIAO NHIỆM VỤ (Manager/Admin) ===== */
+      function loadNhiemVuHistory() {
+        const container = document.getElementById('nhiemvu_history_list');
+        if (!container) return;
+        container.innerHTML = '<p class="has-text-centered has-text-grey py-4"><span class="button is-loading is-white" style="border:none;"></span> Đang tải lịch sử...</p>';
+
+        // Lấy tất cả nhiệm vụ - backend cần key để filter, dùng USER_MNV
+        // Gọi song song 2 request: 1 theo nguoi_giao, 1 theo nguoi_nhan để lấy hết
+        const fetchAll = async () => {
+          const myMnv = USER_MNV || '';
+          // Fetch tất cả bằng cách gọi với key = mã NV hiện tại
+          const url1 = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(myMnv)}&_t=${Date.now()}`;
+          const res1 = await fetch(url1);
+          return await res1.json();
+        };
+        fetchAll()
+          .then(list => {
+            if (!Array.isArray(list) || list.length === 0) {
+              container.innerHTML = '<p class="has-text-centered has-text-grey py-4">Chưa có nhiệm vụ nào</p>';
+              return;
+            }
+
+            // Lọc theo role: Admin chỉ thấy NV do mình giao, Manager thấy tất cả
+            let filtered = list;
+            if (USER_ROLE === 'admin' && USER_MNV) {
+              filtered = list.filter(nv =>
+                String(nv.nguoi_giao || '').toUpperCase() === USER_MNV ||
+                String(nv.nguoi_nhan || '').toUpperCase() === USER_MNV
+              );
+            }
+
+            if (filtered.length === 0) {
+              container.innerHTML = '<p class="has-text-centered has-text-grey py-4">Không có nhiệm vụ nào</p>';
+              return;
+            }
+
+            // Sắp xếp theo thời gian mới nhất trước
+            filtered.sort((a, b) => {
+              const tA = new Date(a.created_at || 0).getTime() || 0;
+              const tB = new Date(b.created_at || 0).getTime() || 0;
+              return tB - tA;
+            });
+
+            let html = '';
+            filtered.forEach(nv => {
+              const tt = String(nv.trang_thai || 'Mới giao').trim();
+              let statusColor = '#3273dc';
+              let statusBg = 'rgba(50,115,220,0.1)';
+              let statusIcon = '🆕';
+              if (tt === 'Đang thực hiện') { statusColor = '#ff9900'; statusBg = 'rgba(255,153,0,0.1)'; statusIcon = '⏳'; }
+              else if (tt === 'Đã hoàn thành') { statusColor = '#23d160'; statusBg = 'rgba(35,209,96,0.1)'; statusIcon = '✅'; }
+              else if (tt === 'Hủy') { statusColor = '#ff3860'; statusBg = 'rgba(255,56,96,0.1)'; statusIcon = '❌'; }
+
+              const ngayGiao = nv.created_at ? new Date(nv.created_at).toLocaleDateString('vi-VN') : '';
+              const hanHT = nv.han_hoan_thanh || '';
+
+              html += `
+              <div class="nhiemvu-history-card" onclick="editNhiemVuFromHistory(${JSON.stringify(nv).replace(/"/g, '&quot;')})" 
+                style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); border-left: 4px solid ${statusColor};
+                border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
+                transition: all 0.2s ease; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;">
+                      <span style="background: ${statusBg}; color: ${statusColor}; border: 1px solid ${statusColor}; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; white-space: nowrap;">
+                        ${statusIcon} ${tt}
+                      </span>
+                      <span style="font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap;">📅 ${ngayGiao}</span>
+                      <span style="background: rgba(255,255,255,0.1); color: #fff; border-radius: 6px; padding: 1px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
+                        ${nv.loai_nhiem_vu || 'Khác'}
+                      </span>
+                    </div>
+                    <div style="font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                      ${nv.noi_dung || '(Không có nội dung)'}
+                    </div>
+                    <div style="font-size: 11px; color: rgba(255,255,255,0.6);">
+                      👤 <strong style="color: rgba(255,255,255,0.8);">${nv.nguoi_giao || '?'}</strong> → <strong style="color: rgba(255,255,255,0.8);">${nv.nguoi_nhan || '?'}</strong>
+                      ${hanHT ? ' &nbsp;|&nbsp; ⏰ Hạn: <strong style="color: rgba(255,255,255,0.8);">' + hanHT + '</strong>' : ''}
+                    </div>
+                    ${nv.ghi_chu_ket_qua ? '<div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">💬 ' + nv.ghi_chu_ket_qua + '</div>' : ''}
+                  </div>
+                  <span style="color: rgba(255,255,255,0.3); font-size: 16px; flex-shrink: 0;">›</span>
+                </div>
+              </div>`;
+            });
+
+            container.innerHTML = html;
+
+            // Thêm hover effect cho các card
+            container.querySelectorAll('.nhiemvu-history-card').forEach(card => {
+              card.addEventListener('mouseenter', () => {
+                card.style.background = 'rgba(255,255,255,0.2)';
+                card.style.transform = 'translateX(4px)';
+              });
+              card.addEventListener('mouseleave', () => {
+                card.style.background = 'rgba(255,255,255,0.12)';
+                card.style.transform = 'translateX(0)';
+              });
+            });
+          })
+          .catch(err => {
+            console.error('Lỗi tải lịch sử nhiệm vụ:', err);
+            container.innerHTML = '<p class="has-text-centered has-text-danger py-4">Lỗi tải dữ liệu. Nhấn 🔄 để thử lại.</p>';
+          });
+      }
+
+      /* ===== CLICK VÀO CARD LỊCH SỬ ĐỂ CHỈNH SỬA ===== */
+      function editNhiemVuFromHistory(rowData) {
+        const form = document.getElementById('nhiemvuForm');
+        if (!form) return;
+
+        // Điền dữ liệu vào form
+        document.getElementById('nv_id').value = rowData.id || '';
+        form.querySelector('[name="nguoi_giao"]').value = rowData.nguoi_giao || '';
+        form.querySelector('[name="nguoi_nhan"]').value = rowData.nguoi_nhan || '';
+
+        // Set loại nhiệm vụ
+        const loaiSelect = form.querySelector('[name="loai_nhiem_vu"]');
+        if (loaiSelect) {
+          for (let opt of loaiSelect.options) {
+            if (opt.text === rowData.loai_nhiem_vu || opt.value === rowData.loai_nhiem_vu) {
+              opt.selected = true; break;
+            }
+          }
+        }
+
+        // Set trạng thái
+        const trangThaiSelect = form.querySelector('[name="trang_thai"]');
+        if (trangThaiSelect) {
+          for (let opt of trangThaiSelect.options) {
+            if (opt.value === rowData.trang_thai) { opt.selected = true; break; }
+          }
+        }
+
+        form.querySelector('[name="noi_dung"]').value = rowData.noi_dung || '';
+        form.querySelector('[name="ngay_bat_dau"]').value = rowData.ngay_bat_dau || '';
+        form.querySelector('[name="han_hoan_thanh"]').value = rowData.han_hoan_thanh || '';
+        form.querySelector('[name="ghi_chu_ket_qua"]').value = rowData.ghi_chu_ket_qua || '';
+
+        // Đổi tiêu đề + nút
+        document.getElementById('nhiemvu_form_title').textContent = '✏️ Chỉnh sửa nhiệm vụ';
+        document.getElementById('nhiemvu_save_btn').textContent = '💾 CẬP NHẬT NHIỆM VỤ';
+
+        // Scroll lên form
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       /* ===== TÀI XẾ: NHẬN NHIỆM VỤ → Chuyển trạng thái sang "Đang thực hiện" ===== */
