@@ -73,10 +73,11 @@
       border: none !important;
     }
 
-    /* Hiệu ứng kính mờ dành cho Tab Báo cáo, Bảng kê nhiên liệu & Nhiệm vụ */
+    /* Hiệu ứng kính mờ dành cho Tab Báo cáo, Bảng kê nhiên liệu, Nhiệm vụ & Đánh giá */
     #baocao .box,
     #fuelgrid .box,
-    #nhiemvu .box {
+    #nhiemvu .box,
+    #danhgia .box {
       background: rgba(255, 255, 255, 0.15) !important;
       backdrop-filter: blur(15px) !important;
       -webkit-backdrop-filter: blur(15px) !important;
@@ -2708,12 +2709,12 @@
           </div>
         </div>
       </section>
-      <form id="danhgiaForm">
-        <hr>
+      <form id="danhgiaForm" class="box is-relative">
         <h3 class="subtitle">
           📋 Danh sách sẽ hiển thị sau khi bấm tra cứu
         </h3>
-        <div class="table-container">
+        <div class="table-container"
+          style="background: rgba(255,255,255,0.95) !important; border-radius: 12px; padding: 10px;">
           <table class="table is-bordered is-striped is-fullwidth" id="danhgiaTable">
             <thead></thead>
             <tbody></tbody>
@@ -3134,7 +3135,8 @@
       <div id="nhiemvu_taixe_area" class="hidden" style="margin-bottom: 20px;">
         <div class="box">
           <h3 class="subtitle">📋 Nhiệm vụ của bạn</h3>
-          <div class="table-container" style="overflow-x: auto;">
+          <div class="table-container"
+            style="background: rgba(255,255,255,0.95) !important; border-radius: 12px; padding: 10px; overflow-x: auto;">
             <table id="nhiemvuTaixeTable" class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
               <thead></thead>
               <tbody></tbody>
@@ -3241,7 +3243,8 @@
         ⬅ Quay lại Nhiệm vụ
       </button>
       <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">📋 DANH SÁCH NHIỆM VỤ</h2>
-      <div class="table-container shadow-table-container">
+      <div class="table-container shadow-table-container"
+        style="background: rgba(255,255,255,0.95) !important; border-radius: 12px; padding: 10px;">
         <table class="table is-bordered is-striped is-fullwidth styled-table" id="nhiemvuResultTable">
           <thead></thead>
           <tbody></tbody>
