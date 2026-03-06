@@ -220,6 +220,58 @@
       z-index: 10;
     }
 
+    /* ================= BÁO CÁO (REPORT) STYLES ================= */
+    .report-card {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.95));
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border-left: 4px solid #3273dc;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 90px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      border-left-width: 6px;
+    }
+
+    .report-card.is-success-card {
+      border-left-color: #48c774;
+    }
+
+    .report-card.is-warning-card {
+      border-left-color: #ffdd57;
+    }
+
+    .report-card.is-danger-card {
+      border-left-color: #f14668;
+    }
+
+    .report-card.is-info-card {
+      border-left-color: #3298dc;
+    }
+
+    .report-card .subtitle.is-7 {
+      color: #6a7b92;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    .report-card .report-number {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1a2340;
+      margin-top: auto;
+    }
+
     /* ================= MODERN INPUT DECORATION ================= */
     .input,
     .textarea,
@@ -2779,165 +2831,134 @@
     <!-- ================= 10. BÁO CÁO (MANAGER ONLY) ================= -->
     <div id="baocao" class="hidden form-box">
       <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
-      <h2 class="title is-4">📊 BÁO CÁO TỔNG HỢP</h2>
-      <!-- DATE FILTER -->
-      <section class="box">
-        <div class="columns is-mobile is-vcentered">
-          <div class="column is-4">
-            <div class="select is-fullwidth">
-              <select id="rpt_month">
-                <option value="1">Tháng 1</option>
-                <option value="2">Tháng 2</option>
-                <option value="3">Tháng 3</option>
-                <option value="4">Tháng 4</option>
-                <option value="5">Tháng 5</option>
-                <option value="6">Tháng 6</option>
-                <option value="7">Tháng 7</option>
-                <option value="8">Tháng 8</option>
-                <option value="9">Tháng 9</option>
-                <option value="10">Tháng 10</option>
-                <option value="11">Tháng 11</option>
-                <option value="12">Tháng 12</option>
-              </select>
+      <h2 class="title is-4 mb-4" style="text-shadow: 1px 1px 2px black; color: white;">📊 DASHBOARD TỔNG HỢP</h2>
+
+      <!-- ACTION TOOLBAR -->
+      <div class="box" style="background: rgba(255,255,255,0.95); padding: 15px;">
+        <div class="level is-mobile" style="flex-wrap: wrap; margin-bottom: 0;">
+          <div class="level-left">
+            <div class="level-item mr-2 mb-2">
+              <div class="select">
+                <select id="rpt_month">
+                  <option value="1">Tháng 1</option>
+                  <option value="2">Tháng 2</option>
+                  <option value="3">Tháng 3</option>
+                  <option value="4">Tháng 4</option>
+                  <option value="5">Tháng 5</option>
+                  <option value="6">Tháng 6</option>
+                  <option value="7">Tháng 7</option>
+                  <option value="8">Tháng 8</option>
+                  <option value="9">Tháng 9</option>
+                  <option value="10">Tháng 10</option>
+                  <option value="11">Tháng 11</option>
+                  <option value="12">Tháng 12</option>
+                </select>
+              </div>
+            </div>
+            <div class="level-item mr-2 mb-2">
+              <div class="select">
+                <select id="rpt_year">
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+              </div>
+            </div>
+            <div class="level-item mr-2 mb-2">
+              <input class="input" id="rpt_fuel_bsx" placeholder="Nhập biển số lọc..."
+                oninput="this.value = this.value.toUpperCase()" style="width: 170px;">
+            </div>
+            <div class="level-item mb-2">
+              <button class="button is-primary" onclick="loadReport()">
+                <span>🔍 Tra cứu</span>
+              </button>
             </div>
           </div>
-          <div class="column is-4">
-            <div class="select is-fullwidth">
-              <select id="rpt_year">
-                <option value="2023">2023</option>
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-                <option value="2027">2027</option>
-                <option value="2028">2028</option>
-                <option value="2029">2029</option>
-                <option value="2030">2030</option>
-              </select>
+          <div class="level-right">
+            <div class="level-item mb-2">
+              <button class="button is-success is-light mr-2"
+                onclick="alert('Tính năng Xuất Excel đang được phát triển!')">
+                <span class="has-text-weight-bold">📁 Xuất Excel</span>
+              </button>
+              <button class="button is-danger is-light" onclick="alert('Tính năng Xuất PDF đang được phát triển!')">
+                <span class="has-text-weight-bold">📄 Xuất PDF</span>
+              </button>
             </div>
           </div>
-          <div class="column is-4">
-            <button class="button is-primary is-fullwidth" onclick="loadReport()">
-              Xem
-            </button>
-          </div>
         </div>
-        <div class="columns is-mobile mt-2">
-          <div class="column is-12">
-            <input class="input" id="rpt_fuel_bsx" placeholder="Nhập Biển số để lọc báo cáo"
-              oninput="this.value = this.value.toUpperCase()">
-          </div>
-        </div>
-      </section>
-      <!-- FUEL LOG GRID removed from here -->
+      </div>
+
       <!-- REPORT CARDS -->
-      <div class="columns is-multiline is-mobile">
-        <!-- PAIR 1: VẬN HÀNH & NHIÊN LIỆU -->
-        <div class="column is-12">
-          <div class="columns is-mobile is-multiline">
-            <!-- Cột Vận Hành -->
-            <div class="column is-6-tablet is-12-mobile">
-              <div class="box h-100">
-                <h3 class="subtitle is-6 mb-3">🚚 VẬN HÀNH</h3>
-                <div class="columns is-mobile is-multiline">
-                  <div class="column is-12">
-                    <div class="report-card">
-                      <p class="subtitle is-7">TỔNG KM</p>
-                      <p class="report-number" id="rpt_op_km">0</p>
-                    </div>
-                  </div>
-                  <div class="column is-6">
-                    <div class="report-card">
-                      <p class="subtitle is-7">SỐ CHUYẾN</p>
-                      <p class="report-number" id="rpt_op_trips">0</p>
-                    </div>
-                  </div>
-                  <div class="column is-6">
-                    <div class="report-card">
-                      <p class="subtitle is-7">GIỜ CHẠY</p>
-                      <p class="report-number" id="rpt_op_hours">0</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Cột Nhiên Liệu -->
-            <div class="column is-6-tablet is-12-mobile">
-              <div class="box h-100">
-                <h3 class="subtitle is-6 mb-3">⛽ NHIÊN LIỆU</h3>
-                <div class="columns is-mobile is-multiline">
-                  <div class="column is-12">
-                    <div class="report-card">
-                      <p class="subtitle is-7">TỔNG TIỀN</p>
-                      <p class="report-number" id="rpt_fuel_cost">0 ₫</p>
-                    </div>
-                  </div>
-                  <div class="column is-12">
-                    <div class="report-card">
-                      <p class="subtitle is-7">SỐ LÍT</p>
-                      <p class="report-number" id="rpt_fuel_liters">0</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <div class="box" style="background: rgba(255,255,255,0.95);">
+        <h3 class="subtitle is-6 mb-4 has-text-weight-bold has-text-grey">💡 CHỈ SỐ HOẠT ĐỘNG CHÍNH</h3>
+        <div class="columns is-multiline is-mobile">
+
+          <!-- VẬN HÀNH -->
+          <div class="column is-6-mobile is-4-tablet is-2-desktop">
+            <div class="report-card is-info-card">
+              <p class="subtitle is-7">🚚 TỔNG KM</p>
+              <p class="report-number" id="rpt_op_km">0</p>
             </div>
           </div>
-        </div>
-
-        <!-- PAIR 2: BẢO DƯỠNG & SỬA CHỮA -->
-        <div class="column is-12">
-          <div class="columns is-mobile is-multiline">
-            <!-- Cột Bảo Dưỡng -->
-            <div class="column is-6-tablet is-12-mobile">
-              <div class="box h-100">
-                <h3 class="subtitle is-6 mb-3">🛠️ BẢO DƯỠNG</h3>
-                <div class="columns is-mobile">
-                  <div class="column is-7">
-                    <div class="report-card">
-                      <p class="subtitle is-7">CHI PHÍ</p>
-                      <p class="report-number" id="rpt_bd_cost" style="color: #ff3860">0 ₫</p>
-                    </div>
-                  </div>
-                  <div class="column is-5">
-                    <div class="report-card">
-                      <p class="subtitle is-7">LƯỢT</p>
-                      <p class="report-number" id="rpt_bd_count">0</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Cột Sửa Chữa -->
-            <div class="column is-6-tablet is-12-mobile">
-              <div class="box h-100">
-                <h3 class="subtitle is-6 mb-3">🔧 SỬA CHỮA</h3>
-                <div class="columns is-mobile">
-                  <div class="column is-7">
-                    <div class="report-card">
-                      <p class="subtitle is-7">CHI PHÍ</p>
-                      <p class="report-number" id="rpt_sc_cost" style="color: #ff3860">0 ₫</p>
-                    </div>
-                  </div>
-                  <div class="column is-5">
-                    <div class="report-card">
-                      <p class="subtitle is-7">LƯỢT</p>
-                      <p class="report-number" id="rpt_sc_count">0</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div class="column is-6-mobile is-4-tablet is-2-desktop">
+            <div class="report-card is-info-card">
+              <p class="subtitle is-7">🔄 SỐ CHUYẾN</p>
+              <p class="report-number" id="rpt_op_trips">0</p>
             </div>
           </div>
-        </div>
+          <div class="column is-12-mobile is-4-tablet is-2-desktop">
+            <div class="report-card is-info-card">
+              <p class="subtitle is-7">⏱️ GIỜ CHẠY</p>
+              <p class="report-number" id="rpt_op_hours">0</p>
+            </div>
+          </div>
 
-        <!-- 4. VI PHẠM -->
-        <div class="column is-12">
-          <div class="box">
-            <h3 class="subtitle is-6 mb-3">⚠️ VI PHẠM</h3>
-            <div class="report-card" style="padding: 10px !important;">
-              <p class="subtitle is-7">TỔNG SỐ LỖI</p>
+          <!-- NHIÊN LIỆU -->
+          <div class="column is-6-mobile is-6-tablet is-3-desktop">
+            <div class="report-card is-success-card">
+              <p class="subtitle is-7">⛽ T.TIỀN DẦU</p>
+              <p class="report-number has-text-success" id="rpt_fuel_cost">0 ₫</p>
+            </div>
+          </div>
+          <div class="column is-6-mobile is-6-tablet is-3-desktop">
+            <div class="report-card is-success-card">
+              <p class="subtitle is-7">💧 SỐ LÍT DẦU</p>
+              <p class="report-number" id="rpt_fuel_liters">0</p>
+            </div>
+          </div>
+
+          <!-- BẢO DƯỠNG & SỬA CHỮA -->
+          <div class="column is-6-mobile is-4-tablet is-3-desktop">
+            <div class="report-card is-warning-card">
+              <p class="subtitle is-7">🛠️ T. PHÍ BẢO DƯỠNG</p>
+              <p class="report-number has-text-danger" id="rpt_bd_cost">0 ₫</p>
+            </div>
+          </div>
+          <div class="column is-6-mobile is-4-tablet is-3-desktop">
+            <div class="report-card is-warning-card">
+              <p class="subtitle is-7">🛠️ LƯỢT BẢO DƯỠNG</p>
+              <p class="report-number" id="rpt_bd_count">0</p>
+            </div>
+          </div>
+
+          <div class="column is-6-mobile is-4-tablet is-3-desktop">
+            <div class="report-card is-warning-card">
+              <p class="subtitle is-7">🔧 T. PHÍ SỬA CHỮA</p>
+              <p class="report-number has-text-danger" id="rpt_sc_cost">0 ₫</p>
+            </div>
+          </div>
+          <div class="column is-6-mobile is-12-tablet is-3-desktop">
+            <div class="report-card is-danger-card"
+              style="background: linear-gradient(145deg, rgba(255,245,245,0.95), rgba(255,235,235,0.95)); border-left-color: #ff3860;">
+              <p class="subtitle is-7" style="color: #ff3860;">⚠️ LỖI VI PHẠM</p>
               <p class="report-number has-text-danger" id="rpt_violation_count">0</p>
             </div>
           </div>
+
         </div>
       </div>
 
