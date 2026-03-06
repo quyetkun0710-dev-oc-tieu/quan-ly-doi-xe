@@ -22,6 +22,7 @@
   <!-- ===== END PWA ===== -->
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       background-color: #f4f6f8;
@@ -2939,6 +2940,20 @@
           </div>
         </div>
       </div>
+
+      <!-- 📈 BIỂU ĐỒ TRỰC QUAN -->
+      <h3 class="subtitle has-text-white mt-5" style="text-shadow: 1px 1px 2px black;">📈 BIỂU ĐỒ BÁO CÁO</h3>
+      <div class="box" style="background: rgba(255,255,255,0.95) !important;">
+        <div class="columns is-mobile is-multiline">
+          <div class="column is-12-mobile is-5-tablet">
+            <canvas id="costChart"></canvas>
+          </div>
+          <div class="column is-12-mobile is-7-tablet">
+            <canvas id="kmChart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <!-- CHI TIẾT XE -->
       <hr class="has-background-grey-lighter" style="height: 1px; opacity: 0.2">
       <h3 class="subtitle has-text-white mt-5" style="text-shadow: 1px 1px 2px black;">📋 CHI TIẾT XE</h3>
@@ -3722,6 +3737,9 @@ Hết hạn: ${w.ngay_he} <br>
         }
       }
 
+      let reportCostChart = null;
+      let reportKMChart = null;
+
       function loadReport(isAuto = false) {
         const m = document.getElementById("rpt_month").value;
         const y = document.getElementById("rpt_year").value;
@@ -3851,6 +3869,67 @@ Hết hạn: ${w.ngay_he} <br>
  </tr>
         `;
               });
+
+              // --- RENDER DYNAMIC CHARTS ---
+              if (reportCostChart) reportCostChart.destroy();
+              if (reportKMChart) reportKMChart.destroy();
+
+              const ctxCost = document.getElementById('costChart');
+              if (ctxCost) {
+                const fuelCost = Number(d.data.fuel_cost) || 0;
+                const bdCost = Number(d.data.bd_cost) || 0;
+                const scCost = Number(d.data.sc_cost) || 0;
+
+                reportCostChart = new Chart(ctxCost, {
+                  type: 'doughnut',
+                  data: {
+                    labels: ['Nhiên liệu', 'Bảo dưỡng', 'Sửa chữa'],
+                    datasets: [{
+                      data: [fuelCost, bdCost, scCost],
+                      backgroundColor: ['#48c774', '#ffe08a', '#f14668'],
+                      borderWidth: 0
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { position: 'bottom' },
+                      title: { display: true, text: '💰 MỨC ĐỘ TIÊU HAO TÀI CHÍNH', font: { size: 14 } }
+                    }
+                  }
+                });
+              }
+
+              const ctxKM = document.getElementById('kmChart');
+              if (ctxKM && vehicles.length > 0) {
+                const vTop = vehicles.map(v => ({ bsx: v.bsx, km: v.op_km })).sort((a, b) => b.km - a.km).slice(0, 15);
+                reportKMChart = new Chart(ctxKM, {
+                  type: 'bar',
+                  data: {
+                    labels: vTop.map(v => v.bsx),
+                    datasets: [{
+                      label: 'Tổng KM',
+                      data: vTop.map(v => v.km),
+                      backgroundColor: '#3298dc',
+                      borderRadius: 4
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      title: { display: true, text: '🚚 HOẠT ĐỘNG PHƯƠNG TIỆN (Top KM)', font: { size: 14 } }
+                    },
+                    scales: {
+                      y: { beginAtZero: true }
+                    }
+                  }
+                });
+              }
+              // --- END RENDER CHARTS ---
+
             } else {
               showAlert("Lỗi tải báo cáo: " + d.message, "is-danger");
             }
