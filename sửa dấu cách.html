@@ -73,9 +73,10 @@
       border: none !important;
     }
 
-    /* Hiệu ứng kính mờ dành cho Tab Báo cáo & Bảng kê nhiên liệu */
+    /* Hiệu ứng kính mờ dành cho Tab Báo cáo, Bảng kê nhiên liệu & Nhiệm vụ */
     #baocao .box,
-    #fuelgrid .box {
+    #fuelgrid .box,
+    #nhiemvu .box {
       background: rgba(255, 255, 255, 0.15) !important;
       backdrop-filter: blur(15px) !important;
       -webkit-backdrop-filter: blur(15px) !important;
@@ -4600,10 +4601,16 @@ Hết hạn: ${w.ngay_he} <br>
         if (!container) return;
         container.innerHTML = '<p class="has-text-centered has-text-grey py-4"><span class="button is-loading is-white" style="border:none;"></span> Đang tải lịch sử...</p>';
 
-        // Lấy tất cả nhiệm vụ (không filter theo key → lấy hết)
-        const url = `${SCRIPT_URL}?tag=nhiemvu&_t=${Date.now()}`;
-        fetch(url)
-          .then(res => res.json())
+        // Lấy tất cả nhiệm vụ - backend cần key để filter, dùng USER_MNV
+        // Gọi song song 2 request: 1 theo nguoi_giao, 1 theo nguoi_nhan để lấy hết
+        const fetchAll = async () => {
+          const myMnv = USER_MNV || '';
+          // Fetch tất cả bằng cách gọi với key = mã NV hiện tại
+          const url1 = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(myMnv)}&_t=${Date.now()}`;
+          const res1 = await fetch(url1);
+          return await res1.json();
+        };
+        fetchAll()
           .then(list => {
             if (!Array.isArray(list) || list.length === 0) {
               container.innerHTML = '<p class="has-text-centered has-text-grey py-4">Chưa có nhiệm vụ nào</p>';
