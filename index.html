@@ -1628,6 +1628,14 @@
                     </td>
                   </tr>
                   <tr class="animate-row glass-row" style="animation-delay: 0.6s;">
+                    <td colspan="2" style="border: none; padding: 10px 12px; text-align: center;">
+                      <button class="button is-small is-primary is-light is-fullwidth" onclick="refreshProjectData()"
+                        id="btnRefreshData" style="border-radius: 8px; font-weight: 600;">
+                        🔄 Làm mới dữ liệu
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="animate-row glass-row" style="animation-delay: 0.7s;">
                     <td
                       style="border: none; padding: 10px 6px 10px 12px; text-align: center; border-radius: 8px 0 0 8px; width: 50%;">
                       <button class="button is-small is-info is-light is-fullwidth" onclick="openChangePasswordModal()"
@@ -3647,6 +3655,28 @@ Hết hạn: ${w.ngay_he} <br>
         document.getElementById("btnChangePass").classList.remove("is-loading");
         showAlert("Lỗi kết nối máy chủ", "is-danger");
       }
+    }
+
+    function refreshProjectData() {
+      const btn = document.getElementById("btnRefreshData");
+      if (btn) btn.classList.add("is-loading");
+
+      // 1. Tải lại profile & quyền hạn
+      preloadUserProfile();
+
+      // 2. Cập nhật giao diện menu theo quyền mới (nếu có)
+      applyHomeCardByRole();
+
+      // 3. Tải lại các cảnh báo & dữ liệu ngầm
+      checkWarnings();
+      preLoadData();
+      fetchBackgrounds();
+
+      showAlert("Đã làm mới dữ liệu và phân quyền!", "is-success");
+
+      setTimeout(() => {
+        if (btn) btn.classList.remove("is-loading");
+      }, 1000);
     }
 
     function preloadUserProfile() {
