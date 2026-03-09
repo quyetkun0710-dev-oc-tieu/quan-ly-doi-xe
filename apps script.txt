@@ -634,6 +634,7 @@ function doGet(e) {
         let ngayGiaNhap = "Chưa cập nhật";
         
         try {
+          const shTaiXe = getSheetByTag("taixe");
           const lastRowTx = shTaiXe.getLastRow();
           if (lastRowTx > 0) {
             const dataTaiXe = shTaiXe.getRange(1, 1, Math.min(lastRowTx, 500), shTaiXe.getLastColumn()).getDisplayValues(); // Tối ưu: chỉ lấy 500 dòng đầu
