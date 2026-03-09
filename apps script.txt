@@ -15,7 +15,8 @@ function getSheetByTag(tag) {
     dinhmuc: "định mức",
     dangkylich: "DangKyLich",
     nhiemvu: "nhiemvu",
-    thongbao: "ThongBao"
+    thongbao: "ThongBao",
+    lopxe: "LopXe"
   };
 
   if (!MAP[tag]) {
@@ -174,6 +175,7 @@ function mapDataToRow(sh, data, headers) {
     const field = String(h).toLowerCase().trim();
     if (field === "created_at") return data[h] || now();
     if (field === "updated_at") return now();
+    if (field === "id" && !data[h]) return "ID_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
 
     // Công thức tính ngày còn lại cho Sheet Xe
     if (sheetName === "Xe") {
@@ -543,7 +545,8 @@ function setupSheetHeaders() {
     danhgia: ["ma_nv", "ho_ten", "ngay", "loi", "muc_do", "so_lan", "ket_luan", "ghi_chu", "created_at"],
     dangkylich: ["id", "ma_nv", "ho_ten", "thang_nam", "cac_ngay", "loai_nghi", "ly_do", "trang_thai", "nguoi_duyet", "created_at", "updated_at"],
     nhiemvu: ["id", "nguoi_giao", "nguoi_nhan", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ghi_chu_ket_qua", "created_at"],
-    thongbao: ["tieu_de", "noi_dung", "nguoi_dang", "uu_tien", "ngay_dang", "created_at"]
+    thongbao: ["tieu_de", "noi_dung", "nguoi_dang", "uu_tien", "ngay_dang", "created_at"],
+    lopxe: ["id", "bien_so_xe", "vi_tri_lop", "ngay_thay", "km_thay", "thuong_hieu", "tinh_trang", "ghi_chu", "created_at"]
   };
 
   const MAP_NAME = {
@@ -555,7 +558,8 @@ function setupSheetHeaders() {
     danhgia: "DanhGia",
     dangkylich: "DangKyLich",
     nhiemvu: "nhiemvu",
-    thongbao: "ThongBao"
+    thongbao: "ThongBao",
+    lopxe: "LopXe"
   };
 
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -737,6 +741,7 @@ function doGet(e) {
     if (tag === "dangkylich")
       keyName = "id";
     if (tag === "setting") keyName = "key";
+    if (tag === "lopxe") keyName = "bien_so_xe";
     
     // Xử lý đặc biệt cho searchNhiemVu có thể truyền 'key' tự do
     if (tag === "nhiemvu") {
@@ -760,7 +765,7 @@ function doGet(e) {
 
       const list = values
       .filter(r => {
-        if (["xe", "taixe", "dangkylich", "nhiemvu", "thongbao"].includes(tag) && !keyValue) return true;
+        if (["xe", "taixe", "dangkylich", "nhiemvu", "thongbao", "lopxe"].includes(tag) && !keyValue) return true;
         if (!keyValue) return false;
 
         if (tag === "taixe") {

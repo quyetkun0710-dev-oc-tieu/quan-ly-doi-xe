@@ -1927,6 +1927,19 @@
           <div class="app-name">Thông báo</div>
         </div>
 
+        <div class="app-card" data-tag="lopxe" onclick="openTag('lopxe')">
+          <div class="app-icon"
+            style="font-size: 2.2rem; display: flex; align-items: center; justify-content: center; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"
+              style="width: 1.2em; height: 1.2em;">
+              <path
+                d="M492.3 224L480 183.1 433.2 196l-20.9-46.1 40-27L420.2 87.2l-45.1 22.8-35.9-35.9L362.1 29.1 326.3 0c-10.7 30-18.6 32-70.3 32s-60.1-2-70.3-32L149.9 29.1l22.9 45.1-35.9 35.9-45.1-22.8-31.9 35.7 40 27-21 46.1L32 183.1 19.7 224h43.3c-2 10.5-3 21.2-3 32s1 21.5 3 32H19.7L32 328.9l46.8-12.9 20.9 46.1-40 27 31.9 35.7 45.1-22.8 35.9 35.9-22.9 45.1 35.8 29.1c10.3-29.8 18.2-31 69.4-31s59.1 1 69.4 31l36.2-29.1-22.9-45.1 35.9-35.9 45.1 22.8 32-35.7-40-27 21-46.1 46.8 12.9 12.3-40.9h-43.3c2-10.5 3-21.2 3-32s-1-21.5-3-32h43.3zM256 368c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112zm64-112c0 35.3-28.7 64-64 64s-64-28.7-64-64 28.7-64 64-64 64 28.7 64 64z" />
+              <circle cx="256" cy="256" r="32" />
+            </svg>
+          </div>
+          <div class="app-name">Quản lý lốp</div>
+        </div>
+
       </div>
     </div>
     <!-- ================= START TAG: LỊCH LÀM VIỆC ================= -->
@@ -3729,6 +3742,113 @@
         </table>
       </div>
     </div>
+    <!-- ================= START TAG: QUẢN LÝ LỐP XE ================= -->
+    <div id="lopxe" class="hidden form-box">
+      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2" style="padding: 0 10px;">
+        <h2 class="title is-4 has-text-weight-bold mb-0" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.5rem; display: flex; align-items: center; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"
+              style="width: 1em; height: 1em; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">
+              <path
+                d="M492.3 224L480 183.1 433.2 196l-20.9-46.1 40-27L420.2 87.2l-45.1 22.8-35.9-35.9L362.1 29.1 326.3 0c-10.7 30-18.6 32-70.3 32s-60.1-2-70.3-32L149.9 29.1l22.9 45.1-35.9 35.9-45.1-22.8-31.9 35.7 40 27-21 46.1L32 183.1 19.7 224h43.3c-2 10.5-3 21.2-3 32s1 21.5 3 32H19.7L32 328.9l46.8-12.9 20.9 46.1-40 27 31.9 35.7 45.1-22.8 35.9 35.9-22.9 45.1 35.8 29.1c10.3-29.8 18.2-31 69.4-31s59.1 1 69.4 31l36.2-29.1-22.9-45.1 35.9-35.9 45.1 22.8 32-35.7-40-27 21-46.1 46.8 12.9 12.3-40.9h-43.3c2-10.5 3-21.2 3-32s-1-21.5-3-32h43.3zM256 368c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112zm64-112c0 35.3-28.7 64-64 64s-64-28.7-64-64 28.7-64 64-64 64 28.7 64 64z" />
+              <circle cx="256" cy="256" r="32" />
+            </svg>
+          </span>
+          QUẢN LÝ LỐP XE
+        </h2>
+        <button class="button is-primary is-small is-manager-only" onclick="openLopXeForm()">➕ Thay lốp</button>
+      </div>
+
+      <!-- SEARCH LỐP XE -->
+      <div class="box mx-2 mb-4" id="lopxe_search_box">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input class="input" type="text" id="lopxe_search_key" placeholder="Nhập Biển số xe..."
+              oninput="this.value = this.value.toUpperCase()">
+          </div>
+          <div class="control">
+            <button class="button is-info" onclick="searchLopXe()">🔍 Tra cứu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM NHẬP THAY LỐP (Chỉ Manager/Admin) -->
+      <div id="lopxe_form_box" class="hidden box mx-2 mb-4" style="background: rgba(255,255,255,0.9);">
+        <h3 class="subtitle is-6 has-text-weight-bold">🛠️ Ghi nhận thay lốp</h3>
+        <form id="lopxeForm" onsubmit="event.preventDefault(); submitForm('lopxe', this);">
+          <div class="columns is-multiline is-mobile">
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Biển số xe</label>
+                <input class="input is-small" name="bien_so_xe" list="xe_list_datalist" placeholder="Chọn xe..."
+                  required oninput="this.value = this.value.toUpperCase()">
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Vị trí lốp</label>
+                <div class="select is-small is-fullwidth">
+                  <select name="vi_tri_lop" required>
+                    <option value="Trước Trái">Trước Trái</option>
+                    <option value="Trước Phải">Trước Phải</option>
+                    <option value="Sau Ngoài Trái">Sau Ngoài Trái</option>
+                    <option value="Sau Trong Trái">Sau Trong Trái</option>
+                    <option value="Sau Ngoài Phải">Sau Ngoài Phải</option>
+                    <option value="Sau Trong Phải">Sau Trong Phải</option>
+                    <option value="Dự Phòng">Dự Phòng</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Ngày thay</label>
+                <input class="input is-small" type="date" name="ngay_thay" required>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Số Km lúc thay</label>
+                <input class="input is-small" type="number" name="km_thay" placeholder="Nhập số KM..." required>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Thương hiệu</label>
+                <input class="input is-small" name="thuong_hieu" placeholder="VD: Bridgestone, Michelin...">
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Tình trạng</label>
+                <div class="select is-small is-fullwidth">
+                  <select name="tinh_trang">
+                    <option value="Mới 100%">Mới 100%</option>
+                    <option value="Cũ">Cũ</option>
+                    <option value="Đã đắp/phục hồi">Đã đắp/phục hồi</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label is-small">Ghi chú</label>
+            <textarea class="textarea is-small" name="ghi_chu" rows="2" placeholder="Ghi chú thêm..."></textarea>
+          </div>
+          <div class="buttons is-right">
+            <button class="button is-light is-small" type="button"
+              onclick="document.getElementById('lopxe_form_box').classList.add('hidden')">Hủy</button>
+            <button class="button is-primary is-small" type="submit">💾 Lưu thông tin</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- LIST LỊCH SỬ THAY LỐP -->
+      <div id="lopxe_list" class="px-2" style="max-height: 70vh; overflow-y: auto;">
+        <p class="has-text-centered py-5">Đang tải dữ liệu lốp xe...</p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -3753,16 +3873,16 @@
       }, 4000);
     }
     /* ================= CONFIG ================= */
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIRGjaKig5aGMChRVqAc9RUxehTTIoNlhYltUtb94P3Ov6AupSnw_7aAFnI2mK-tg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2CuvpJchaHwpxssBoVjukauRNVfhCLG6qR58YGMTI_B4NXcabitP_ilAbgbOkotsr/exec";
     const ACCOUNT_SS_ID = "1i0CFkUWJoY18C-DKIlavRpbsYYVIM4fpKtIYGkdPZ-A";
 
     let USER_ROLE = null; // manager | admin | taixe
     let USER_MNV = null;
     const ROLE_PERMISSION = {
-      manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao"],
-      admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao"],
-      taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao"],
-      driver: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao"]
+      manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"],
+      admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"],
+      taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"],
+      driver: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"]
     };
 
     const ALL_TAGS = [
@@ -3783,7 +3903,8 @@
       "lichlamviec",
       "nhiemvu",
       "nhiemvu_table",
-      "thongbao"
+      "thongbao",
+      "lopxe"
     ];
     /* ================= LOGIN ================= */
     const LOGIN_API = "https://script.google.com/macros/s/AKfycbw3MTRDfoEpxL8JJQxgmYYO6YKRIUZLnuHzt5ff5lCWQYhHwRYTAvlcRndXBU5ydgj1Zg/exec";
@@ -4659,6 +4780,9 @@ Hết hạn: ${w.ngay_he} <br>
 
       // Tải ngầm Bảng kê KM
       loadKmGridBackground(m, y, "");
+
+      // Tải ngầm Thông báo
+      loadNotices();
     }
 
     async function loadFuelGridBackground(m, y, bsx) {
@@ -4897,6 +5021,16 @@ Hết hạn: ${w.ngay_he} <br>
           // Tự động load lịch sử giao nhiệm vụ
           loadNhiemVuHistory();
         }
+      }
+
+      // ===== THÔNG BÁO NỘI BỘ =====
+      if (tagId === 'thongbao') {
+        loadNotices();
+      }
+
+      // ===== QUẢN LÝ LỐP XE =====
+      if (tagId === 'lopxe') {
+        loadLopXeHistory();
       }
     }
 
@@ -7104,6 +7238,18 @@ Hết hạn: ${w.ngay_he} <br>
         if (!data || data.length === 0) {
           const banner = document.getElementById('home_notice_banner');
           if (banner) banner.classList.add('hidden');
+          const listContainer = document.getElementById('notice_list');
+          if (listContainer) {
+            listContainer.innerHTML = '<p class="has-text-centered py-5 has-text-grey">Chưa có thông báo nào.</p>';
+          }
+          return;
+        }
+
+        if (data[0].error) {
+          const listContainer = document.getElementById('notice_list');
+          if (listContainer) {
+            listContainer.innerHTML = `<p class="has-text-centered py-5 has-text-danger">${data[0].error}</p>`;
+          }
           return;
         }
 
@@ -7111,14 +7257,17 @@ Hết hạn: ${w.ngay_he} <br>
         const banner = document.getElementById('home_notice_banner');
         if (banner) banner.classList.remove('hidden');
 
-        const latestInfo = data[0];
+        // Note: data is sorted from oldest to newest if Google Sheet appendRow is used.
+        // We probably want the newest info on the banner. We should reverse the array.
+        const reversedData = [...data].reverse();
+        const latestInfo = reversedData[0];
         const marquee = document.getElementById('notice_marquee');
         if (marquee) marquee.innerText = `${latestInfo.uu_tien || 'Tin mới'}: ${latestInfo.tieu_de} - ${latestInfo.noi_dung} (Ngày đăng: ${latestInfo.ngay_dang || '...'})`;
 
         // 2. Render danh sách chi tiết ở Tab
         const listContainer = document.getElementById('notice_list');
         if (listContainer) {
-          listContainer.innerHTML = data.map(n => `
+          listContainer.innerHTML = reversedData.map(n => `
             <div class="notice-card notice-${(n.uu_tien || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '')}">
               <div class="is-flex is-justify-content-space-between">
                 <span class="has-text-weight-bold is-size-6">${n.tieu_de}</span>
@@ -7139,6 +7288,88 @@ Hết hạn: ${w.ngay_he} <br>
       if (author) author.value = (document.getElementById('up_hoten')?.innerText || USER_MNV).trim();
       const dateInp = document.querySelector('#noticeForm input[name="ngay_dang"]');
       if (dateInp) dateInp.value = new Date().toLocaleDateString('vi-VN');
+    }
+
+    /* ================= STEP 2: LOGIC QUẢN LÝ LỐP XE ================= */
+    function openLopXeForm() {
+      const box = document.getElementById('lopxe_form_box');
+      if (box) {
+        box.classList.remove('hidden');
+        document.getElementById('lopxeForm').reset();
+        // Set default date to today
+        const dateInput = box.querySelector('input[name="ngay_thay"]');
+        if (dateInput) {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          dateInput.value = `${y}-${m}-${d}`;
+        }
+      }
+    }
+
+    function searchLopXe() {
+      const bsx = document.getElementById('lopxe_search_key').value.trim();
+      if (!bsx) {
+        showAlert("Vui lòng nhập Biển số xe để tra cứu!", "is-warning");
+        return;
+      }
+      loadLopXeHistory(bsx);
+    }
+
+    async function loadLopXeHistory(searchBSX = "") {
+      const container = document.getElementById('lopxe_list');
+      if (!container) return;
+
+      container.innerHTML = `<p class="has-text-centered py-5"><button class="button is-loading is-white">Đang tải dữ liệu...</button></p>`;
+
+      try {
+        let url = `${SCRIPT_URL}?tag=lopxe&_t=${Date.now()}`;
+        if (searchBSX) url += `&bien_so_xe=${encodeURIComponent(searchBSX)}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+          container.innerHTML = `<p class="has-text-centered py-5 has-text-grey">Không tìm thấy dữ liệu lốp xe${searchBSX ? ` cho xe ${searchBSX}` : ''}.</p>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="columns is-multiline mx-1">
+            ${data.map(item => `
+              <div class="column is-12-mobile is-6-tablet is-4-desktop">
+                <div class="box p-4" style="border-top: 5px solid #2b3e50; border-radius: 12px; background: rgba(255,255,255,0.95); box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.2s; position: relative; overflow: hidden;">
+                  <div style="position: absolute; top: 10px; right: 10px; opacity: 0.1; font-size: 4rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" style="width: 1em; height: 1em;">
+                      <path d="M492.3 224L480 183.1 433.2 196l-20.9-46.1 40-27L420.2 87.2l-45.1 22.8-35.9-35.9L362.1 29.1 326.3 0c-10.7 30-18.6 32-70.3 32s-60.1-2-70.3-32L149.9 29.1l22.9 45.1-35.9 35.9-45.1-22.8-31.9 35.7 40 27-21 46.1L32 183.1 19.7 224h43.3c-2 10.5-3 21.2-3 32s1 21.5 3 32H19.7L32 328.9l46.8-12.9 20.9 46.1-40 27 31.9 35.7 45.1-22.8 35.9 35.9-22.9 45.1 35.8 29.1c10.3-29.8 18.2-31 69.4-31s59.1 1 69.4 31l36.2-29.1-22.9-45.1 35.9-35.9 45.1 22.8 32-35.7-40-27 21-46.1 46.8 12.9 12.3-40.9h-43.3c2-10.5 3-21.2 3-32s-1-21.5-3-32h43.3zM256 368c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112zm64-112c0 35.3-28.7 64-64 64s-64-28.7-64-64 28.7-64 64-64 64 28.7 64 64z"/>
+                      <circle cx="256" cy="256" r="32"/>
+                    </svg>
+                  </div>
+                  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3 pb-2" style="border-bottom: 1px dashed #ddd;">
+                    <span class="is-size-5 has-text-weight-bold has-text-link">${item.bien_so_xe || '-'}</span>
+                    <span class="tag is-medium is-success is-light has-text-weight-semibold" style="border: 1px solid #48c774;">${item.vi_tri_lop || '-'}</span>
+                  </div>
+                  <div class="content is-size-6 mb-0 mt-2">
+                    <p class="mb-2 is-flex is-justify-content-space-between"><span class="has-text-grey">📅 Ngày thay:</span> <strong>${item.ngay_thay || '-'}</strong></p>
+                    <p class="mb-2 is-flex is-justify-content-space-between"><span class="has-text-grey">🏎️ ODO lúc thay:</span> <strong class="has-text-info">${item.km_thay ? Number(item.km_thay).toLocaleString('vi-VN') + ' KM' : '-'}</strong></p>
+                    <p class="mb-2 is-flex is-justify-content-space-between"><span class="has-text-grey">🏷️ Thương hiệu:</span> <strong>${item.thuong_hieu || '-'}</strong></p>
+                    <p class="mb-2 is-flex is-justify-content-space-between"><span class="has-text-grey">🔋 Tình trạng:</span> 
+                      ${item.tinh_trang === 'Mới 100%' ? '<span class="tag is-primary">Mới 100%</span>' :
+            (item.tinh_trang === 'Cũ' ? '<span class="tag is-warning">Cũ</span>' :
+              '<span class="tag is-info">' + (item.tinh_trang || '-') + '</span>')}
+                    </p>
+                  </div>
+                  ${item.ghi_chu ? `<div class="notification is-light is-size-7 mt-3 p-3" style="border-radius: 6px;">📝 <strong>Ghi chú:</strong><br/>${item.ghi_chu}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        console.error("Lỗi tải lịch sử lốp xe:", err);
+        container.innerHTML = `<p class="has-text-centered py-5 has-text-danger">Lỗi kết nối máy chủ.</p>`;
+      }
     }
 
 
