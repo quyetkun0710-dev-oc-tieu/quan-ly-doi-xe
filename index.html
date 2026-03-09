@@ -90,12 +90,29 @@
 
     /* Các thẻ con bên trong box không dùng hiệu ứng kính để tránh đè lớp */
     #baocao .report-card {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      padding: 10px !important;
-      /* Compact padding */
+      background: rgba(255, 255, 255, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 15px;
+      margin-bottom: 12px;
+      padding: 15px !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+      border-left-width: 6px !important;
+    }
+
+    #baocao .report-card .subtitle {
+      color: #666 !important;
+      text-shadow: none !important;
+      font-size: 0.75rem !important;
+      font-weight: 700 !important;
+      margin-bottom: 8px !important;
+      opacity: 0.8;
+    }
+
+    #baocao .report-card .report-number {
+      color: #1a2340 !important;
+      font-size: 1.8rem !important;
+      font-weight: 900 !important;
+      text-shadow: none !important;
     }
 
     .h-100 {
@@ -244,20 +261,24 @@
       border-left-width: 6px;
     }
 
+    .report-card.is-info-card {
+      border-left-color: #209cee !important;
+      background: linear-gradient(145deg, #ffffff, #f0f7ff) !important;
+    }
+
     .report-card.is-success-card {
-      border-left-color: #48c774;
+      border-left-color: #48c774 !important;
+      background: linear-gradient(145deg, #ffffff, #f0fff4) !important;
     }
 
     .report-card.is-warning-card {
-      border-left-color: #ffdd57;
+      border-left-color: #ffdd57 !important;
+      background: linear-gradient(145deg, #ffffff, #fffdf0) !important;
     }
 
     .report-card.is-danger-card {
-      border-left-color: #f14668;
-    }
-
-    .report-card.is-info-card {
-      border-left-color: #3298dc;
+      border-left-color: #f14668 !important;
+      background: linear-gradient(145deg, #ffffff, #fff5f7) !important;
     }
 
     .report-card .subtitle.is-7 {
@@ -2988,7 +3009,7 @@
             <div class="column is-6-mobile is-6-tablet is-3-desktop">
               <div class="report-card is-success-card">
                 <p class="subtitle is-7">⛽ T.TIỀN DẦU</p>
-                <p class="report-number has-text-success" id="rpt_fuel_cost">0 ₫</p>
+                <p class="report-number" id="rpt_fuel_cost">0 ₫</p>
               </div>
             </div>
             <div class="column is-6-mobile is-6-tablet is-3-desktop">
@@ -3002,7 +3023,7 @@
             <div class="column is-6-mobile is-4-tablet is-3-desktop">
               <div class="report-card is-warning-card">
                 <p class="subtitle is-7">🛠️ T. PHÍ BẢO DƯỠNG</p>
-                <p class="report-number has-text-danger" id="rpt_bd_cost">0 ₫</p>
+                <p class="report-number" id="rpt_bd_cost">0 ₫</p>
               </div>
             </div>
             <div class="column is-6-mobile is-4-tablet is-3-desktop">
@@ -3015,7 +3036,7 @@
             <div class="column is-6-mobile is-4-tablet is-2-desktop">
               <div class="report-card is-warning-card">
                 <p class="subtitle is-7">🔧 T. PHÍ SỬA CHỮA</p>
-                <p class="report-number has-text-danger" id="rpt_sc_cost">0 ₫</p>
+                <p class="report-number" id="rpt_sc_cost">0 ₫</p>
               </div>
             </div>
             <div class="column is-6-mobile is-4-tablet is-2-desktop">
@@ -3025,10 +3046,9 @@
               </div>
             </div>
             <div class="column is-12-mobile is-4-tablet is-2-desktop">
-              <div class="report-card is-danger-card"
-                style="background: linear-gradient(145deg, rgba(255,245,245,0.95), rgba(255,235,235,0.95)); border-left-color: #ff3860;">
-                <p class="subtitle is-7" style="color: #ff3860;">⚠️ LỖI VI PHẠM</p>
-                <p class="report-number has-text-danger" id="rpt_violation_count">0</p>
+              <div class="report-card is-danger-card">
+                <p class="subtitle is-7">⚠️ LỖI VI PHẠM</p>
+                <p class="report-number" id="rpt_violation_count">0</p>
               </div>
             </div>
 
