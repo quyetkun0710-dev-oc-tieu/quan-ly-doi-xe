@@ -58,6 +58,13 @@ function now() {
   );
 }
 
+function normalizeHeader(h) {
+  if (!h) return "";
+  return String(h).trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Bỏ dấu
+    .replace(/\s+/g, "_"); // Thay khoảng trắng bằng gạch dưới
+}
+
 /* ================= FORMAT ROW HELPER ================= */
 function formatRow(sh, rowIdx) {
   const lastCol = sh.getLastColumn();
@@ -143,39 +150,18 @@ function calcRemainDays(dateStr) {
 /* ================= DATA MAPPING HELPER ================= */
 function mapDataToRow(sh, data, headers) {
   const sheetName = sh.getName();
-  const tag = Object.keys({
-    xe: "Xe",
-    taixe: "TaiXe",
-    nhatky: "NhatKy",
-    baoduong: "BaoDuong",
-    fuel: "NhienLieu",
-    danhgia: "DanhGia"
-  }).find(key => {
-    const MAP = {
-      xe: "Xe",
-      taixe: "TaiXe",
-      nhatky: "NhatKy",
-      baoduong: "BaoDuong",
-      fuel: "NhienLieu",
-      danhgia: "DanhGia",
-      dangkylich: "DangKyLich",
-      nhiemvu: "nhiemvu"
-    };
-    return MAP[key] === sheetName;
-  });
+  // ... (mapping logic) ...
+  const hNorm = headers.map(h => normalizeHeader(h));
+  const iDkiem = hNorm.indexOf("ngay_dang_kiem");
+  const iPhuHieu = hNorm.indexOf("ngay_phu_hieu");
+  const iBaoHiem = hNorm.indexOf("ngay_bao_hiem");
+  const iDangKy = hNorm.indexOf("ngay_dang_ky");
 
-  // Chuẩn hóa headers sang chữ thường để tìm kiếm chính xác
-  const hLower = headers.map(h => String(h).toLowerCase().trim());
-  const iDkiem = hLower.indexOf("ngay_dang_kiem");
-  const iPhuHieu = hLower.indexOf("ngay_phu_hieu");
-  const iBaoHiem = hLower.indexOf("ngay_bao_hiem");
-  const iDangKy = hLower.indexOf("ngay_dang_ky");
-
-  return headers.map((h, i) => {
-    const field = String(h).toLowerCase().trim();
-    if (field === "created_at") return data[h] || now();
+  return headers.map((hRaw, i) => {
+    const field = hNorm[i];
+    if (field === "created_at") return data[field] || data[hRaw] || now();
     if (field === "updated_at") return now();
-    if (field === "id" && !data[h]) return "ID_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
+    if (field === "id" && !data[field] && !data[hRaw]) return "ID_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
 
     // Công thức tính ngày còn lại cho Sheet Xe
     if (sheetName === "Xe") {
@@ -425,65 +411,53 @@ function doPost(e) {
     // ===== XỬ LÝ NHIỆM VỤ RIÊNG (ghi trực tiếp tương tự DangKyLich) =====
     if (tag === "nhiemvu") {
       const shNv = getSheetByTag(tag);
+      const headers = getHeaders(shNv);
+      const hLower = headers.map(h => String(h).toLowerCase().trim());
       const nowStr = now();
 
-      const reqId          = String(data.id || "").trim();
-      const reqNguoiGiao   = String(data.nguoi_giao || "").trim();
-      const reqNguoiNhan   = String(data.nguoi_nhan || "").trim();
-      const reqLoaiNv      = String(data.loai_nhiem_vu || "").trim();
-      const reqTrangThai   = String(data.trang_thai || "Mới giao").trim();
-      const reqNoiDung     = String(data.noi_dung || "").trim();
-      const reqNgayBD      = String(data.ngay_bat_dau || "").trim();
-      const reqHanHT       = String(data.han_hoan_thanh || "").trim();
-      const reqGhiChu      = String(data.ghi_chu_ket_qua || "").trim();
+      const reqId = String(data.id || "").trim();
 
       if (reqId !== "") {
-          // UPDATE
-          const allVals = shNv.getDataRange().getValues();
-          const hdrs    = allVals.shift();
-          const iId     = hdrs.indexOf("id");
-          
-          const rowIdx = allVals.findIndex(r => String(r[iId]).trim() === reqId);
-          if (rowIdx !== -1) {
-             const sheetRow = rowIdx + 2;
-             
-             const updateCols = {
-                  "nguoi_giao": reqNguoiGiao,
-                  "nguoi_nhan": reqNguoiNhan,
-                  "loai_nhiem_vu": reqLoaiNv,
-                  "trang_thai": reqTrangThai,
-                  "noi_dung": reqNoiDung,
-                  "ngay_bat_dau": reqNgayBD,
-                  "han_hoan_thanh": reqHanHT,
-                  "ghi_chu_ket_qua": reqGhiChu,
-                  "created_at": nowStr
-             };
-             for (const [k, v] of Object.entries(updateCols)) {
-                 const cIdx = hdrs.indexOf(k);
-                 if (cIdx > -1) shNv.getRange(sheetRow, cIdx + 1).setValue("'" + v);
-             }
-             SpreadsheetApp.flush();
-             return json({ status: "success", mode: "update" });
+        // UPDATE
+        const allVals = shNv.getDataRange().getValues();
+        const hdrsRaw = allVals.shift(); // Raw headers from the sheet
+        const hdrsMatch = hdrsRaw.map(h => String(h).toLowerCase().trim());
+        const iId = hdrsMatch.indexOf("id");
+
+        if (iId === -1) throw "Sheet nhiemvu thiếu cột ID";
+
+        const rowIdx = allVals.findIndex(r => String(r[iId]).trim() === reqId);
+        if (rowIdx !== -1) {
+          const sheetRow = rowIdx + 2;
+
+          // Cập nhật tất cả các trường được gửi lên, tự động khớp theo header name (ko phân biệt hoa thường)
+          for (let k in data) {
+            const val = data[k];
+            const cIdx = hdrsMatch.indexOf(normalizeHeader(k));
+            if (cIdx > -1 && normalizeHeader(k) !== "id") {
+              shNv.getRange(sheetRow, cIdx + 1).setValue("'" + val);
+            }
           }
+          
+          // Đảm bảo cập nhật thời gian
+          const iUpdate = hdrsMatch.indexOf("updated_at");
+          if (iUpdate > -1) shNv.getRange(sheetRow, iUpdate + 1).setValue(nowStr);
+          
+          SpreadsheetApp.flush();
+          return json({ status: "success", mode: "update", message: "Đã cập nhật nhiệm vụ!" });
+        }
       }
+
       // CREATE
       const autoId = "NV_" + new Date().getTime();
-      const newRow = [
-          "'" + autoId,
-          "'" + reqNguoiGiao,
-          "'" + reqNguoiNhan,
-          "'" + reqLoaiNv,
-          "'" + reqTrangThai,
-          "'" + reqNoiDung,
-          "'" + reqNgayBD,
-          "'" + reqHanHT,
-          "'" + reqGhiChu,
-          nowStr
-      ];
-      shNv.insertRowAfter(1);
-      shNv.getRange(2, 1, 1, newRow.length).setValues([newRow]);
+      data.id = autoId;
+      data.created_at = nowStr;
+      
+      // Sử dụng mapping động chuẩn của hệ thống để đảm bảo đúng thứ tự cột trong sheet
+      const row = mapDataToRow(shNv, data, headers);
+      appendRowOnTop(shNv, row);
       SpreadsheetApp.flush();
-      return json({ status: "success", mode: "append_top", id: autoId });
+      return json({ status: "success", mode: "append_top", id: autoId, message: "Đã tạo nhiệm vụ mới!" });
     }
     // ===================================================
 
@@ -731,7 +705,7 @@ function doGet(e) {
     if (values.length < 2) return jsonOut([]);
 
     const headersRaw = values.shift();
-    const headers = headersRaw.map(h => String(h).trim().toLowerCase());
+    const headers = headersRaw.map(h => normalizeHeader(h));
 
     let keyName = "";
     if (["xe", "nhatky", "baoduong", "fuel"].includes(tag))
@@ -746,11 +720,10 @@ function doGet(e) {
     // Xử lý đặc biệt cho searchNhiemVu có thể truyền 'key' tự do
     if (tag === "nhiemvu") {
       keyName = "key"; 
-      // vì chúng ta sẽ so khớp 'nguoi_nhan' OẶC 'nguoi_giao'
     }
 
     // KIỂM TRA HEADER
-    if (tag !== "nhiemvu" && keyName && !headers.includes(keyName.toLowerCase())) {
+    if (tag !== "nhiemvu" && keyName && !headers.includes(normalizeHeader(keyName))) {
       return jsonOut([{
         error: `Lỗi: Sheet "${tag}" thiếu cột "${keyName}". Các cột hiện có: ${headers.join(", ")}`
       }]);
@@ -818,17 +791,18 @@ function doGet(e) {
           String(r[idx]).trim().toLowerCase() === keyLower
         );
       })
-      .map(r => {
-        const o = {};
-        headers.forEach((h, i) => {
-          o[h] = FORMAT_NUMBER_FIELDS.includes(h)
-            ? formatNumberDisplay(r[i])
-            : r[i];
-        });
-        return o;
+    const result = list.map(r => {
+      const o = {};
+      headers.forEach((h, i) => {
+        const normH = normalizeHeader(h);
+        o[normH] = FORMAT_NUMBER_FIELDS.includes(normH)
+          ? formatNumberDisplay(r[i])
+          : r[i];
       });
+      return o;
+    });
 
-    return jsonOut(list);
+    return jsonOut(result);
   } catch (err) {
     return jsonOut([{ error: "Lỗi Server: " + String(err) }]);
   }
