@@ -2937,56 +2937,58 @@
 
       <!-- ACTION TOOLBAR -->
       <div class="box" style="background: rgba(255,255,255,0.95); padding: 15px;">
-        <div class="level is-mobile" style="flex-wrap: wrap; margin-bottom: 0;">
-          <div class="level-left">
-            <div class="level-item mr-2 mb-2">
-              <div class="select">
-                <select id="rpt_month">
-                  <option value="1">Tháng 1</option>
-                  <option value="2">Tháng 2</option>
-                  <option value="3">Tháng 3</option>
-                  <option value="4">Tháng 4</option>
-                  <option value="5">Tháng 5</option>
-                  <option value="6">Tháng 6</option>
-                  <option value="7">Tháng 7</option>
-                  <option value="8">Tháng 8</option>
-                  <option value="9">Tháng 9</option>
-                  <option value="10">Tháng 10</option>
-                  <option value="11">Tháng 11</option>
-                  <option value="12">Tháng 12</option>
-                </select>
-              </div>
-            </div>
-            <div class="level-item mr-2 mb-2">
-              <div class="select">
-                <select id="rpt_year">
-                  <option value="2024">2024</option>
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                  <option value="2027">2027</option>
-                  <option value="2028">2028</option>
-                  <option value="2029">2029</option>
-                  <option value="2030">2030</option>
-                </select>
-              </div>
-            </div>
-            <div class="level-item mr-2 mb-2">
-              <input class="input" id="rpt_fuel_bsx" placeholder="Nhập biển số lọc..."
-                oninput="this.value = this.value.toUpperCase()" style="width: 170px;">
-            </div>
-            <div class="level-item mb-2">
-              <button class="button is-primary" onclick="loadReport()">
-                <span>🔍 Tra cứu</span>
-              </button>
+        <div class="columns is-mobile is-multiline is-variable is-2">
+          <!-- Month/Year -->
+          <div class="column is-6-mobile is-2-tablet">
+            <div class="select is-fullwidth">
+              <select id="rpt_month">
+                <option value="1">Tháng 1</option>
+                <option value="2">Tháng 2</option>
+                <option value="3">Tháng 3</option>
+                <option value="4">Tháng 4</option>
+                <option value="5">Tháng 5</option>
+                <option value="6">Tháng 6</option>
+                <option value="7">Tháng 7</option>
+                <option value="8">Tháng 8</option>
+                <option value="9">Tháng 9</option>
+                <option value="10">Tháng 10</option>
+                <option value="11">Tháng 11</option>
+                <option value="12">Tháng 12</option>
+              </select>
             </div>
           </div>
-          <div class="level-right">
-            <div class="level-item mb-2">
-              <button class="button is-success is-light mr-2" id="btnExportExcel" onclick="exportReportToExcel()">
-                <span class="has-text-weight-bold">📁 Xuất Excel</span>
+          <div class="column is-6-mobile is-2-tablet">
+            <div class="select is-fullwidth">
+              <select id="rpt_year">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2030">2030</option>
+              </select>
+            </div>
+          </div>
+          <!-- Plate Input -->
+          <div class="column is-8-mobile is-3-tablet">
+            <input class="input" id="rpt_fuel_bsx" placeholder="Biển số..."
+              oninput="this.value = this.value.toUpperCase()">
+          </div>
+          <!-- Search Button -->
+          <div class="column is-4-mobile is-1-tablet">
+            <button class="button is-primary is-fullwidth" onclick="loadReport()">
+              <span>🔍</span>
+            </button>
+          </div>
+          <!-- Export Buttons -->
+          <div class="column is-12-mobile is-4-tablet">
+            <div class="buttons is-right">
+              <button class="button is-success is-light is-flexible" id="btnExportExcel"
+                onclick="exportReportToExcel()">
+                <span class="has-text-weight-bold">📁 Excel</span>
               </button>
-              <button class="button is-danger is-light" id="btnExportPDF" onclick="exportReportToPDF()">
-                <span class="has-text-weight-bold">📄 Xuất PDF</span>
+              <button class="button is-danger is-light is-flexible" id="btnExportPDF" onclick="exportReportToPDF()">
+                <span class="has-text-weight-bold">📄 PDF</span>
               </button>
             </div>
           </div>
