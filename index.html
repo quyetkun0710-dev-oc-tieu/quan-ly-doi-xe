@@ -3284,7 +3284,7 @@
     <!-- ================= START TAG: NHIỆM VỤ ================= -->
     <div id="nhiemvu" class="hidden form-box"
       style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
-      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <button class="floating-back-btn" type="button" onclick="backFromNhiemVu()">⬅ Quay lại</button>
       <h2 class="title is-4 has-text-weight-bold" style="padding-left: 10px;">🎯 GIAO / NHẬN NHIỆM VỤ</h2>
 
       <!-- 🔍 TRA CỨU (Manager + Admin thấy) -->
@@ -3326,13 +3326,7 @@
         </div>
       </div>
 
-      <!-- FORM GIAO NHIỆM VỤ (Manager + Admin thấy, Tài xế chỉ thấy khi báo cáo) -->
       <div id="nhiemvu_form_box" class="hidden">
-        <div class="mb-4" style="padding: 0 10px;">
-          <button class="button is-small is-light" onclick="backToNhiemVuHistory()">
-            ⬅ Quay lại danh sách
-          </button>
-        </div>
         <form id="nhiemvuForm" class="box is-relative">
           <input type="hidden" name="id" id="nv_id">
           <!-- 1️⃣ THÔNG TIN CƠ BẢN -->
@@ -4654,6 +4648,21 @@ Hết hạn: ${w.ngay_he} <br>
       document.getElementById('nhiemvu_search_box').style.display = '';
       document.getElementById('nhiemvu_history_area').style.display = '';
       loadNhiemVuHistory();
+    }
+
+    function backFromNhiemVu() {
+      if (USER_ROLE === 'taixe' || USER_ROLE === 'driver') {
+        backHome();
+        return;
+      }
+      const formBox = document.getElementById('nhiemvu_form_box');
+      // Nếu Form đang hiện (không có class hidden) thì quay về Lịch sử
+      if (formBox && !formBox.classList.contains('hidden')) {
+        backToNhiemVuHistory();
+      } else {
+        // Nếu đang ở Lịch sử (Form đang ẩn) thì quay về Home
+        backHome();
+      }
     }
     function animateHeaderTitle() {
       const titleBox = document.querySelector('.home-header .title-box h1');
