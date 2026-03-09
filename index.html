@@ -3289,7 +3289,12 @@
 
       <!-- 🔍 TRA CỨU (Manager + Admin thấy) -->
       <div id="nhiemvu_search_box" class="box" style="margin-bottom: 20px;">
-        <h3 class="subtitle">🔍 Quản lý Nhiệm vụ</h3>
+        <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+          <h3 class="subtitle mb-0">🔍 Quản lý Nhiệm vụ</h3>
+          <button class="button is-primary is-small" onclick="openNhiemVuAssignForm()">
+            ➕ Thêm mới nhiệm vụ
+          </button>
+        </div>
         <div class="field">
           <label class="label">Tìm theo Mã NV / Biển số xe</label>
           <div class="control" style="display: flex; gap: 10px;">
@@ -3322,7 +3327,12 @@
       </div>
 
       <!-- FORM GIAO NHIỆM VỤ (Manager + Admin thấy, Tài xế chỉ thấy khi báo cáo) -->
-      <div id="nhiemvu_form_box">
+      <div id="nhiemvu_form_box" class="hidden">
+        <div class="mb-4" style="padding: 0 10px;">
+          <button class="button is-small is-light" onclick="backToNhiemVuHistory()">
+            ⬅ Quay lại danh sách
+          </button>
+        </div>
         <form id="nhiemvuForm" class="box is-relative">
           <input type="hidden" name="id" id="nv_id">
           <!-- 1️⃣ THÔNG TIN CƠ BẢN -->
@@ -4603,41 +4613,47 @@ Hết hạn: ${w.ngay_he} <br>
 
       // ===== NHIỆM VỤ: PHÂN QUYỀN THEO ROLE =====
       if (tagId === 'nhiemvu') {
-        const formBox = document.getElementById('nhiemvu_form_box');
-        const searchBox = document.getElementById('nhiemvu_search_box');
-        const taixeArea = document.getElementById('nhiemvu_taixe_area');
-        const nguoiGiaoInput = document.getElementById('nv_nguoi_giao');
-        const historyArea = document.getElementById('nhiemvu_history_area');
-
         if (USER_ROLE === 'taixe' || USER_ROLE === 'driver') {
           // TÀI XẾ: Ẩn form giao việc + ô tìm kiếm, hiện bảng nhiệm vụ của mình
-          if (formBox) formBox.style.display = 'none';
-          if (searchBox) searchBox.style.display = 'none';
-          if (historyArea) historyArea.style.display = 'none';
-          if (taixeArea) taixeArea.classList.remove('hidden');
-          // Tự động load nhiệm vụ của tài xế theo mã NV
-          if (USER_MNV) {
-            loadNhiemVuTaixe(USER_MNV);
-          }
+          document.getElementById('nhiemvu_form_box').style.display = 'none';
+          document.getElementById('nhiemvu_search_box').style.display = 'none';
+          document.getElementById('nhiemvu_history_area').style.display = 'none';
+          document.getElementById('nhiemvu_taixe_area').classList.remove('hidden');
+          if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
         } else {
-          // MANAGER / ADMIN: Hiện form giao việc + tìm kiếm, ẩn bảng tài xế
-          if (formBox) formBox.style.display = '';
-          if (searchBox) searchBox.style.display = '';
-          if (historyArea) historyArea.style.display = '';
-          if (taixeArea) taixeArea.classList.add('hidden');
-          // Tự động điền "Người giao" = mã NV của người đang đăng nhập
-          if (nguoiGiaoInput && USER_MNV) {
-            nguoiGiaoInput.value = USER_MNV;
-          }
-          // Reset form về trạng thái tạo mới
-          document.getElementById('nhiemvuForm').reset();
-          document.getElementById('nv_id').value = '';
-          document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
-          document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU';
+          // MANAGER / ADMIN: Mặc định hiện Lịch sử + Tìm kiếm, ẩn Form
+          document.getElementById('nhiemvu_form_box').classList.add('hidden');
+          document.getElementById('nhiemvu_search_box').style.display = '';
+          document.getElementById('nhiemvu_history_area').style.display = '';
+          document.getElementById('nhiemvu_taixe_area').classList.add('hidden');
           // Tự động load lịch sử giao nhiệm vụ
           loadNhiemVuHistory();
         }
       }
+    }
+
+    function openNhiemVuAssignForm() {
+      // Ẩn lịch sử
+      document.getElementById('nhiemvu_search_box').style.display = 'none';
+      document.getElementById('nhiemvu_history_area').style.display = 'none';
+      // Hiện form
+      const fBox = document.getElementById('nhiemvu_form_box');
+      fBox.classList.remove('hidden');
+      fBox.style.display = '';
+      // Reset & Điền mã NV người giao
+      document.getElementById('nhiemvuForm').reset();
+      document.getElementById('nv_id').value = '';
+      document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
+      document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU';
+      if (USER_MNV) document.getElementById('nv_nguoi_giao').value = USER_MNV;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToNhiemVuHistory() {
+      document.getElementById('nhiemvu_form_box').classList.add('hidden');
+      document.getElementById('nhiemvu_search_box').style.display = '';
+      document.getElementById('nhiemvu_history_area').style.display = '';
+      loadNhiemVuHistory();
     }
     function animateHeaderTitle() {
       const titleBox = document.querySelector('.home-header .title-box h1');
@@ -4776,13 +4792,9 @@ Hết hạn: ${w.ngay_he} <br>
                 document.getElementById('nhiemvu_taixe_area').classList.remove('hidden');
                 if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
               } else {
-                form.reset();
-                document.getElementById('nv_id').value = '';
-                document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
-                document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU';
-                if (USER_MNV) document.getElementById('nv_nguoi_giao').value = USER_MNV;
+                // Quay về lịch sử và load lại
+                backToNhiemVuHistory();
               }
-              loadNhiemVuHistory();
               updateNhiemVuBadge();
             }
 
@@ -5238,8 +5250,15 @@ Hết hạn: ${w.ngay_he} <br>
       document.getElementById('nhiemvu_form_title').textContent = '✏️ Chỉnh sửa nhiệm vụ';
       document.getElementById('nhiemvu_save_btn').textContent = '💾 CẬP NHẬT NHIỆM VỤ';
 
+      // Hiển thị form và ẩn lịch sử
+      document.getElementById('nhiemvu_search_box').style.display = 'none';
+      document.getElementById('nhiemvu_history_area').style.display = 'none';
+      const fBox = document.getElementById('nhiemvu_form_box');
+      fBox.classList.remove('hidden');
+      fBox.style.display = '';
+
       // Scroll lên form
-      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      fBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     /* ===== TÀI XẾ: NHẬN NHIỆM VỤ → Chuyển trạng thái sang "Đang thực hiện" ===== */
