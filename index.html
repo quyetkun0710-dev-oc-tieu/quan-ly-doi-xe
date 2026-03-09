@@ -4053,7 +4053,7 @@ Hết hạn: ${w.ngay_he} <br>
       // 2. Cập nhật giao diện menu theo quyền mới (nếu có)
       applyHomeCardByRole();
 
-      // 3. Tải lại các cảnh báo & dữ liệu ngầm
+      // 3. Tải lại các cảnh báo & dữ liệu ngầm (Có reset UI)
       checkWarnings();
       preLoadData(true);
       fetchBackgrounds();
@@ -4839,26 +4839,28 @@ Hết hạn: ${w.ngay_he} <br>
       const kmM = document.getElementById("km_month") ? document.getElementById("km_month").value : m;
       const kmY = document.getElementById("km_year") ? document.getElementById("km_year").value : y;
 
+      const isSilent = !isInitial; // Nếu không phải khởi tạo thì là tải ngầm (silent)
+
       // Kích hoạt tải ngầm song song
-      loadReport(true);
+      loadReport(isSilent);
       loadQuotaData();
-      generateAutoLichLamViec(true);
+      generateAutoLichLamViec(isSilent);
 
       // Tải ngầm bảng Xe và Tài xế
-      loadTableByKey("xe", "bien_so_xe", "", "xeTable");
-      loadTableByKey("taixe", "ma_nv", "", "taixeTable");
+      loadTableByKey("xe", "bien_so_xe", "", "xeTable", isSilent);
+      loadTableByKey("taixe", "ma_nv", "", "taixeTable", isSilent);
 
       // Tải ngầm các bảng dữ liệu khác cho Manager/Admin
       if (USER_ROLE === "manager" || USER_ROLE === "admin") {
-        loadTableByKey("nhatky", "", "", "nhatkyResultTable");
-        loadTableByKey("baoduong", "", "", "baoduongResultTable");
-        loadTableByKey("fuel", "", "", "fuelResultTable");
-        loadTableByKey("danhgia", "", "", "danhgiaResultTable");
-        loadNhiemVuHistory();
+        loadTableByKey("nhatky", "", "", "nhatkyResultTable", isSilent);
+        loadTableByKey("baoduong", "", "", "baoduongResultTable", isSilent);
+        loadTableByKey("fuel", "", "", "fuelResultTable", isSilent);
+        loadTableByKey("danhgia", "", "", "danhgiaResultTable", isSilent);
+        loadNhiemVuHistory("", isSilent);
       }
 
       if (USER_MNV) {
-        loadNhiemVuTaixe(USER_MNV);
+        loadNhiemVuTaixe(USER_MNV, isSilent);
       }
 
       const tbodyMaintenance = document.querySelector("#maintenancePlanTable tbody");
@@ -4872,11 +4874,11 @@ Hết hạn: ${w.ngay_he} <br>
       }
 
       // Tải ngầm Bảng kê Nhiên liệu và KM theo tháng năm đang chọn trên UI
-      loadFuelGridBackground(fuelM, fuelY, (document.getElementById("grid_bsx")?.value || ""));
-      loadKmGridBackground(kmM, kmY, (document.getElementById("km_bsx")?.value || ""));
+      loadFuelGridBackground(fuelM, fuelY, (document.getElementById("grid_bsx")?.value || ""), isSilent);
+      loadKmGridBackground(kmM, kmY, (document.getElementById("km_bsx")?.value || ""), isSilent);
 
       loadNotices();
-      loadLopXeHistory();
+      loadLopXeHistory(isSilent);
     }
 
     // Khởi tạo auto-refresh mỗi 10 giây
@@ -4892,10 +4894,10 @@ Hết hạn: ${w.ngay_he} <br>
       }, 10000);
     }
 
-    async function loadFuelGridBackground(m, y, bsx) {
+    async function loadFuelGridBackground(m, y, bsx, isSilent = false) {
       const container = document.getElementById("fuelGridContainer");
       if (container) {
-        container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
+        if (!isSilent) container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
         try {
           const res = await fetch(`${SCRIPT_URL}?action=get_log_grid&bien_so_xe=${encodeURIComponent(bsx)}&month=${m}&year=${y}&_t=${Date.now()}`);
           const json = await res.json();
@@ -4911,10 +4913,10 @@ Hết hạn: ${w.ngay_he} <br>
       }
     }
 
-    async function loadKmGridBackground(m, y, bsx) {
+    async function loadKmGridBackground(m, y, bsx, isSilent = false) {
       const container = document.getElementById("kmGridContainer");
       if (container) {
-        container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
+        if (!isSilent) container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
         try {
           const res = await fetch(`${SCRIPT_URL}?action=get_km_grid&month=${m}&year=${y}&bien_so_xe=${encodeURIComponent(bsx)}&_t=${Date.now()}`);
           const json = await res.json();
@@ -5561,13 +5563,15 @@ Hết hạn: ${w.ngay_he} <br>
     }
 
     /* ===== NHIỆM VỤ: LOAD BẢNG CHO TÀI XẾ (có nút Nhận + Báo cáo) ===== */
-    function loadNhiemVuTaixe(maNV) {
+    function loadNhiemVuTaixe(maNV, isSilent = false) {
       const table = document.getElementById("nhiemvuTaixeTable");
       if (!table) return;
       const thead = table.querySelector("thead");
       const tbody = table.querySelector("tbody");
-      thead.innerHTML = "";
-      tbody.innerHTML = '<tr><td colspan="100%" class="has-text-centered">⏳ Đang tải...</td></tr>';
+      if (!isSilent) {
+        thead.innerHTML = "";
+        tbody.innerHTML = '<tr><td colspan="100%" class="has-text-centered">⏳ Đang tải...</td></tr>';
+      }
 
       const url = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(maNV)}&_t=${Date.now()}`;
       fetch(url)
@@ -5659,10 +5663,10 @@ Hết hạn: ${w.ngay_he} <br>
     }
 
     /* ===== LỊCH SỬ GIAO NHIỆM VỤ (Manager/Admin) ===== */
-    function loadNhiemVuHistory(searchKey = "") {
+    function loadNhiemVuHistory(searchKey = "", isSilent = false) {
       const container = document.getElementById('nhiemvu_history_list');
       if (!container) return;
-      container.innerHTML = '<p class="has-text-centered has-text-grey py-4"><span class="button is-loading is-white" style="border:none;"></span> Đang tải dữ liệu...</p>';
+      if (!isSilent) container.innerHTML = '<p class="has-text-centered has-text-grey py-4"><span class="button is-loading is-white" style="border:none;"></span> Đang tải dữ liệu...</p>';
 
       // Lấy tất cả nhiệm vụ - backend cần key để filter, dùng USER_MNV
       const fetchAll = async () => {
@@ -6014,13 +6018,15 @@ Hết hạn: ${w.ngay_he} <br>
         form.ngay_nghi_viec.value = ""; // xóa ngày nếu đang làm việc
       }
     }
-    function loadTableByKey(tag, keyName, keyValue, tableId) {
+    function loadTableByKey(tag, keyName, keyValue, tableId, isSilent = false) {
       const table = document.getElementById(tableId);
       if (!table) return;
       const thead = table.querySelector("thead");
       const tbody = table.querySelector("tbody");
-      thead.innerHTML = "";
-      tbody.innerHTML = "";
+      if (!isSilent) {
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+      }
       /* ✅ KHÔNG CÓ KEY → LẤY HẾT */
       let url = `${SCRIPT_URL}?tag=${encodeURIComponent(tag)}`;
       /* ✅ CHỈ GẮN KEY KHI CÓ */
@@ -7425,11 +7431,22 @@ Hết hạn: ${w.ngay_he} <br>
       loadLopXeHistory(bsx);
     }
 
-    async function loadLopXeHistory(searchBSX = "") {
+    async function loadLopXeHistory(isSilentOrBSX = false) {
       const container = document.getElementById('lopxe_list');
       if (!container) return;
 
-      container.innerHTML = `<p class="has-text-centered py-5"><button class="button is-loading is-white">Đang tải dữ liệu...</button></p>`;
+      let searchBSX = "";
+      let isSilent = false;
+
+      if (typeof isSilentOrBSX === "string") {
+        searchBSX = isSilentOrBSX;
+      } else if (typeof isSilentOrBSX === "boolean") {
+        isSilent = isSilentOrBSX;
+      }
+
+      if (!isSilent) {
+        container.innerHTML = `<p class="has-text-centered py-5"><button class="button is-loading is-white">Đang tải dữ liệu...</button></p>`;
+      }
 
       try {
         let url = `${SCRIPT_URL}?tag=lopxe&_t=${Date.now()}`;
