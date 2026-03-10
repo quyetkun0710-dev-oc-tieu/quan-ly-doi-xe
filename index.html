@@ -25,6 +25,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       background-color: #f4f6f8;
@@ -1640,9 +1641,42 @@
       background: #1a2340 !important;
       color: #fff !important;
       border-color: rgba(255, 255, 255, 0.1) !important;
-      text-transform: uppercase;
       font-size: 11px;
       letter-spacing: 0.5px;
+    }
+
+    /* Role based visibility */
+    body:not(.role-manager):not(.role-admin) .is-manager-only,
+    body:not(.role-manager):not(.role-admin) .is-admin-only {
+      display: none !important;
+    }
+
+    body.role-admin .is-manager-only {
+      display: none !important;
+    }
+
+    /* Pulse Live Animation */
+    @keyframes pulseLive {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .pulse-live {
+      animation: pulseLive 2s infinite ease-in-out;
+      border: 1px solid rgba(255, 56, 96, 0.3);
+      font-weight: 800;
     }
   </style>
 </head>
@@ -1727,6 +1761,14 @@
                 <button class="button is-small is-primary is-light is-fullwidth" onclick="refreshProjectData()"
                   id="btnRefreshData" style="border-radius: 8px; font-weight: 600;">
                   🔄 Làm mới dữ liệu
+                </button>
+              </td>
+            </tr>
+            <tr class="animate-row glass-row is-manager-only" style="animation-delay: 0.8s;">
+              <td colspan="2" style="border: none; padding: 10px 12px; text-align: center;">
+                <button class="button is-small is-danger is-light is-fullwidth" onclick="migrateAllToSupabase()"
+                  id="btnMigrateAllSupabase" style="border-radius: 8px; font-weight: 600;">
+                  🚀 Đồng bộ TOÀN BỘ Database
                 </button>
               </td>
             </tr>
@@ -2304,8 +2346,11 @@
     <div id="xe" class="hidden form-box">
       <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
-        <h2 class="title is-4 has-text-weight-bold mb-0">🚚 THÔNG TIN XE</h2>
-        <div>
+        <h2 class="title is-4 has-text-weight-bold mb-0">🚚 THÔNG TIN XE <span class="tag is-danger is-light pulse-live"
+            style="font-size: 10px; margin-left: 10px; vertical-align: middle;">🟢 LIVE</span></h2>
+        <div class="buttons">
+          <button class="button is-warning is-small is-light px-2 is-manager-only" onclick="migrateAllToSupabase()">🚀
+            Sync All</button>
           <button class="button is-success is-small is-light" onclick="exportTableToExcel('xeTable', 'Thong_Tin_Xe')">📁
             Excel</button>
           <button class="button is-danger is-small is-light" onclick="exportElementToPDF('xeTable', 'Thong_Tin_Xe')">📄
@@ -4167,6 +4212,11 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbya7Dglug6AIquYYUqt8Qqo3FhX3czlAUWa18VeSk29Oags8M86AiEwtrIdHqrMNL68/exec";
     const ACCOUNT_SS_ID = "1i0CFkUWJoY18C-DKIlavRpbsYYVIM4fpKtIYGkdPZ-A";
 
+    /* ================= SUPABASE CONFIG ================= */
+    const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_KGgl0a2sghvPxzws_q1_2A_tp61ozcR";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let USER_ROLE = null; // manager | admin | taixe
     let USER_MNV = null;
     const ROLE_PERMISSION = {
@@ -4253,6 +4303,9 @@
           if (typeof startGlobalAutoRefresh === "function") {
             startGlobalAutoRefresh();
           }
+
+          // Khởi động Supabase Real-time
+          setupSupabaseRealtime();
 
         } else {
           showAlert(d.message || "Tài khoản hoặc mật khẩu không chính xác", "is-danger");
@@ -5390,50 +5443,43 @@ Hết hạn: ${w.ngay_he} <br>
       updateNhiemVuBadge();
     }
 
-    function updateNhiemVuBadge() {
+    async function updateNhiemVuBadge() {
       const badge = document.getElementById("badgeNhiemVu");
       if (!badge) return;
-      // Tài xế thấy số NV Mới giao cho mình. Manager/Admin thấy số NV mới giao cho toàn đội/mình.
       const myMnv = (USER_ROLE === 'manager') ? '' : (USER_MNV || '');
-      fetch(`${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(myMnv)}&_t=${Date.now()}`)
-        .then(r => r.json())
-        .then(data => {
-          if (!Array.isArray(data)) return;
-          // Đếm số nhiệm vụ "Mới giao" (case-insensitive)
-          const count = data.filter(d => {
-            const st = String(d.trang_thai || "").toLowerCase();
-            return st === "mới giao" || st === "moii giao"; // Support slight typos if any
-          }).length;
-          if (count > 0) {
-            badge.textContent = count > 99 ? "99+" : count;
-            badge.style.display = "flex";
-          } else {
-            badge.style.display = "none";
-          }
-        })
-        .catch(e => console.error(e));
+
+      const data = await fetchDataFallback("nhiemvu");
+      let count = 0;
+      data.forEach(d => {
+        const st = String(d.trang_thai || "").toLowerCase();
+        const validTask = (myMnv === '') || (String(d.nguoi_nhan).includes(myMnv));
+        if (validTask && (st === "mới giao" || st === "moii giao")) count++;
+      });
+
+      if (count > 0) {
+        badge.textContent = count > 99 ? "99+" : count;
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
     }
 
-    function updateLichLamViecBadge() {
+    async function updateLichLamViecBadge() {
       const badge = document.getElementById("badgeLichLamViec");
       if (!badge) return;
       if (USER_ROLE !== "admin" && USER_ROLE !== "manager") {
         badge.style.display = "none";
         return;
       }
-      fetch(`${SCRIPT_URL}?tag=dangkylich&_t=${Date.now()}`)
-        .then(r => r.json())
-        .then(data => {
-          if (!Array.isArray(data)) return;
-          const count = data.filter(d => String(d.trang_thai).toLowerCase() === "chờ duyệt").length;
-          if (count > 0) {
-            badge.textContent = count > 99 ? "99+" : count;
-            badge.style.display = "flex";
-          } else {
-            badge.style.display = "none";
-          }
-        })
-        .catch(e => console.error(e));
+
+      const data = await fetchDataFallback("dangkylich");
+      const count = data.filter(d => String(d.trang_thai).toLowerCase() === "chờ duyệt").length;
+      if (count > 0) {
+        badge.textContent = count > 99 ? "99+" : count;
+        badge.style.display = "flex";
+      } else {
+        badge.style.display = "none";
+      }
     }
     function openTag(tagId) {
       if (!USER_ROLE) {
@@ -5548,8 +5594,7 @@ Hết hạn: ${w.ngay_he} <br>
       datalist.innerHTML = "";
 
       // Lấy data taixe (đã được preLoadData hoặc fetch mới)
-      fetch(`${SCRIPT_URL}?tag=taixe&_t=${Date.now()}`)
-        .then(res => res.json())
+      fetchDataFallback("taixe")
         .then(list => {
           if (!Array.isArray(list)) return;
           list.forEach(item => {
@@ -5714,6 +5759,26 @@ Hết hạn: ${w.ngay_he} <br>
 
         const result = await response.json();
 
+        // ✅ AUTO SYNC TO SUPABASE FOR ALL TAGS
+        if (result.status === "success") {
+          try {
+            const payload = Object.fromEntries(new URLSearchParams(fd));
+            // Cleanup payload
+            delete payload.tag;
+            delete payload.auth_mnv;
+            delete payload.auth_role;
+
+            // Format data based on tag
+            const formattedData = formatDataForSupabase(tag, payload);
+            formattedData.updated_at = new Date();
+
+            const { error } = await supabaseClient.from(tag).upsert(formattedData);
+            if (error) console.warn(`Supabase Sync Error [${tag}]:`, error);
+          } catch (se) {
+            console.warn(`Supabase Sync Exception [${tag}]:`, se);
+          }
+        }
+
         if (result.status === "success") {
           showAlert(result.message || "Lưu dữ liệu thành công!", "is-success");
 
@@ -5774,13 +5839,9 @@ Hết hạn: ${w.ngay_he} <br>
         showAlert("Thiếu dữ liệu tra cứu", "is-warning");
         return;
       }
-      const url =
-        `${SCRIPT_URL}?tag=${encodeURIComponent(tag)}&${encodeURIComponent(
-          keyName
-        )}=${encodeURIComponent(keyValue)}&_t=${Date.now()}`;
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
+      fetchDataFallback(tag, keyName, keyValue)
+        .then(list => {
+          const data = (list && list.length > 0) ? list[0] : null;
           if (!data || Object.keys(data).length === 0) {
             showAlert("Không tìm thấy dữ liệu", "is-danger");
             return;
@@ -5946,8 +6007,7 @@ Hết hạn: ${w.ngay_he} <br>
     const nvTaixeDataMap = {};
 
     /* ===== NHIỆM VỤ: LOAD CARD CHO TÀI XẾ ===== */
-    function loadNhiemVuTaixe(maNV, isSilent) {
-      if (isSilent === undefined) isSilent = false;
+    async function loadNhiemVuTaixe(maNV, isSilent = false) {
       const container = document.getElementById('nhiemvu_taixe_cards');
       if (!container) return;
 
@@ -5955,20 +6015,15 @@ Hết hạn: ${w.ngay_he} <br>
         container.innerHTML = '<p class="has-text-centered has-text-grey py-4">⏳ Đang tải...</p>';
       }
 
-      const url = SCRIPT_URL + "?tag=nhiemvu&key=" + encodeURIComponent(maNV) + "&_t=" + Date.now();
-      fetch(url)
-        .then(function (res) { return res.json(); })
-        .then(function (list) {
-          if (!Array.isArray(list) || list.length === 0) {
-            container.innerHTML = '<p class="has-text-centered has-text-grey py-4">📭 Bạn chưa có nhiệm vụ nào</p>';
-            return;
-          }
-          renderNhiemVuTaixeCards(list, container);
-        })
-        .catch(function (err) {
-          console.error("Lỗi tải nhiệm vụ:", err);
-          container.innerHTML = '<p class="has-text-centered has-text-danger py-4">Lỗi tải dữ liệu. Nhấn 🔄 để thử lại.</p>';
-        });
+      const list = await fetchDataFallback("nhiemvu");
+      // filter out tasks that belong to maNV
+      const myDocs = list.filter(d => String(d.nguoi_nhan || '').includes(maNV));
+
+      if (myDocs.length === 0) {
+        container.innerHTML = '<p class="has-text-centered has-text-grey py-4">📭 Bạn chưa có nhiệm vụ nào</p>';
+        return;
+      }
+      renderNhiemVuTaixeCards(myDocs, container);
     }
 
     function renderNhiemVuTaixeCards(list, container) {
@@ -6205,16 +6260,16 @@ Hết hạn: ${w.ngay_he} <br>
 
       // Lấy tất cả nhiệm vụ - backend cần key để filter, dùng USER_MNV
       const fetchAll = async () => {
+        const list = await fetchDataFallback("nhiemvu");
         const roleToken = String(USER_ROLE || "").toLowerCase();
-        // Manager cần lấy tất cả nhiệm vụ nên truyền key rỗng
         const myMnv = (roleToken === 'manager') ? '' : (USER_MNV || '');
-
-        // Nếu có searchKey thì ưu tiên dùng searchKey
-        const keyToSearch = searchKey || myMnv;
-
-        const url1 = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(keyToSearch)}&_t=${Date.now()}`;
-        const res1 = await fetch(url1);
-        return await res1.json();
+        const keyToSearch = (searchKey || myMnv || '').toLowerCase();
+        if (!keyToSearch) return list;
+        return list.filter(d =>
+          String(d.nguoi_giao || '').toLowerCase().includes(keyToSearch) ||
+          String(d.nguoi_nhan || '').toLowerCase().includes(keyToSearch) ||
+          String(d.noi_dung || '').toLowerCase().includes(keyToSearch)
+        );
       };
       fetchAll()
         .then(list => {
@@ -6478,84 +6533,308 @@ Hết hạn: ${w.ngay_he} <br>
         form.ngay_nghi_viec.value = ""; // xóa ngày nếu đang làm việc
       }
     }
-    function loadTableByKey(tag, keyName, keyValue, tableId, isSilent = false) {
-      const table = document.getElementById(tableId);
-      if (!table) return;
-      const thead = table.querySelector("thead");
-      const tbody = table.querySelector("tbody");
+
+    /* ================= GENERIC FETCH ARRAY (WITH GOOGLE SHEETS FALLBACK) ================= */
+    async function fetchDataFallback(tag, filterCol = null, filterVal = null) {
+      // 1. Try Supabase
+      try {
+        let query = supabaseClient.from(tag).select('*');
+        if (tag === 'xe') query = query.order('bien_so_xe', { ascending: true });
+        else if (tag === 'taixe') query = query.order('ma_nv', { ascending: true });
+        else query = query.order('created_at', { ascending: false });
+
+        if (filterCol && filterVal) {
+          if (filterCol === 'ma_nv' || filterCol === 'bien_so_xe') query = query.eq(filterCol, filterVal);
+          else query = query.ilike(filterCol, `%${filterVal}%`);
+        }
+        const { data: list, error } = await query;
+        if (!error && list && list.length > 0) return list;
+      } catch (e) { console.warn(`[Supabase Error] ${tag}:`, e); }
+
+      // 2. Fallback Google Sheets
+      try {
+        let url = `${SCRIPT_URL}?tag=${encodeURIComponent(tag)}`;
+        if (tag === 'nhiemvu' && filterVal) url += `&key=${encodeURIComponent(filterVal)}`;
+        else if (filterCol && filterVal) url += `&${encodeURIComponent(filterCol)}=${encodeURIComponent(filterVal)}`;
+        url += `&_t=${Date.now()}`;
+
+        const res = await fetch(url);
+        const list = await res.json();
+        return Array.isArray(list) ? list : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    /* ================= SUPABASE DATA FETCH (WITH GOOGLE SHEETS FALLBACK) ================= */
+    async function loadFromSupabase(tag, keyName, keyValue, tableId, isSilent = false) {
+      const tableEl = document.getElementById(tableId);
+      if (!tableEl) return;
+      const thead = tableEl.querySelector("thead");
+      const tbody = tableEl.querySelector("tbody");
+
       if (!isSilent) {
         thead.innerHTML = "";
-        tbody.innerHTML = "";
+        tbody.innerHTML = `<tr><td colspan="100%" class="has-text-centered">⏳ Đang tải dữ liệu...</td></tr>`;
       }
-      /* ✅ KHÔNG CÓ KEY → LẤY HẾT */
-      let url = `${SCRIPT_URL}?tag=${encodeURIComponent(tag)}`;
-      /* ✅ CHỈ GẮN KEY KHI CÓ */
-      if (keyValue) {
-        url += `&${encodeURIComponent(keyName)}=${encodeURIComponent(keyValue)}`;
-      }
-      url += `${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
-      fetch(url)
-        .then(res => res.json())
-        .then(list => {
-          if (!Array.isArray(list) || list.length === 0) {
-            tbody.innerHTML = `
-        <tr>
-        <td colspan="100%" class="has-text-centered">
-          Không có dữ liệu
-        </td>
-</tr>
-        `;
-            return;
-          }
-          // KIỂM TRA LỖI TỪ SERVER TRẢ VỀ
-          if (list.length === 1 && list[0].error) {
-            alert("❌ " + list[0].error);
-            tbody.innerHTML = `<tr><td colspan="100%" class="has-text-danger">${list[0].error}</td></tr>`;
-            return;
-          }
-          const headers = Object.keys(list[0]);
-          const showSelectCol = (tag === "xe" || tag === "taixe");
-          /* ===== HEADER ===== */
-          thead.innerHTML =
-            (showSelectCol ? "<tr><th>Chọn</th>" : "<tr>") +
-            headers.map(h => `<th>${h}</th>`).join("") +
-            "</tr>";
-          /* ===== BODY ===== */
-          tbody.innerHTML = ""; // Clear just before rendering
-          list.forEach(row => {
-            const tr = document.createElement("tr");
-            /* === CỘT CHỌN: chỉ hiện với xe / taixe === */
-            if (showSelectCol) {
-              const tdSelect = document.createElement("td");
-              const btn = document.createElement("button");
-              btn.textContent = "Chọn";
-              btn.className = "button is-small is-link";
-              btn.onclick = () => {
-                if (tag === "xe") fillFormXe(row);
-                if (tag === "taixe") fillFormTaiXe(row);
-              };
-              tdSelect.appendChild(btn);
-              tr.appendChild(tdSelect);
-            }
-            /* === CÁC CỘT DỮ LIỆU === */
-            headers.forEach(h => {
-              const td = document.createElement("td");
-              td.textContent = row[h] ?? "";
-              tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-          });
+
+      // ===== THỬ SUPABASE TRƯỚC (chỉ dùng nếu có dữ liệu) =====
+      try {
+        let query = supabaseClient.from(tag).select('*');
+        if (tag === 'xe') query = query.order('bien_so_xe', { ascending: true });
+        else if (tag === 'taixe') query = query.order('ma_nv', { ascending: true });
+        else query = query.order('created_at', { ascending: false });
+
+        if (keyValue && keyName) query = query.ilike(keyName, `%${keyValue}%`);
+
+        const { data: list, error } = await query;
+
+        // Chỉ dùng Supabase nếu KHÔNG lỗi VÀ có dữ liệu thực
+        if (!error && list && list.length > 0) {
+          renderGenericTable(list, tag, tableId);
           enablePinchZoom(tableId);
-        })
-        .catch(() => {
-          tbody.innerHTML = `
-        <tr>
-        <td colspan="100%" class="has-text-danger">
-          Lỗi tải dữ liệu
-        </td>
-        </tr>
-        `;
+          return; // ✅ Dùng Supabase thành công
+        }
+
+        if (error) {
+          console.warn(`[Supabase] Lỗi bảng ${tag}: ${error.message}. Đang dùng Google Sheets...`);
+        } else {
+          console.log(`[Supabase] Bảng ${tag} trống → Dùng Google Sheets làm nguồn dữ liệu.`);
+        }
+      } catch (e) {
+        console.warn(`[Supabase] Exception bảng ${tag}:`, e);
+      }
+
+      // ===== FALLBACK: GOOGLE SHEETS =====
+      try {
+        let url = `${SCRIPT_URL}?tag=${encodeURIComponent(tag)}`;
+        if (keyValue && keyName) url += `&${encodeURIComponent(keyName)}=${encodeURIComponent(keyValue)}`;
+        url += `&_t=${Date.now()}`;
+
+        const res = await fetch(url);
+        const list = await res.json();
+
+        if (!Array.isArray(list) || list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="100%" class="has-text-centered">Không có dữ liệu</td></tr>`;
+          return;
+        }
+        if (list.length === 1 && list[0].error) {
+          tbody.innerHTML = `<tr><td colspan="100%" class="has-text-danger">${list[0].error}</td></tr>`;
+          return;
+        }
+
+        const headers = Object.keys(list[0]);
+        const showSelectCol = (tag === "xe" || tag === "taixe");
+        thead.innerHTML = (showSelectCol ? "<tr><th>Chọn</th>" : "<tr>") +
+          headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+        tbody.innerHTML = "";
+        list.forEach(row => {
+          const tr = document.createElement("tr");
+          if (showSelectCol) {
+            const td = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.textContent = "Chọn";
+            btn.className = "button is-small is-link";
+            btn.onclick = () => { if (tag === "xe") fillFormXe(row); if (tag === "taixe") fillFormTaiXe(row); };
+            td.appendChild(btn);
+            tr.appendChild(td);
+          }
+          headers.forEach(h => {
+            const td = document.createElement("td");
+            td.textContent = row[h] ?? "";
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
         });
+        enablePinchZoom(tableId);
+      } catch (e2) {
+        tbody.innerHTML = `<tr><td colspan="100%" class="has-text-danger">❌ Lỗi tải dữ liệu: ${e2.message}</td></tr>`;
+      }
+    }
+
+
+    function renderGenericTable(list, tag, tableId) {
+      const table = document.getElementById(tableId);
+      const thead = table.querySelector("thead");
+      const tbody = table.querySelector("tbody");
+
+      // Filter out meta fields
+      const headers = Object.keys(list[0]).filter(h => !['id', 'created_at', 'updated_at'].includes(h));
+      const showSelectCol = (tag === "xe" || tag === "taixe");
+
+      /* ===== HEADER ===== */
+      thead.innerHTML =
+        (showSelectCol ? "<tr><th>Chọn</th>" : "<tr>") +
+        headers.map(h => `<th>${h}</th>`).join("") +
+        "</tr>";
+
+      /* ===== BODY ===== */
+      tbody.innerHTML = "";
+      list.forEach(row => {
+        const tr = document.createElement("tr");
+        if (showSelectCol) {
+          const tdSelect = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.textContent = "Chọn";
+          btn.className = "button is-small is-link";
+          btn.onclick = () => {
+            if (tag === "xe") fillFormXe(row);
+            if (tag === "taixe") fillFormTaiXe(row);
+          };
+          tdSelect.appendChild(btn);
+          tr.appendChild(tdSelect);
+        }
+        headers.forEach(h => {
+          const td = document.createElement("td");
+          let val = row[h];
+          // Format date for display if needed
+          if (h.startsWith('ngay_') && val) {
+            const d = new Date(val);
+            if (!isNaN(d)) val = d.toLocaleDateString('vi-VN');
+          }
+          td.textContent = val ?? "";
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function migrateAllToSupabase() {
+      if (USER_ROLE !== 'manager' && USER_ROLE !== 'admin') {
+        showAlert("Bạn không có quyền thực hiện việc này!", "is-danger");
+        return;
+      }
+
+      const tables = ['xe', 'taixe', 'nhiemvu', 'thongbao', 'fuel', 'nhatky', 'baoduong', 'lopxe', 'diemgiaohang', 'dangkylich'];
+      const btn = document.getElementById("btnMigrateAllSupabase");
+      if (btn) { btn.classList.add("is-loading"); btn.disabled = true; }
+
+      try {
+        for (const table of tables) {
+          showAlert(`Đang chuẩn bị bảng: ${table.toUpperCase()}...`, "is-info");
+
+          const res = await fetch(`${SCRIPT_URL}?tag=${table}&_t=${Date.now()}`);
+          const data = await res.json();
+          if (!Array.isArray(data) || data.length === 0) continue;
+
+          let mappedData = data.map(item => {
+            const formatted = formatDataForSupabase(table, item);
+            formatted.updated_at = new Date();
+            // Xoá ID giả từ Sheets để Database tự cấp ID (trừ diemgiaohang)
+            if (table !== 'diemgiaohang') delete formatted.id;
+            return formatted;
+          });
+
+          const conflictCols = {
+            xe: 'bien_so_xe',
+            taixe: 'ma_nv',
+            accounts: 'ma_nv',
+            diemgiaohang: 'id'
+          };
+          const options = conflictCols[table] ? { onConflict: conflictCols[table] } : {};
+
+          // CHẾ ĐỘ ĐẨY THÔNG MINH: TỰ LỌC CỘT LỖI
+          let success = false;
+          let attempts = 0;
+          while (!success && attempts < 20) {
+            attempts++;
+            const { error } = await supabaseClient.from(table).upsert(mappedData, options);
+
+            if (error && (error.message.includes("Could not find the") || error.message.includes("column") || error.code === "42703")) {
+              const match = error.message.match(/'([^']+)'/);
+              const col = match ? match[1] : null;
+              if (col) {
+                console.warn(`[Supabase] Tự động lọc bỏ cột lỗi: ${col}`);
+                mappedData.forEach(row => delete row[col]);
+                continue; // Thử lại
+              }
+            }
+
+            if (error) {
+              console.error(`Error migrating ${table}:`, error);
+              showAlert(`Lỗi tại bảng ${table}: ${error.message}`, "is-danger");
+              break;
+            }
+            success = true;
+          }
+          if (success) console.log(`✅ Đã đồng bộ xong bảng ${table}`);
+        }
+        showAlert("✅ Đã hoàn thành di chuyển dữ liệu!", "is-success");
+      } catch (err) {
+        console.error("Migration Error:", err);
+        showAlert("Lỗi hệ thống: " + err.message, "is-danger");
+      } finally {
+        if (btn) { btn.classList.remove("is-loading"); btn.disabled = false; }
+      }
+    }
+
+    function setupSupabaseRealtime() {
+      const tables = ['xe', 'taixe', 'nhiemvu', 'thongbao', 'fuel', 'nhatky', 'baoduong', 'lopxe', 'diemgiaohang', 'dangkylich'];
+
+      tables.forEach(table => {
+        supabaseClient.channel(`${table}-changes`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: table },
+            (payload) => {
+              console.log(`📢 Real-time [${table}]:`, payload);
+
+              const currentTagEl = document.getElementById(table);
+              if (currentTagEl && !currentTagEl.classList.contains("hidden")) {
+                const tableId = table === 'xe' ? 'xeTable' :
+                  table === 'taixe' ? 'taixeTable' :
+                    table === 'nhiemvu' ? 'nhiemvu_history_list' : null;
+
+                if (tableId) {
+                  const searchVal = tableId === 'xeTable' ? document.getElementById("search_bien_so_xe")?.value :
+                    tableId === 'taixeTable' ? document.getElementById("search_mnv")?.value : "";
+                  loadTableByKey(table, "", searchVal, tableId, true);
+                }
+
+                // Special cases like NhiemVu cards
+                if (table === 'nhiemvu' && USER_MNV) {
+                  loadNhiemVuTaixe(USER_MNV, true);
+                  loadNhiemVuHistory("", true);
+                }
+                if (table === 'thongbao') loadNotices(true);
+              }
+
+              if (payload.eventType === 'INSERT') {
+                if (table === 'thongbao') showAlert(`📢 Thông báo mới: ${payload.new.tieu_de}`, "is-info");
+                if (table === 'nhiemvu' && payload.new.nguoi_nhan === USER_MNV) showAlert("🆕 Bạn có nhiệm vụ mới!", "is-warning");
+              }
+            }
+          )
+          .subscribe();
+      });
+    }
+
+    function formatDataForSupabase(tag, data) {
+      const result = { ...data };
+      // Generic formatting for numbers and dates
+      Object.keys(result).forEach(key => {
+        const val = String(result[key] || "");
+        if (key === 'tai_trong' || key.startsWith('km_') || key.includes('chi_phi') || key.includes('thanh_tien') || key.includes('so_lit') || key.includes('tong_km') || key.includes('tong_gio')) {
+          result[key] = parseFloat(val.replace(',', '.')) || 0;
+        } else if (key.startsWith('ngay_') || key === 'nam_sx' || key === 'han_gplx' || key === 'ngay_dang_ky') {
+          result[key] = formatDateForSupabase(val);
+        }
+      });
+      return result;
+    }
+
+    function formatDateForSupabase(dStr) {
+      if (!dStr || dStr === "" || dStr === "-") return null;
+      let d = new Date(dStr);
+      if (isNaN(d.getTime())) {
+        const parts = String(dStr).split('/');
+        if (parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+      }
+      return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0];
+    }
+
+    function loadTableByKey(tag, keyName, keyValue, tableId, isSilent = false) {
+      loadFromSupabase(tag, keyName, keyValue, tableId, isSilent);
     }
     /* ================= DATE UTIL ================= */
     function calcRemainDays(dateStr) {
@@ -6911,10 +7190,7 @@ Hết hạn: ${w.ngay_he} <br>
         targetInput.value = "";
         return;
       }
-      fetch(
-        `${SCRIPT_URL}?tag=taixe&ma_nv=${encodeURIComponent(mnv)}&_t=${Date.now()}`
-      )
-        .then(res => res.json())
+      fetchDataFallback("taixe", "ma_nv", mnv)
         .then(list => {
           if (Array.isArray(list) && list.length > 0) {
             targetInput.value = list[0].ho_ten || "";
@@ -7316,8 +7592,7 @@ Hết hạn: ${w.ngay_he} <br>
 
       try {
         // Fetch Drivers
-        const txRes = await fetch(`${SCRIPT_URL}?tag=taixe&_t=${Date.now()}`);
-        let txData = await txRes.json();
+        let txData = await fetchDataFallback("taixe");
         if (!Array.isArray(txData)) txData = [];
 
         const currentMonthStart = new Date(y, m - 1, 1);
@@ -7408,8 +7683,7 @@ Hết hạn: ${w.ngay_he} <br>
           }
 
           // Fetch Cars (chỉ chạy tải khi tính toán mới)
-          const xeRes = await fetch(`${SCRIPT_URL}?tag=xe&_t=${Date.now()}`);
-          const xeData = await xeRes.json();
+          const xeData = await fetchDataFallback("xe");
 
           if (Array.isArray(xeData)) {
             soLuongXeHienTai = xeData.filter(x => {
@@ -7507,8 +7781,7 @@ Hết hạn: ${w.ngay_he} <br>
 
         // ===== ÁP DỤNG ĐĂNG KÝ LỊCH ĐÃ DUYỆT ĐÈ LÊN LỊCH QUY CHUẨN =====
         try {
-          const dkRes = await fetch(`${SCRIPT_URL}?tag=dangkylich&_t=${Date.now()}`);
-          let dkData = await dkRes.json();
+          let dkData = await fetchDataFallback("dangkylich");
           if (Array.isArray(dkData)) {
             const approvedRequests = dkData.filter(d => {
               const trangThai = String(d.trang_thai || "").trim().toLowerCase();
@@ -7820,8 +8093,7 @@ Hết hạn: ${w.ngay_he} <br>
     /* ================= STEP 1: LOGIC THÔNG BÁO NỘI BỘ ================= */
     async function loadNotices(isSilent = false) {
       try {
-        const res = await fetch(`${SCRIPT_URL}?tag=thongbao&_t=${Date.now()}`);
-        const data = await res.json();
+        const data = await fetchDataFallback("thongbao");
         if (!data || data.length === 0) {
           const banner = document.getElementById('home_notice_banner');
           if (banner) banner.classList.add('hidden');
@@ -7927,11 +8199,7 @@ Hết hạn: ${w.ngay_he} <br>
       }
 
       try {
-        let url = `${SCRIPT_URL}?tag=lopxe&_t=${Date.now()}`;
-        if (searchBSX) url += `&bien_so_xe=${encodeURIComponent(searchBSX)}`;
-
-        const res = await fetch(url);
-        const data = await res.json();
+        let data = await fetchDataFallback("lopxe", searchBSX ? "bien_so_xe" : null, searchBSX);
 
         if (!data || data.length === 0) {
           container.innerHTML = `<p class="has-text-centered py-5 has-text-grey">Không tìm thấy dữ liệu lốp xe${searchBSX ? ` cho xe ${searchBSX}` : ''}.</p>`;
