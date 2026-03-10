@@ -537,6 +537,12 @@
       width: 160px;
       height: auto;
       transition: all 0.3s ease;
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+    }
+
+    .home-logo:hover {
+      filter: drop-shadow(0 0 15px rgba(0, 209, 178, 0.6));
+      transform: scale(1.05);
     }
 
     /* mobile */
@@ -554,22 +560,141 @@
       .home-logo {
         max-width: 120px;
       }
+    }
 
+    .user-widget-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100000;
+    }
+
+    .user-profile-widget {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3273dc, #23d160);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .user-profile-widget:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .user-profile-widget:active {
+      transform: scale(0.9);
+    }
+
+    #up_avatar_char {
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* PROFILE DROPDOWN TEXT STYLES */
+    /* PROFILE DROPDOWN TEXT STYLES WITH MARQUEE */
+    .profile-name-text {
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #1a2340;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    .profile-role-text {
+      font-size: 11px;
+      color: #3273dc;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    /* Animation cho text chạy (Marquee) */
+    .marquee-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: profileMarquee 15s linear infinite;
+    }
+
+    @keyframes profileMarquee {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-200%);
+      }
+    }
+
+    /* Avoid overlap with toggle button */
+    .toggle-table-btn {
+      right: 90px !important;
+    }
+
+    @media (max-width: 768px) {
       .user-widget-container {
-        bottom: 15px !important;
-        top: auto !important;
-        right: 15px !important;
+        bottom: 15px;
+        right: 15px;
       }
 
       .user-profile-widget {
-        width: 32px !important;
-        height: 32px !important;
+        width: 48px;
+        height: 48px;
       }
 
-      .avatar {
-        font-size: 18px !important;
+      .toggle-table-btn {
+        right: 80px !important;
       }
     }
+
+    /* Role-based visibility classes */
+    .is-manager-only,
+    .is-admin-only,
+    .is-driver-only {
+      display: none !important;
+    }
+
+    .role-manager .is-manager-only {
+      display: inline-flex !important;
+    }
+
+    .role-admin .is-admin-only,
+    .role-manager .is-admin-only {
+      display: inline-flex !important;
+    }
+
+    .role-taixe .is-driver-only {
+      display: inline-flex !important;
+    }
+
+    /* Fix report search button for mobile */
+    @media screen and (max-width: 768px) {
+      .report-search-btn-col {
+        margin-top: 10px;
+      }
+
+      .report-search-btn-col .button {
+        height: 45px;
+      }
+    }
+
 
     /* ===== AUTO SCROLL TABLE – GLOBAL ===== */
     .table-container {
@@ -936,30 +1061,55 @@
       width: 100%;
     }
 
-    /* Toast Notification */
+    /* Toast Notification Container - Fixed on right side */
     #toast-container {
       position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 9999;
+      width: auto;
+      max-width: 300px;
+      z-index: 999999;
       pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    /* Mobile-friendly Export Buttons */
+    .export-buttons .button {
+      margin-bottom: 5px;
+      font-size: 0.75rem !important;
+      /* Smaller text */
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+      height: 2.2em !important;
+    }
+
+    @media screen and (max-width: 768px) {
+      .export-buttons {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
     }
 
     .toast {
-      min-width: 280px;
-      margin-bottom: 15px;
-      padding: 16px 24px;
-      border-radius: 12px;
+      width: fit-content;
+      min-width: 180px;
+      padding: 8px 14px;
+      border-radius: 6px;
       color: white;
       font-weight: 600;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       display: flex;
       align-items: center;
-      gap: 12px;
-      animation: slideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+      gap: 8px;
+      animation: slideInRight 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
       pointer-events: auto;
-      border-left: 6px solid rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(8px);
+      border-left: 4px solid rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      font-size: 0.8rem;
     }
 
     .toast.is-success {
@@ -975,7 +1125,7 @@
       color: #946c00;
     }
 
-    @keyframes slideIn {
+    @keyframes slideInRight {
       from {
         transform: translateX(120%);
         opacity: 0;
@@ -987,7 +1137,7 @@
       }
     }
 
-    @keyframes slideOut {
+    @keyframes slideOutRight {
       from {
         transform: translateX(0);
         opacity: 1;
@@ -1000,7 +1150,7 @@
     }
 
     .toast.fade-out {
-      animation: slideOut 0.4s ease forwards;
+      animation: slideOutRight 0.4s ease forwards;
     }
 
     /* ================= FUEL GRID REPORT STYLE ================= */
@@ -1364,6 +1514,136 @@
     }
 
     /* Trắng */
+
+    /* NOTICE BOARD STYLES */
+    .home-notice-container {
+      margin: 10px 15px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .notice-label {
+      background: #ff3860;
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      animation: pulseNotice 2s infinite;
+    }
+
+    .notice-content-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      height: 20px;
+    }
+
+    .notice-marquee {
+      white-space: nowrap;
+      color: white;
+      font-weight: 500;
+      font-size: 14px;
+      display: inline-block;
+      position: absolute;
+      animation: marqueeNotice 20s linear infinite;
+    }
+
+    @keyframes marqueeNotice {
+      0% {
+        left: 100%;
+      }
+
+      100% {
+        left: -100%;
+      }
+    }
+
+    @keyframes pulseNotice {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .notice-card {
+      background: #fff;
+      border-left: 6px solid #3273dc;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+
+    .notice-card.notice-khancap {
+      border-left-color: #ff3860;
+      background: #fff5f7;
+    }
+
+    .notice-card.notice-quantrong {
+      border-left-color: #ffdd57;
+      background: #fffbef;
+    }
+
+    .notice-card .notice-date {
+      font-size: 11px;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    /* PREMIUM MAINTENANCE PLAN STYLES */
+    .maintenance-row {
+      background: rgba(255, 255, 255, 0.95) !important;
+      transition: all 0.2s ease;
+      color: #333 !important;
+    }
+
+    .maintenance-row td {
+      border-color: rgba(0, 0, 0, 0.05) !important;
+      padding: 8px 6px !important;
+    }
+
+    .maintenance-row:hover {
+      background: #f0f7ff !important;
+      transform: scale(1.005);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 5;
+      position: relative;
+    }
+
+    .bg-light-blue {
+      background: rgba(220, 208, 255, 0.2) !important;
+    }
+
+    #maintenancePlanTable thead th {
+      background: #1a2340 !important;
+      color: #fff !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 
@@ -1372,11 +1652,110 @@
   <div id="fixed-bg"></div>
   <!-- Toast Container -->
   <div id="toast-container"></div>
+
+  <!-- ================= THÔNG TIN TÀI KHOẢN (ICON AVATAR FIXED GÓC PHẢI) ================= -->
+  <div class="user-widget-container hidden" id="userProfileWidget">
+    <div class="user-profile-widget" onclick="toggleUserProfileDropdown(); event.stopPropagation();">
+      <span id="up_avatar_char">-</span>
+    </div>
+
+    <!-- POPUP MENU (MỞ HẤT LÊN TRÊN VÌ Ở DƯỚI GÓC MÀN HÌNH) -->
+    <div id="userProfileDropdown" class="hidden glass-dropdown"
+      style="position: absolute; bottom: calc(100% + 15px); right: 0; min-width: 280px; z-index: 100001; overflow: hidden; transition: all 0.3s ease; transform-origin: bottom right;">
+
+      <div
+        style="padding: 20px 15px; text-align: center; background: linear-gradient(135deg, rgba(255,255,255,1), rgba(240,240,240,1)); border-radius: 15px; margin: 15px 15px 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <div id="up_hoten" class="profile-name-text">
+          Đang tải...
+        </div>
+        <div id="up_role" class="profile-role-text" style="margin-top: 5px;">
+          -
+        </div>
+      </div>
+
+      <div id="userProfileContent" class="p-4" style="background: transparent;">
+        <table class="table is-fullwidth align-middle"
+          style="font-size: 14px; margin-bottom: 0; background: transparent; border-collapse: separate; border-spacing: 0 8px;">
+          <tbody>
+            <tr class="animate-row glass-row" style="animation-delay: 0.1s;">
+              <td class="has-text-grey"
+                style="width: 45%; border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                Tài khoản</td>
+              <td id="up_user" class="has-text-weight-bold has-text-dark"
+                style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+                -
+              </td>
+            </tr>
+            <tr class="animate-row glass-row" style="animation-delay: 0.2s;">
+              <td class="has-text-grey"
+                style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                Mã NV</td>
+              <td id="up_mnv" class="has-text-weight-bold has-text-info"
+                style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+                -
+              </td>
+            </tr>
+            <tr class="animate-row glass-row" style="animation-delay: 0.3s;">
+              <td class="has-text-grey"
+                style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                SĐT</td>
+              <td id="up_sdt" class="has-text-weight-bold has-text-dark"
+                style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+                -
+              </td>
+            </tr>
+            <tr class="animate-row glass-row" style="animation-delay: 0.4s;">
+              <td class="has-text-grey"
+                style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                Ngày sinh</td>
+              <td id="up_ngaysinh" class="has-text-weight-bold has-text-dark"
+                style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+                -
+              </td>
+            </tr>
+            <tr class="animate-row glass-row" style="animation-delay: 0.5s;">
+              <td class="has-text-grey"
+                style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                Gia nhập</td>
+              <td id="up_ngaygianhap" class="has-text-weight-bold has-text-dark"
+                style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+                -
+              </td>
+            </tr>
+            <tr class="animate-row glass-row" style="animation-delay: 0.6s;">
+              <td colspan="2" style="border: none; padding: 10px 12px; text-align: center;">
+                <button class="button is-small is-primary is-light is-fullwidth" onclick="refreshProjectData()"
+                  id="btnRefreshData" style="border-radius: 8px; font-weight: 600;">
+                  🔄 Làm mới dữ liệu
+                </button>
+              </td>
+            </tr>
+            <tr class="animate-row glass-row" style="animation-delay: 0.7s;">
+              <td
+                style="border: none; padding: 10px 6px 10px 12px; text-align: center; border-radius: 8px 0 0 8px; width: 50%;">
+                <button class="button is-small is-info is-light is-fullwidth" onclick="openChangePasswordModal()"
+                  style="border-radius: 8px; font-weight: 600;">
+                  Đổi mật khẩu
+                </button>
+              </td>
+              <td
+                style="border: none; padding: 10px 12px 10px 6px; text-align: center; border-radius: 0 8px 8px 0; width: 50%;">
+                <button class="button is-small is-danger is-light is-fullwidth" onclick="doLogout()"
+                  style="border-radius: 8px; font-weight: 600;">
+                  Đăng xuất
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
   <!-- ================= LOGIN ================= -->
   <div id="login" class="form-box">
     <div class="box login-box">
       <div class="has-text-centered">
-        <img class="login-logo" src="https://drive.google.com/thumbnail?id=1bCo718U6WuH5apKx2mHjqR6PtlbYdA_f&sz=w800">
+        <img class="login-logo" src="https://drive.google.com/thumbnail?id=1qSU6HSj47xELMy05XI67qyrLyvAkggWZ&sz=w800">
       </div>
       <h2 class="title is-4 has-text-centered mb-5">🔐 ĐĂNG NHẬP HỆ THỐNG</h2>
       <div class="field">
@@ -1545,7 +1924,7 @@
       <div class="home-header"
         style="justify-content: center; position: relative; z-index: 9999; padding-top: 15px; padding-bottom: 15px;">
         <div class="header-inner header-center">
-          <img src="https://drive.google.com/thumbnail?id=1bCo718U6WuH5apKx2mHjqR6PtlbYdA_f&sz=w1200" class="home-logo">
+          <img src="https://drive.google.com/thumbnail?id=1qSU6HSj47xELMy05XI67qyrLyvAkggWZ&sz=w1200" class="home-logo">
         </div>
         <div class="title-box">
           <h1 style="margin-bottom: 5px;">FLEET MANAGEMENT</h1>
@@ -1553,110 +1932,16 @@
           <p></p>
         </div>
 
-        <!-- THÔNG TIN TÀI KHOẢN (NỔI GÓC DƯỚI PHẢI HEADER) -->
-        <div class="user-widget-container" style="position: absolute; bottom: 15px; right: 15px; z-index: 99999;">
-          <div class="user-profile-widget" onclick="toggleUserProfileDropdown()"
-            style="cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(40,40,40,0.85); width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3);"
-            onmouseover="this.style.background='rgba(0,0,0,0.95)'; this.style.transform='scale(1.1)';"
-            onmouseout="this.style.background='rgba(40,40,40,0.85)'; this.style.transform='scale(1)';">
-            <span id="up_avatar_char"
-              style="font-size: 24px; font-weight: bold; color: #fff; line-height: 1; margin-top: -2px;">-</span>
-          </div>
 
-          <!-- POPUP MENU (MỞ HẤT XUỐNG DƯỚI) -->
-          <div id="userProfileDropdown" class="hidden glass-dropdown"
-            style="position: absolute; top: calc(100% + 10px); right: 0; min-width: 300px; border-radius: 16px; z-index: 99999; overflow: hidden; transition: opacity 0.2s ease, transform 0.2s ease; transform-origin: top right;">
-
-            <div
-              style="padding: 15px; text-align: center; position: relative; background: rgba(255,255,255,0.95); border-radius: 12px; margin: 15px 15px 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);">
-              <div id="up_hoten"
-                style="font-size: 18px; font-weight: 700; text-transform: capitalize; letter-spacing: 0.5px; color: #333;">
-                Đang
-                tải...</div>
-              <div id="up_role"
-                style="font-size: 13px; color: #3273dc; font-weight: 600; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px;">
-                -</div>
-            </div>
-
-            <div id="userProfileContent" class="p-4" style="background: transparent;">
-              <table class="table is-fullwidth align-middle"
-                style="font-size: 14px; margin-bottom: 0; background: transparent; border-collapse: separate; border-spacing: 0 8px;">
-                <tbody>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.1s;">
-                    <td class="has-text-grey"
-                      style="width: 45%; border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
-                      Tài khoản</td>
-                    <td id="up_user" class="has-text-weight-bold has-text-dark"
-                      style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
-                      -
-                    </td>
-                  </tr>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.2s;">
-                    <td class="has-text-grey"
-                      style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
-                      Mã NV</td>
-                    <td id="up_mnv" class="has-text-weight-bold has-text-info"
-                      style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
-                      -
-                    </td>
-                  </tr>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.3s;">
-                    <td class="has-text-grey"
-                      style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
-                      SĐT</td>
-                    <td id="up_sdt" class="has-text-weight-bold has-text-dark"
-                      style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
-                      -
-                    </td>
-                  </tr>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.4s;">
-                    <td class="has-text-grey"
-                      style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
-                      Ngày sinh</td>
-                    <td id="up_ngaysinh" class="has-text-weight-bold has-text-dark"
-                      style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
-                      -
-                    </td>
-                  </tr>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.5s;">
-                    <td class="has-text-grey"
-                      style="border: none; padding: 10px 12px; font-weight: 500; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
-                      Gia nhập</td>
-                    <td id="up_ngaygianhap" class="has-text-weight-bold has-text-dark"
-                      style="border: none; padding: 10px 12px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
-                      -
-                    </td>
-                  </tr>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.6s;">
-                    <td colspan="2" style="border: none; padding: 10px 12px; text-align: center;">
-                      <button class="button is-small is-primary is-light is-fullwidth" onclick="refreshProjectData()"
-                        id="btnRefreshData" style="border-radius: 8px; font-weight: 600;">
-                        🔄 Làm mới dữ liệu
-                      </button>
-                    </td>
-                  </tr>
-                  <tr class="animate-row glass-row" style="animation-delay: 0.7s;">
-                    <td
-                      style="border: none; padding: 10px 6px 10px 12px; text-align: center; border-radius: 8px 0 0 8px; width: 50%;">
-                      <button class="button is-small is-info is-light is-fullwidth" onclick="openChangePasswordModal()"
-                        style="border-radius: 8px; font-weight: 600;">
-                        Đổi mật khẩu
-                      </button>
-                    </td>
-                    <td
-                      style="border: none; padding: 10px 12px 10px 6px; text-align: center; border-radius: 0 8px 8px 0; width: 50%;">
-                      <button class="button is-small is-danger is-light is-fullwidth" onclick="doLogout()"
-                        style="border-radius: 8px; font-weight: 600;">
-                        Đăng xuất
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      </div>
+      <!-- ================= THÔNG BÁO NỘI BỘ (BANNER CHỮ CHẠY) ================= -->
+      <div id="home_notice_banner" class="home-notice-container hidden" onclick="openTag('thongbao')">
+        <div class="notice-label">📢 TIN MỚI:</div>
+        <div class="notice-content-wrapper">
+          <div id="notice_marquee" class="notice-marquee">Đang tải thông báo mới nhất...</div>
         </div>
       </div>
+
       <div class="app-grid">
         <div class="app-card" data-tag="xe" onclick="openTag('xe')">
           <div class="app-icon">🚚</div>
@@ -1719,8 +2004,159 @@
           <div class="app-name">Nhiệm vụ</div>
         </div>
 
+        <div class="app-card" data-tag="thongbao" onclick="openTag('thongbao')">
+          <div class="app-icon">🔔</div>
+          <div class="app-name">Thông báo</div>
+        </div>
+
+        <div class="app-card" data-tag="lopxe" onclick="openTag('lopxe')">
+          <div class="app-icon"
+            style="font-size: 2.2rem; display: flex; align-items: center; justify-content: center; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"
+              style="width: 1.2em; height: 1.2em;">
+              <path
+                d="M492.3 224L480 183.1 433.2 196l-20.9-46.1 40-27L420.2 87.2l-45.1 22.8-35.9-35.9L362.1 29.1 326.3 0c-10.7 30-18.6 32-70.3 32s-60.1-2-70.3-32L149.9 29.1l22.9 45.1-35.9 35.9-45.1-22.8-31.9 35.7 40 27-21 46.1L32 183.1 19.7 224h43.3c-2 10.5-3 21.2-3 32s1 21.5 3 32H19.7L32 328.9l46.8-12.9 20.9 46.1-40 27 31.9 35.7 45.1-22.8 35.9 35.9-22.9 45.1 35.8 29.1c10.3-29.8 18.2-31 69.4-31s59.1 1 69.4 31l36.2-29.1-22.9-45.1 35.9-35.9 45.1 22.8 32-35.7-40-27 21-46.1 46.8 12.9 12.3-40.9h-43.3c2-10.5 3-21.2 3-32s-1-21.5-3-32h43.3zM256 368c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112zm64-112c0 35.3-28.7 64-64 64s-64-28.7-64-64 28.7-64 64-64 64 28.7 64 64z" />
+              <circle cx="256" cy="256" r="32" />
+            </svg>
+          </div>
+          <div class="app-name">Quản lý lốp</div>
+        </div>
+
+        <div class="app-card" data-tag="diemgiaohang" onclick="openTag('diemgiaohang');">
+          <div class="app-icon">
+            <svg viewBox="0 0 384 512" width="1em" height="1em" fill="currentColor">
+              <defs>
+                <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ee5253;stop-opacity:1" />
+                </linearGradient>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+                  <feOffset dx="0" dy="4" result="offsetblur" />
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.5" />
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path filter="url(#shadow)" fill="url(#pinGradient)"
+                d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
+            </svg>
+          </div>
+          <div class="app-name">Điểm giao hàng</div>
+        </div>
+
       </div>
     </div>
+    <!-- ================= START TAG: ĐIỂM GIAO HÀNG ================= -->
+    <div id="diemgiaohang" class="hidden form-box">
+      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
+        <h2 class="title is-4 has-text-weight-bold mb-0" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.8rem; display: flex; align-items: center; color: white;">
+            <svg viewBox="0 0 384 512" width="1em" height="1em" fill="currentColor">
+              <path
+                d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
+            </svg>
+          </span>
+          ĐIỂM GIAO HÀNG
+        </h2>
+        <button class="button is-primary is-small" onclick="openAddPointModal()" id="btnAddPoint" style="display:none;">
+          ➕ Thêm điểm
+        </button>
+      </div>
+
+      <div class="field mb-4">
+        <div class="control has-icons-left">
+          <input class="input is-rounded" type="text" id="searchPoint" placeholder="Tìm tên điểm hoặc địa chỉ..."
+            onkeyup="filterDeliveryPoints()">
+          <span class="icon is-left">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+
+      <div id="deliveryPointsList" class="columns is-multiline is-mobile px-2">
+        <!-- JS đổ dữ liệu vào đây -->
+        <div class="column is-12 has-text-centered py-5">
+          <button class="button is-loading is-white">Đang tải dữ liệu...</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL THÊM/SỬA ĐIỂM GIAO HÀNG -->
+    <div id="modalPoint" class="modal">
+      <div class="modal-background" onclick="closePointModal()"
+        style="background: rgba(0,0,0,0.7) !important; backdrop-filter: blur(5px);"></div>
+      <div class="modal-content" style="max-width: 500px; width: 95%;">
+        <div class="box p-5"
+          style="border-radius: 24px; background: rgba(25, 33, 56, 0.9) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: 0 24px 64px rgba(0,0,0,0.5) !important;">
+          <h3 class="title is-4 has-text-centered mb-5" id="pointModalTitle"
+            style="color:#fff !important; text-shadow: 0 2px 10px rgba(0,0,0,0.5) !important; letter-spacing: 1px;">📍
+            THÊM ĐIỂM GIAO HÀNG</h3>
+          <form id="formPoint" onsubmit="savePoint(event)">
+            <input type="hidden" id="p_id">
+            <div class="field">
+              <label class="label">Tên điểm giao</label>
+              <div class="control has-icons-left">
+                <input class="input" type="text" id="p_ten" required placeholder="Ví dụ: Kho A - Thủ Đức">
+                <span class="icon is-small is-left"><i class="fas fa-tag"></i></span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">🏠 Địa chỉ</label>
+              <div class="control has-icons-left">
+                <input class="input" type="text" id="p_diachi" required placeholder="Nhập địa chỉ chi tiết">
+                <span class="icon is-small is-left"><i class="fas fa-map-marker-alt"></i></span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">🔗 Link Google Maps</label>
+              <div class="control has-icons-left">
+                <input class="input" type="text" id="p_maps_link" placeholder="Dán link Google Maps vào đây">
+                <span class="icon is-small is-left"><i class="fas fa-link"></i></span>
+              </div>
+              <p class="help is-info">Lái xe có thể dán link tọa độ thực tế tại đây.</p>
+            </div>
+            <div class="columns is-mobile">
+              <div class="column">
+                <div class="field">
+                  <label class="label">Latitude</label>
+                  <div class="control">
+                    <input class="input" type="text" id="p_lat" placeholder="10.123456">
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">Longitude</label>
+                  <div class="control">
+                    <input class="input" type="text" id="p_lng" placeholder="106.123456">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="help is-light mb-4 opacity-75">Bạn có thể lấy tọa độ từ Google Maps (chuột phải vào điểm trên bản
+              đồ).</p>
+            <div class="field">
+              <label class="label">Ghi chú</label>
+              <div class="control">
+                <textarea class="textarea" id="p_ghichu" rows="2" placeholder="Chỉ dẫn thêm..."></textarea>
+              </div>
+            </div>
+            <div class="buttons is-centered mt-5">
+              <button class="button is-primary is-fullwidth has-text-weight-bold" type="submit" id="btnSavePoint"
+                style="height: 50px; border-radius: 12px; font-size: 1.1rem;">LƯU DỮ LIỆU</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close" onclick="closePointModal()"></button>
+    </div>
+
     <!-- ================= START TAG: LỊCH LÀM VIỆC ================= -->
     <div id="lichlamviec" class="hidden form-box"
       style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
@@ -2064,9 +2500,9 @@
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
         <h2 class="title is-4 mb-0">👨‍✈️ THÔNG TIN TÀI XẾ</h2>
         <div>
-          <button class="button is-success is-small is-light"
+          <button class="button is-success is-small is-light px-2"
             onclick="exportTableToExcel('taixeTable', 'Thong_Tin_Tai_Xe')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
+          <button class="button is-danger is-small is-light px-2"
             onclick="exportElementToPDF('taixeTable', 'Thong_Tin_Tai_Xe')">📄 PDF</button>
         </div>
       </div>
@@ -2290,9 +2726,9 @@
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
         <h2 class="title is-4 mb-0">📒 NHẬT KÝ VẬN HÀNH</h2>
         <div>
-          <button class="button is-success is-small is-light"
+          <button class="button is-success is-small is-light px-2"
             onclick="exportTableToExcel('nhatkyResultTable', 'Nhat_Ky_Van_Hanh')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
+          <button class="button is-danger is-small is-light px-2"
             onclick="exportElementToPDF('nhatkyResultTable', 'Nhat_Ky_Van_Hanh')">📄 PDF</button>
         </div>
       </div>
@@ -2472,10 +2908,7 @@
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
         <h2 class="title is-4 mb-0">🛠️ BẢO DƯỠNG – SỬA CHỮA</h2>
         <div>
-          <button class="button is-success is-small is-light"
-            onclick="exportTableToExcel('baoduongResultTable', 'Bao_Duong_Sua_Chua')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
-            onclick="exportElementToPDF('baoduongResultTable', 'Bao_Duong_Sua_Chua')">📄 PDF</button>
+          <button class="button is-info is-small is-light px-2" onclick="window.print()">🖨️ In phiếu</button>
         </div>
       </div>
       <!-- ===== TRA CỨU ===== -->
@@ -2654,13 +3087,13 @@
       <button class="floating-back-btn" type="button" onclick="backHome()">
         ⬅ Quay lại
       </button>
-      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
         <h2 class="title is-4 mb-0">⛽ NHIÊN LIỆU</h2>
         <div>
-          <button class="button is-success is-small is-light"
-            onclick="exportTableToExcel('fuelResultTable', 'Quan_Ly_Nhien_Lieu')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
-            onclick="exportElementToPDF('fuelResultTable', 'Quan_Ly_Nhien_Lieu')">📄 PDF</button>
+          <button class="button is-success is-small is-light px-2"
+            onclick="exportTableToExcel('fuelResultTable', 'Ket_Qua_Nhien_Lieu')">📁 Excel</button>
+          <button class="button is-danger is-small is-light px-2"
+            onclick="exportElementToPDF('fuelResultTable', 'Ket_Qua_Nhien_Lieu')">📄 PDF</button>
         </div>
       </div>
       <!-- ===== TRA CỨU ===== -->
@@ -2799,9 +3232,9 @@
         class="mt-4">
         <h2 class="title is-4 mb-0">📅 KẾ HOẠCH BẢO DƯỠNG ĐỊNH KỲ</h2>
         <div>
-          <button class="button is-success is-small is-light"
+          <button class="button is-success is-small is-light px-2"
             onclick="exportTableToExcel('maintenancePlanTable', 'Ke_Hoach_Bao_Duong')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
+          <button class="button is-danger is-small is-light px-2"
             onclick="exportElementToPDF('maintenancePlanTable', 'Ke_Hoach_Bao_Duong')">📄 PDF</button>
         </div>
       </div>
@@ -2849,12 +3282,7 @@
       </button>
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
         <h2 class="title is-4 mb-0">📝 ĐÁNH GIÁ NHÂN SỰ</h2>
-        <div>
-          <button class="button is-success is-small is-light"
-            onclick="exportTableToExcel('danhgiaResultTable', 'Danh_Gia_Nhan_Su')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
-            onclick="exportElementToPDF('danhgiaResultTable', 'Danh_Gia_Nhan_Su')">📄 PDF</button>
-        </div>
+        <div></div>
       </div>
       <!-- ===== TRA CỨU ===== -->
       <section class="box">
@@ -2978,24 +3406,24 @@
             </div>
           </div>
           <!-- Plate Input -->
-          <div class="column is-8-mobile is-3-tablet">
+          <div class="column is-7-mobile is-3-tablet">
             <input class="input" id="rpt_fuel_bsx" placeholder="Biển số..."
               oninput="this.value = this.value.toUpperCase()">
           </div>
           <!-- Search Button -->
-          <div class="column is-4-mobile is-1-tablet">
+          <div class="column is-5-mobile is-1-tablet report-search-btn-col">
             <button class="button is-primary is-fullwidth" onclick="loadReport()">
-              <span>🔍</span>
+              <span class="is-hidden-tablet">Tra cứu </span><span>🔍</span>
             </button>
           </div>
           <!-- Export Buttons -->
           <div class="column is-12-mobile is-4-tablet">
             <div class="buttons is-right">
-              <button class="button is-success is-light is-flexible" id="btnExportExcel"
+              <button class="button is-success is-light is-small px-3" id="btnExportExcel"
                 onclick="exportReportToExcel()">
                 <span class="has-text-weight-bold">📁 Excel</span>
               </button>
-              <button class="button is-danger is-light is-flexible" id="btnExportPDF" onclick="exportReportToPDF()">
+              <button class="button is-danger is-light is-small px-3" id="btnExportPDF" onclick="exportReportToPDF()">
                 <span class="has-text-weight-bold">📄 PDF</span>
               </button>
             </div>
@@ -3079,15 +3507,24 @@
           </div>
         </div>
 
-        <!-- 📈 BIỂU ĐỒ TRỰC QUAN -->
-        <h3 class="subtitle has-text-white mt-5" style="text-shadow: 1px 1px 2px black;">📈 BIỂU ĐỒ BÁO CÁO</h3>
+        <!-- 📈 BIỂU ĐỒ BÁO CÁO ĐA CHIỀU -->
+        <h3 class="subtitle has-text-white mt-5" style="text-shadow: 1px 1px 2px black;">📈 BIỂU ĐỒ THỐNG KÊ ĐA CHIỀU
+        </h3>
         <div class="box" style="background: rgba(255,255,255,0.95) !important;">
-          <div class="columns is-mobile is-multiline">
-            <div class="column is-12-mobile is-5-tablet">
-              <canvas id="costChart"></canvas>
+          <div class="columns is-multiline">
+            <!-- Row 1 -->
+            <div class="column is-12-tablet is-4-desktop">
+              <div style="height: 300px;"><canvas id="costChart"></canvas></div>
             </div>
-            <div class="column is-12-mobile is-7-tablet">
-              <canvas id="kmChart"></canvas>
+            <div class="column is-12-tablet is-8-desktop">
+              <div style="height: 300px;"><canvas id="kmChart"></canvas></div>
+            </div>
+            <!-- Row 2 -->
+            <div class="column is-12-tablet is-6-desktop">
+              <div style="height: 320px;"><canvas id="quotaChart"></canvas></div>
+            </div>
+            <div class="column is-12-tablet is-6-desktop">
+              <div style="height: 320px;"><canvas id="driverChart"></canvas></div>
             </div>
           </div>
         </div>
@@ -3198,9 +3635,9 @@
           </button>
           <div class="is-flex is-justify-content-flex-end mt-2">
             <div>
-              <button class="button is-success is-small is-light"
+              <button class="button is-success is-small is-light px-2"
                 onclick="exportTableToExcel('fuel_log_table', 'Bang_Ke_Nhien_Lieu')">📁 Excel</button>
-              <button class="button is-danger is-small is-light"
+              <button class="button is-danger is-small is-light px-2"
                 onclick="exportElementToPDF('fuel_log_table', 'Bang_Ke_Nhien_Lieu')">📄 PDF</button>
             </div>
           </div>
@@ -3265,9 +3702,9 @@
           </button>
           <div class="is-flex is-justify-content-flex-end mt-2">
             <div>
-              <button class="button is-success is-small is-light"
+              <button class="button is-success is-small is-light px-2"
                 onclick="exportTableToExcel('km_log_table', 'Bang_Ke_KM')">📁 Excel</button>
-              <button class="button is-danger is-small is-light"
+              <button class="button is-danger is-small is-light px-2"
                 onclick="exportElementToPDF('km_log_table', 'Bang_Ke_KM')">📄 PDF</button>
             </div>
           </div>
@@ -3310,19 +3747,69 @@
         <div class="box">
           <div class="is-flex is-justify-content-space-between is-align-items-center mb-4">
             <h3 class="subtitle mb-0">📋 Nhiệm vụ của bạn</h3>
-            <div>
-              <button class="button is-success is-small is-light"
-                onclick="exportTableToExcel('nhiemvuTaixeTable', 'Nhiem_Vu_Tai_Xe')">📁 Excel</button>
-              <button class="button is-danger is-small is-light"
-                onclick="exportElementToPDF('nhiemvuTaixeTable', 'Nhiem_Vu_Tai_Xe')">📄 PDF</button>
+            <button class="button is-info is-small is-light px-2" onclick="loadNhiemVuTaixe(USER_MNV)">🔄 Tải
+              lại</button>
+          </div>
+          <div id="nhiemvu_taixe_cards" style="max-height: 65vh; overflow-y: auto;"></div>
+        </div>
+      </div>
+
+      <!-- MODAL BÁO CÁO NHIỆM VỤ (chỉ tài xế dùng) -->
+      <div id="modal_taixe_baocao" class="modal">
+        <div class="modal-background" onclick="closeBaoCaoModal()"></div>
+        <div class="modal-card" style="border-radius: 14px; max-width: 500px; width: 95vw;">
+          <header class="modal-card-head"
+            style="border-radius: 14px 14px 0 0; background: linear-gradient(135deg,#2c3e80,#1a2340);">
+            <p class="modal-card-title" id="modal_bc_title" style="color:#fff;">📝 Cập nhật nhiệm vụ</p>
+            <button class="delete" aria-label="close" onclick="closeBaoCaoModal()"></button>
+          </header>
+          <section class="modal-card-body" style="padding: 20px;">
+            <input type="hidden" id="modal_bc_id">
+            <input type="hidden" id="modal_bc_nguoi_giao">
+            <input type="hidden" id="modal_bc_nguoi_nhan">
+            <input type="hidden" id="modal_bc_loai_nv">
+            <input type="hidden" id="modal_bc_noi_dung">
+            <input type="hidden" id="modal_bc_ngay_bat_dau">
+            <input type="hidden" id="modal_bc_han_ht">
+            <input type="hidden" id="modal_bc_mode"> <!-- "nhan" hoặc "baocao" -->
+
+            <div id="modal_bc_info" class="notification is-info is-light"
+              style="font-size:13px; white-space: pre-line; border-radius: 10px;"></div>
+
+            <!-- Phần hiển thị khi chọn NHẬN (mode=nhan) -->
+            <div id="modal_bc_nhan_section">
+              <label class="label">Xác nhận nhận nhiệm vụ:</label>
+              <div class="buttons">
+                <button class="button is-success" onclick="confirmNhanNhiemVu('Đã nhận')">✅ Nhận nhiệm vụ</button>
+                <button class="button is-warning" onclick="confirmNhanNhiemVu('Chưa nhận')">🚫 Chưa nhận / Từ
+                  chối</button>
+              </div>
             </div>
-          </div>
-          <div class="table-container" style="overflow-x: auto;">
-            <table id="nhiemvuTaixeTable" class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-              <thead></thead>
-              <tbody></tbody>
-            </table>
-          </div>
+
+            <!-- Phần hiển thị khi BÁO CÁO KẾT QUẢ (mode=baocao) -->
+            <div id="modal_bc_ketqua_section">
+              <div class="field">
+                <label class="label">Kết quả thực hiện</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="modal_bc_ket_qua">
+                      <option value="">-- Chọn kết quả --</option>
+                      <option value="Đang thực hiện">⏳ Đang thực hiện</option>
+                      <option value="Đã hoàn thành">✅ Đã hoàn thành</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Ghi chú / Báo cáo chi tiết</label>
+                <div class="control">
+                  <textarea class="textarea" id="modal_bc_ghi_chu" rows="3"
+                    placeholder="Nhập báo cáo tiến độ, kết quả hoặc vấn đề phát sinh..."></textarea>
+                </div>
+              </div>
+              <button class="button is-primary is-fullwidth" onclick="submitBaoCaoModal()">📤 Gửi báo cáo</button>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -3340,7 +3827,8 @@
             <div class="column is-12-mobile is-6-tablet">
               <label class="label">Giao cho (Mã NV/Biển số)</label>
               <input class="input" type="text" name="nguoi_nhan" id="nv_nguoi_nhan"
-                placeholder="Nhập biển số hoặc mã NV nhận việc" required>
+                placeholder="Nhập biển số hoặc mã NV nhận việc" required list="nhanvien_list">
+              <datalist id="nhanvien_list"></datalist>
             </div>
             <div class="column is-12-mobile is-6-tablet">
               <label class="label">Loại nhiệm vụ</label>
@@ -3356,12 +3844,11 @@
               </div>
             </div>
             <div class="column is-12-mobile is-6-tablet">
-              <label class="label">Trạng thái</label>
+              <label class="label">Trạng thái (Giao việc)</label>
               <div class="select is-fullwidth">
-                <select name="trang_thai" required>
+                <select name="trang_thai" id="nv_trang_thai" required>
                   <option value="Mới giao" selected>Mới giao</option>
-                  <option value="Đang thực hiện">Đang thực hiện</option>
-                  <option value="Đã hoàn thành">Đã hoàn thành</option>
+                  <option value="Đã nhận">Đã nhận</option>
                   <option value="Hủy">Hủy</option>
                 </select>
               </div>
@@ -3389,9 +3876,19 @@
           <!-- 3️⃣ GHI CHÚ BÁO CÁO CỦA TÀI XẾ -->
           <h3 class="subtitle">3️⃣ Báo cáo kết quả (Dành cho người nhận)</h3>
           <div class="columns is-mobile is-multiline">
+            <div class="column is-12-mobile is-6-tablet">
+              <label class="label">Kết quả thực hiện</label>
+              <div class="select is-fullwidth">
+                <select name="ket_qua" id="nv_ket_qua">
+                  <option value=""></option>
+                  <option value="Đang thực hiện">⏳ Đang thực hiện</option>
+                  <option value="Đã hoàn thành">✅ Đã hoàn thành</option>
+                </select>
+              </div>
+            </div>
             <div class="column is-12">
               <label class="label">Ghi chú / Báo cáo thực hiện</label>
-              <textarea class="textarea" name="ghi_chu_ket_qua"
+              <textarea class="textarea" name="ghi_chu"
                 placeholder="Người nhận cập nhật tiến độ hoặc kết quả ở đây..."></textarea>
             </div>
           </div>
@@ -3424,10 +3921,10 @@
       </button>
       <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-4" style="padding-left: 10px;">
         <h2 class="title is-4 has-text-weight-bold mb-0">📋 DANH SÁCH NHIỆM VỤ</h2>
-        <div>
-          <button class="button is-success is-small is-light"
+        <div class="export-buttons">
+          <button class="button is-success is-small is-light px-2"
             onclick="exportTableToExcel('nhiemvuResultTable', 'Danh_Sach_Nhiem_Vu')">📁 Excel</button>
-          <button class="button is-danger is-small is-light"
+          <button class="button is-danger is-small is-light px-2"
             onclick="exportElementToPDF('nhiemvuResultTable', 'Danh_Sach_Nhiem_Vu')">📄 PDF</button>
         </div>
       </div>
@@ -3439,6 +3936,59 @@
       </div>
     </div>
     <!-- ================= END TAG NHIỆM VỤ ================= -->
+
+    <!-- ================= START TAG: THÔNG BÁO NỘI BỘ ================= -->
+    <div id="thongbao" class="hidden form-box">
+      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2" style="padding: 0 10px;">
+        <h2 class="title is-4 has-text-weight-bold mb-0">🔔 THÔNG BÁO NỘI BỘ</h2>
+        <button class="button is-primary is-small is-manager-only" onclick="openCreateNotice()">➕ Đăng tin</button>
+      </div>
+
+      <!-- FORM ĐĂNG THÔNG BÁO (Chỉ Manager/Admin) -->
+      <div id="notice_form_box" class="hidden box mx-2" style="background: rgba(255,255,255,0.9);">
+        <h3 class="subtitle is-6 has-text-weight-bold">📝 Soạn thông báo mới</h3>
+        <form id="noticeForm" onsubmit="event.preventDefault(); submitForm('thongbao', this);">
+          <div class="field">
+            <label class="label is-small">Tiêu đề</label>
+            <input class="input is-small" name="tieu_de" placeholder="VD: Thông báo nghỉ lễ 30/4" required>
+          </div>
+          <div class="field">
+            <label class="label is-small">Nội dung</label>
+            <textarea class="textarea is-small" name="noi_dung" placeholder="Nhập nội dung chi tiết..." rows="3"
+              required></textarea>
+          </div>
+          <div class="columns is-mobile">
+            <div class="column">
+              <label class="label is-small">Người đăng</label>
+              <input class="input is-small" name="nguoi_dang" id="notice_author" readonly>
+            </div>
+            <div class="column">
+              <label class="label is-small">Mức ưu tiên</label>
+              <div class="select is-small is-fullwidth">
+                <select name="uu_tien">
+                  <option value="Bình thường">Bình thường</option>
+                  <option value="Quan trọng">Quan trọng</option>
+                  <option value="Khẩn cấp">Khẩn cấp</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="ngay_dang">
+          <div class="buttons is-right">
+            <button class="button is-light is-small" type="button"
+              onclick="document.getElementById('notice_form_box').classList.add('hidden')">Hủy</button>
+            <button class="button is-link is-small" type="submit">🚀 Đăng thông báo</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- DANH SÁCH THÔNG BÁO -->
+      <div id="notice_list" class="px-2" style="max-height: 70vh; overflow-y: auto;">
+        <p class="has-text-centered py-5">Đang tải danh sách thông báo...</p>
+      </div>
+    </div>
+    <!-- ================= END TAG: THÔNG BÁO NỘI BỘ ================= -->
 
     <!-- ================= TAG: ĐỊNH MỨC (REMOVED INDEPENDENT TAG) ================= -->
     <!-- ================= WARNING MODAL ================= -->
@@ -3467,10 +4017,133 @@
         </table>
       </div>
     </div>
+    <!-- ================= START TAG: QUẢN LÝ LỐP XE ================= -->
+    <div id="lopxe" class="hidden form-box">
+      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2" style="padding: 0 10px;">
+        <h2 class="title is-4 has-text-weight-bold mb-0" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.5rem; display: flex; align-items: center; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"
+              style="width: 1em; height: 1em; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">
+              <path
+                d="M492.3 224L480 183.1 433.2 196l-20.9-46.1 40-27L420.2 87.2l-45.1 22.8-35.9-35.9L362.1 29.1 326.3 0c-10.7 30-18.6 32-70.3 32s-60.1-2-70.3-32L149.9 29.1l22.9 45.1-35.9 35.9-45.1-22.8-31.9 35.7 40 27-21 46.1L32 183.1 19.7 224h43.3c-2 10.5-3 21.2-3 32s1 21.5 3 32H19.7L32 328.9l46.8-12.9 20.9 46.1-40 27 31.9 35.7 45.1-22.8 35.9 35.9-22.9 45.1 35.8 29.1c10.3-29.8 18.2-31 69.4-31s59.1 1 69.4 31l36.2-29.1-22.9-45.1 35.9-35.9 45.1 22.8 32-35.7-40-27 21-46.1 46.8 12.9 12.3-40.9h-43.3c2-10.5 3-21.2 3-32s-1-21.5-3-32h43.3zM256 368c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112zm64-112c0 35.3-28.7 64-64 64s-64-28.7-64-64 28.7-64 64-64 64 28.7 64 64z" />
+              <circle cx="256" cy="256" r="32" />
+            </svg>
+          </span>
+          QUẢN LÝ LỐP XE
+        </h2>
+        <button class="button is-primary is-small is-manager-only" onclick="openLopXeForm()">➕ Thay lốp</button>
+      </div>
+
+      <!-- SEARCH LỐP XE -->
+      <div class="box mx-2 mb-4" id="lopxe_search_box">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input class="input" type="text" id="lopxe_search_key" placeholder="Nhập Biển số xe..."
+              oninput="this.value = this.value.toUpperCase()">
+          </div>
+          <div class="control">
+            <button class="button is-info" onclick="searchLopXe()">🔍 Tra cứu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM NHẬP THAY LỐP (Chỉ Manager/Admin) -->
+      <div id="lopxe_form_box" class="hidden box mx-2 mb-4" style="background: rgba(255,255,255,0.9);">
+        <h3 class="subtitle is-6 has-text-weight-bold">🛠️ Ghi nhận thay lốp</h3>
+        <form id="lopxeForm" onsubmit="event.preventDefault(); submitForm('lopxe', this);">
+          <div class="columns is-multiline is-mobile">
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Biển số xe</label>
+                <input class="input is-small" name="bien_so_xe" list="xe_list_datalist" placeholder="Chọn xe..."
+                  required oninput="this.value = this.value.toUpperCase()">
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Vị trí lốp</label>
+                <div class="select is-small is-fullwidth">
+                  <select name="vi_tri_lop" required>
+                    <option value="Trước Trái">Trước Trái</option>
+                    <option value="Trước Phải">Trước Phải</option>
+                    <option value="Sau Ngoài Trái">Sau Ngoài Trái</option>
+                    <option value="Sau Trong Trái">Sau Trong Trái</option>
+                    <option value="Sau Ngoài Phải">Sau Ngoài Phải</option>
+                    <option value="Sau Trong Phải">Sau Trong Phải</option>
+                    <option value="Dự Phòng">Dự Phòng</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Ngày thay</label>
+                <input class="input is-small" type="date" name="ngay_thay" required>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Số Km lúc thay</label>
+                <input class="input is-small" type="number" name="km_thay" placeholder="Nhập số KM..." required>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Thương hiệu</label>
+                <input class="input is-small" name="thuong_hieu" placeholder="VD: Bridgestone, Michelin...">
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="field">
+                <label class="label is-small">Tình trạng</label>
+                <div class="select is-small is-fullwidth">
+                  <select name="tinh_trang">
+                    <option value="Mới 100%">Mới 100%</option>
+                    <option value="Cũ">Cũ</option>
+                    <option value="Đã đắp/phục hồi">Đã đắp/phục hồi</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label is-small">Ghi chú</label>
+            <textarea class="textarea is-small" name="ghi_chu" rows="2" placeholder="Ghi chú thêm..."></textarea>
+          </div>
+          <div class="buttons is-right">
+            <button class="button is-light is-small" type="button"
+              onclick="document.getElementById('lopxe_form_box').classList.add('hidden')">Hủy</button>
+            <button class="button is-primary is-small" type="submit">💾 Lưu thông tin</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- LIST LỊCH SỬ THAY LỐP -->
+      <div id="lopxe_list" class="px-2" style="max-height: 70vh; overflow-y: auto;">
+        <p class="has-text-centered py-5">Đang tải dữ liệu lốp xe...</p>
+      </div>
+    </div>
   </div>
 
   <script>
     /* ================= SHOW ALERT (TOAST) ================= */
+    const formatDateForInput = (dStr) => {
+      if (!dStr) return "";
+      let d = new Date(dStr);
+      if (isNaN(d.getTime())) {
+        const parts = String(dStr).split('/');
+        if (parts.length === 3) {
+          d = new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+      }
+      if (isNaN(d.getTime())) return dStr; // Trả về gốc nếu ko parse đc
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
     function showAlert(msg, type = 'is-success') {
       const container = document.getElementById('toast-container');
       if (!container) return;
@@ -3491,16 +4164,16 @@
       }, 4000);
     }
     /* ================= CONFIG ================= */
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzctfLVldlBEnlbHTFUylllJ1QM1NTuvBDJamkoLDlN7FYLNOHHUz5rxjrdu7W7M2mx/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbya7Dglug6AIquYYUqt8Qqo3FhX3czlAUWa18VeSk29Oags8M86AiEwtrIdHqrMNL68/exec";
     const ACCOUNT_SS_ID = "1i0CFkUWJoY18C-DKIlavRpbsYYVIM4fpKtIYGkdPZ-A";
 
     let USER_ROLE = null; // manager | admin | taixe
     let USER_MNV = null;
     const ROLE_PERMISSION = {
-      manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu"],
-      admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu"],
-      taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu"],
-      driver: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu"] // Hỗ trợ cả hai cách đặt tên
+      manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"],
+      admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"],
+      taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"],
+      driver: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"]
     };
 
     const ALL_TAGS = [
@@ -3520,10 +4193,13 @@
       "fuelgrid",
       "lichlamviec",
       "nhiemvu",
-      "nhiemvu_table"
+      "nhiemvu_table",
+      "thongbao",
+      "lopxe",
+      "diemgiaohang"
     ];
     /* ================= LOGIN ================= */
-    const LOGIN_API = "https://script.google.com/macros/s/AKfycbw3MTRDfoEpxL8JJQxgmYYO6YKRIUZLnuHzt5ff5lCWQYhHwRYTAvlcRndXBU5ydgj1Zg/exec";
+    const LOGIN_API = "https://script.google.com/macros/s/AKfycbxX3bSw1X7E5YAiSImtaWivFjovi-_xWl7klWtgMznGbzguch9w9s-7DWB0REtDBc3-/exec";
     /* ================= LOGIN ================= */
     async function doLogin() {
       const u = document.getElementById("login_user").value.trim().toUpperCase();
@@ -3553,13 +4229,15 @@
           sessionStorage.setItem("name", profile.ho_ten);
 
           let role = String(profile.role || "").trim().toLowerCase();
-          if (role === 'driver') role = 'taixe';
+          // Normalize roles
+          if (role === 'driver' || role === 'tài xế' || role === 'tx' || role === 'nhân viên') role = 'taixe';
           USER_ROLE = role;
           USER_MNV = String(profile.ma_nv || "").trim().toUpperCase();
 
           // 3. Chuyển giao diện
           document.getElementById("login").classList.add("hidden");
           document.getElementById("home").classList.remove("hidden");
+          document.getElementById("userProfileWidget")?.classList.remove("hidden");
 
           showAlert(`Chào mừng ${profile.ho_ten} quay trở lại!`, "is-success");
 
@@ -3567,9 +4245,14 @@
           applyHomeCardByRole();
           checkWarnings();
           applyBackground("home");
-          preLoadData();
+          preLoadData(true);
           preloadUserProfile();
           animateHeaderTitle();
+
+          // Khởi động auto refresh ngầm
+          if (typeof startGlobalAutoRefresh === "function") {
+            startGlobalAutoRefresh();
+          }
 
         } else {
           showAlert(d.message || "Tài khoản hoặc mật khẩu không chính xác", "is-danger");
@@ -3644,7 +4327,11 @@ Hết hạn: ${w.ngay_he} <br>
         const btn = document.getElementById("btnChangePass");
         btn.classList.add("is-loading");
 
-        const res = await fetch(SCRIPT_URL, { method: "POST", body: fd });
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: new URLSearchParams(fd),
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        });
         const data = await res.json();
 
         btn.classList.remove("is-loading");
@@ -3671,9 +4358,9 @@ Hết hạn: ${w.ngay_he} <br>
       // 2. Cập nhật giao diện menu theo quyền mới (nếu có)
       applyHomeCardByRole();
 
-      // 3. Tải lại các cảnh báo & dữ liệu ngầm
+      // 3. Tải lại các cảnh báo & dữ liệu ngầm (Có reset UI)
       checkWarnings();
-      preLoadData();
+      preLoadData(true);
       fetchBackgrounds();
 
       showAlert("Đã làm mới dữ liệu và phân quyền!", "is-success");
@@ -3686,14 +4373,22 @@ Hết hạn: ${w.ngay_he} <br>
     function preloadUserProfile() {
       if (!USER_MNV) return;
 
+      const setMarqueeText = (id, text) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!text || text === "-") { el.innerText = "-"; return; }
+        el.innerHTML = `<span class="marquee-text">${text}</span>`;
+      };
+
       // Ưu tiên hiển thị ngay từ sessionStorage để tránh giao diện bị trống
-      document.getElementById("up_hoten").innerText = sessionStorage.getItem("name") || "-";
+      setMarqueeText("up_hoten", sessionStorage.getItem("name") || "-");
       document.getElementById("up_mnv").innerText = USER_MNV || "-";
       const roleToken = String(USER_ROLE || "").toLowerCase();
       let displayRole = "Tài xế";
       if (roleToken === "manager") displayRole = "Quản lý / Giám đốc";
       if (roleToken === "admin") displayRole = "Quản trị viên";
-      document.getElementById("up_role").innerText = displayRole;
+      setMarqueeText("up_role", displayRole);
+
       const nameSync = sessionStorage.getItem("name");
       if (nameSync && document.getElementById("up_avatar_char")) {
         document.getElementById("up_avatar_char").innerText = nameSync.trim().charAt(0).toUpperCase();
@@ -3705,17 +4400,18 @@ Hết hạn: ${w.ngay_he} <br>
         .then(res => {
           if (res.status === "success") {
             document.getElementById("up_user").innerText = res.data.user || "-";
-            document.getElementById("up_hoten").innerText = res.data.ho_ten || "-";
+            setMarqueeText("up_hoten", res.data.ho_ten || "-");
             document.getElementById("up_mnv").innerText = res.data.ma_nv || "-";
             document.getElementById("up_sdt").innerText = res.data.sdt || "-";
             document.getElementById("up_ngaysinh").innerText = res.data.ngay_sinh || "-";
             document.getElementById("up_ngaygianhap").innerText = res.data.ngay_gia_nhap || "-";
 
             const roleTokenFetch = String(res.data.role || "").toLowerCase();
-            let displayRole = "Tài xế";
-            if (roleTokenFetch === "manager") displayRole = "Quản lý / Giám đốc";
-            if (roleTokenFetch === "admin") displayRole = "Quản trị viên";
-            document.getElementById("up_role").innerText = displayRole;
+            let displayRoleFetch = "Tài xế";
+            if (roleTokenFetch === "manager") displayRoleFetch = "Quản lý / Giám đốc";
+            if (roleTokenFetch === "admin") displayRoleFetch = "Quản trị viên";
+            setMarqueeText("up_role", displayRoleFetch);
+
             if (res.data.ho_ten && document.getElementById("up_avatar_char")) {
               document.getElementById("up_avatar_char").innerText = String(res.data.ho_ten).trim().charAt(0).toUpperCase();
             }
@@ -3982,8 +4678,51 @@ Hết hạn: ${w.ngay_he} <br>
       }
     }
 
+    /* ===== GLOBAL SILENT AUTO REFRESH (10s) ===== */
+    let globalAutoRefreshTimer = null;
+    function startGlobalAutoRefresh() {
+      if (globalAutoRefreshTimer) clearInterval(globalAutoRefreshTimer);
+      globalAutoRefreshTimer = setInterval(() => {
+        if (!USER_MNV) return;
+
+        // 1. Luôn cập nhật Badge Nhiệm vụ & Lịch làm việc ngầm
+        updateNhiemVuBadge();
+        updateLichLamViecBadge();
+
+        // 2. Xác định Tab đang active để refresh dữ liệu bảng
+        const homeHidden = document.getElementById("home").classList.contains("hidden");
+        if (homeHidden) {
+          // Duyệt qua các tag xem cái nào đang mở
+          ALL_TAGS.forEach(tag => {
+            const el = document.getElementById(tag);
+            if (el && !el.classList.contains("hidden")) {
+              // Refresh dữ liệu theo tag
+              if (tag === 'nhiemvu') {
+                if (USER_ROLE === 'taixe' || USER_ROLE === 'driver' || (USER_MNV && USER_MNV.startsWith('TX'))) {
+                  loadNhiemVuTaixe(USER_MNV, true);
+                } else {
+                  const sKey = document.getElementById("search_nhiemvu_key")?.value?.trim() || "";
+                  loadNhiemVuHistory(sKey, true);
+                }
+              } else if (tag === 'baocao') {
+                loadReport(true);
+              } else if (tag === 'thongbao') {
+                loadNotices(true);
+              } else if (tag === 'lopxe') {
+                loadLopXeHistory(true);
+              } else if (tag === 'diemgiaohang') {
+                loadDeliveryPoints(true);
+              }
+            }
+          });
+        }
+      }, 10000);
+    }
+
     let reportCostChart = null;
     let reportKMChart = null;
+    let reportQuotaChart = null;
+    let reportDriverChart = null;
 
     function loadReport(isAuto = false) {
       const m = document.getElementById("rpt_month").value;
@@ -4117,10 +4856,13 @@ Hết hạn: ${w.ngay_he} <br>
         `;
             });
 
-            // --- RENDER DYNAMIC CHARTS ---
+            // --- RENDER DYNAMIC CHARTS (MULTIDIMENSIONAL) ---
             if (reportCostChart) reportCostChart.destroy();
             if (reportKMChart) reportKMChart.destroy();
+            if (reportQuotaChart) reportQuotaChart.destroy();
+            if (reportDriverChart) reportDriverChart.destroy();
 
+            // 1. CHI PHÍ (Doughnut)
             const ctxCost = document.getElementById('costChart');
             if (ctxCost) {
               const fuelCost = Number(d.data.fuel_cost) || 0;
@@ -4134,20 +4876,23 @@ Hết hạn: ${w.ngay_he} <br>
                   datasets: [{
                     data: [fuelCost, bdCost, scCost],
                     backgroundColor: ['#48c774', '#ffe08a', '#f14668'],
-                    borderWidth: 0
+                    hoverOffset: 15,
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
                   }]
                 },
                 options: {
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: true, text: '💰 MỨC ĐỘ TIÊU HAO TÀI CHÍNH', font: { size: 14 } }
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                    title: { display: true, text: '💰 CƠ CẤU CHI PHÍ', font: { size: 14, weight: 'bold' }, padding: 10 }
                   }
                 }
               });
             }
 
+            // 2. HOẠT ĐỘNG PHƯƠNG TIỆN (Bar)
             const ctxKM = document.getElementById('kmChart');
             if (ctxKM && vehicles.length > 0) {
               const vTop = vehicles.map(v => ({ bsx: v.bsx, km: v.op_km })).sort((a, b) => b.km - a.km).slice(0, 15);
@@ -4158,8 +4903,10 @@ Hết hạn: ${w.ngay_he} <br>
                   datasets: [{
                     label: 'Tổng KM',
                     data: vTop.map(v => v.km),
-                    backgroundColor: '#3298dc',
-                    borderRadius: 4
+                    backgroundColor: 'rgba(50, 152, 220, 0.7)',
+                    borderColor: '#3298dc',
+                    borderWidth: 1,
+                    borderRadius: 5
                   }]
                 },
                 options: {
@@ -4167,10 +4914,89 @@ Hết hạn: ${w.ngay_he} <br>
                   maintainAspectRatio: false,
                   plugins: {
                     legend: { display: false },
-                    title: { display: true, text: '🚚 HOẠT ĐỘNG PHƯƠNG TIỆN (Top KM)', font: { size: 14 } }
+                    title: { display: true, text: '🚚 TOP 15 XE CHẠY NHIỀU NHẤT (KM)', font: { size: 14, weight: 'bold' } }
+                  },
+                  scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                  }
+                }
+              });
+            }
+
+            // 3. HIỆU SUẤT NHIÊN LIỆU (Grouped Bar)
+            const ctxQuota = document.getElementById('quotaChart');
+            if (ctxQuota && vehicles.length > 0) {
+              const vQuota = vehicles
+                .filter(v => v.quota_l100 > 0 && v.op_km > 100)
+                .sort((a, b) => b.op_km - a.op_km)
+                .slice(0, 10);
+
+              reportQuotaChart = new Chart(ctxQuota, {
+                type: 'bar',
+                data: {
+                  labels: vQuota.map(v => v.bsx),
+                  datasets: [
+                    {
+                      label: 'Định mức (L/100km)',
+                      data: vQuota.map(v => v.quota_l100),
+                      backgroundColor: 'rgba(150, 150, 150, 0.5)',
+                      borderRadius: 4
+                    },
+                    {
+                      label: 'Thực tế (L/100km)',
+                      data: vQuota.map(v => v.actual_l100),
+                      backgroundColor: vQuota.map(v => v.variance > 0 ? '#f14668' : '#48c774'),
+                      borderRadius: 4
+                    }
+                  ]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    title: { display: true, text: '⛽ HIỆU SUẤT NHIÊN LIỆU (L/100KM)', font: { size: 14, weight: 'bold' } },
+                    tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.raw.toFixed(2)}` } }
                   },
                   scales: {
                     y: { beginAtZero: true }
+                  }
+                }
+              });
+            }
+
+            // 4. HIỆU SUẤT TÀI XẾ (Horizontal Bar / Mix)
+            const ctxDriver = document.getElementById('driverChart');
+            if (ctxDriver && d.data.drivers) {
+              const dTop = d.data.drivers.sort((a, b) => b.op_trips - a.op_trips).slice(0, 10);
+              reportDriverChart = new Chart(ctxDriver, {
+                type: 'bar',
+                data: {
+                  labels: dTop.map(dr => dr.name),
+                  datasets: [
+                    {
+                      label: 'Số chuyến',
+                      data: dTop.map(dr => dr.op_trips),
+                      backgroundColor: '#00d1b2',
+                      yAxisID: 'y',
+                    },
+                    {
+                      label: 'Tổng KM',
+                      data: dTop.map(dr => dr.op_km),
+                      backgroundColor: '#ffdd57',
+                      yAxisID: 'y1',
+                    }
+                  ]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    title: { display: true, text: '👨‍✈️ TOP 10 TÀI XẾ TÍCH CỰC', font: { size: 14, weight: 'bold' } }
+                  },
+                  scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Chuyến' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'KM' } }
                   }
                 }
               });
@@ -4342,65 +5168,84 @@ Hết hạn: ${w.ngay_he} <br>
           .forEach(el => el.classList.remove("hidden"));
       });
     }
-    function preLoadData() {
+    function preLoadData(isInitial = false) {
       if (!USER_ROLE) return;
       const d = new Date();
       const m = d.getMonth() + 1;
       const y = d.getFullYear();
 
-      // Set default cho Báo cáo
-      if (document.getElementById("rpt_month")) document.getElementById("rpt_month").value = m;
-      if (document.getElementById("rpt_year")) document.getElementById("rpt_year").value = y;
+      // Chỉ set default vào UI trong lần load đầu tiên hoặc khi refresh thủ công (isInitial = true)
+      if (isInitial) {
+        if (document.getElementById("rpt_month")) document.getElementById("rpt_month").value = m;
+        if (document.getElementById("rpt_year")) document.getElementById("rpt_year").value = y;
+        if (document.getElementById("grid_month")) document.getElementById("grid_month").value = m;
+        if (document.getElementById("grid_year")) document.getElementById("grid_year").value = y;
+        if (document.getElementById("km_month")) document.getElementById("km_month").value = m;
+        if (document.getElementById("km_year")) document.getElementById("km_year").value = y;
+        if (document.getElementById("llv_select_month")) document.getElementById("llv_select_month").value = m;
+        if (document.getElementById("llv_select_year")) document.getElementById("llv_select_year").value = y;
+      }
 
-      // Set default cho Bảng kê Nhiên liệu
-      if (document.getElementById("grid_month")) document.getElementById("grid_month").value = m;
-      if (document.getElementById("grid_year")) document.getElementById("grid_year").value = y;
+      // Lấy giá trị hiện tại từ UI để load data (đảm bảo refresh đúng lựa chọn của người dùng)
+      const currentM = document.getElementById("rpt_month") ? document.getElementById("rpt_month").value : m;
+      const currentY = document.getElementById("rpt_year") ? document.getElementById("rpt_year").value : y;
+      const fuelM = document.getElementById("grid_month") ? document.getElementById("grid_month").value : m;
+      const fuelY = document.getElementById("grid_year") ? document.getElementById("grid_year").value : y;
+      const kmM = document.getElementById("km_month") ? document.getElementById("km_month").value : m;
+      const kmY = document.getElementById("km_year") ? document.getElementById("km_year").value : y;
 
-      // Set default cho Bảng kê KM
-      if (document.getElementById("km_month")) document.getElementById("km_month").value = m;
-      if (document.getElementById("km_year")) document.getElementById("km_year").value = y;
-
-      // Set default cho Lịch Làm Việc
-      if (document.getElementById("llv_select_month")) document.getElementById("llv_select_month").value = m;
-      if (document.getElementById("llv_select_year")) document.getElementById("llv_select_year").value = y;
+      const isSilent = !isInitial; // Nếu không phải khởi tạo thì là tải ngầm (silent)
 
       // Kích hoạt tải ngầm song song
-      loadReport(true);
+      loadReport(isSilent);
       loadQuotaData();
-      generateAutoLichLamViec(true); // Tải ngầm lịch làm việc không bật alert
+      generateAutoLichLamViec(isSilent);
 
-      // Tải ngầm bảng Xe và Tài xế (áp dụng cho cả lần đầu login lẫn khi refresh trang)
-      loadTableByKey("xe", "bien_so_xe", "", "xeTable");
-      loadTableByKey("taixe", "ma_nv", "", "taixeTable");
+      // Tải ngầm bảng Xe và Tài xế
+      loadTableByKey("xe", "bien_so_xe", "", "xeTable", isSilent);
+      loadTableByKey("taixe", "ma_nv", "", "taixeTable", isSilent);
 
-      // Tải ngầm Kế hoạch bảo dưỡng
+      // Tải ngầm các bảng dữ liệu khác cho Manager/Admin
+      if (USER_ROLE === "manager" || USER_ROLE === "admin") {
+        loadTableByKey("nhatky", "", "", "nhatkyResultTable", isSilent);
+        loadTableByKey("baoduong", "", "", "baoduongResultTable", isSilent);
+        loadTableByKey("fuel", "", "", "fuelResultTable", isSilent);
+        loadTableByKey("danhgia", "", "", "danhgiaResultTable", isSilent);
+        loadNhiemVuHistory("", isSilent);
+      }
+
+      if (USER_MNV) {
+        loadNhiemVuTaixe(USER_MNV, isSilent);
+      }
+
       const tbodyMaintenance = document.querySelector("#maintenancePlanTable tbody");
       if (tbodyMaintenance) {
         fetch(`${SCRIPT_URL}?action=get_maintenance_plan&_t=${Date.now()}`)
           .then(res => res.json())
           .then(res => {
-            if (res.status === "success") {
-              renderMaintenancePlan(res.data);
-            } else {
-              tbodyMaintenance.innerHTML = `<tr><td colspan="9" class="has-text-danger has-text-centered">Lỗi: ${res.message}</td></tr>`;
-            }
+            if (res.status === "success") renderMaintenancePlan(res.data);
           })
-          .catch(err => {
-            tbodyMaintenance.innerHTML = `<tr><td colspan="9" class="has-text-danger has-text-centered">Lỗi kết nối: ${err.message}</td></tr>`;
-          });
+          .catch(err => console.error("Lỗi tải KHBD ngầm:", err));
       }
 
-      // Tải ngầm Bảng kê Nhiên liệu
-      loadFuelGridBackground(m, y, "");
+      const fuelBsxEl = document.getElementById("grid_bsx");
+      const fuelBsxVal = fuelBsxEl ? fuelBsxEl.value : "";
+      const kmBsxEl = document.getElementById("km_bsx");
+      const kmBsxVal = kmBsxEl ? kmBsxEl.value : "";
 
-      // Tải ngầm Bảng kê KM
-      loadKmGridBackground(m, y, "");
+      // Tải ngầm Bảng kê Nhiên liệu và KM theo tháng năm đang chọn trên UI
+      loadFuelGridBackground(fuelM, fuelY, fuelBsxVal, isSilent);
+      loadKmGridBackground(kmM, kmY, kmBsxVal, isSilent);
+
+      loadNotices(isSilent);
+      loadLopXeHistory(isSilent);
+      loadDeliveryPoints(isSilent);
     }
 
-    async function loadFuelGridBackground(m, y, bsx) {
+    async function loadFuelGridBackground(m, y, bsx, isSilent = false) {
       const container = document.getElementById("fuelGridContainer");
       if (container) {
-        container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
+        if (!isSilent) container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
         try {
           const res = await fetch(`${SCRIPT_URL}?action=get_log_grid&bien_so_xe=${encodeURIComponent(bsx)}&month=${m}&year=${y}&_t=${Date.now()}`);
           const json = await res.json();
@@ -4416,10 +5261,10 @@ Hết hạn: ${w.ngay_he} <br>
       }
     }
 
-    async function loadKmGridBackground(m, y, bsx) {
+    async function loadKmGridBackground(m, y, bsx, isSilent = false) {
       const container = document.getElementById("kmGridContainer");
       if (container) {
-        container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
+        if (!isSilent) container.innerHTML = `<p class="has-text-centered py-5">Đang tải dữ liệu...</p>`;
         try {
           const res = await fetch(`${SCRIPT_URL}?action=get_km_grid&month=${m}&year=${y}&bien_so_xe=${encodeURIComponent(bsx)}&_t=${Date.now()}`);
           const json = await res.json();
@@ -4435,27 +5280,38 @@ Hết hạn: ${w.ngay_he} <br>
       }
     }
 
-    window.addEventListener("load", () => {
+    window.addEventListener("load", function () {
       const logged = sessionStorage.getItem("logged");
       const role = sessionStorage.getItem("role");
       const mnv = sessionStorage.getItem("mnv");
       if (logged === "1" && role) {
         let storedRole = String(role).trim().toLowerCase();
-        if (storedRole === 'driver') storedRole = 'taixe';
+        // Normalize role for persistence
+        if (storedRole === 'driver' || storedRole === 'tài xế' || storedRole === 'tx' || storedRole === 'nhân viên') {
+          storedRole = 'taixe';
+        }
         USER_ROLE = storedRole;
         USER_MNV = mnv ? String(mnv).trim().toUpperCase() : null;
-        document.getElementById("login")?.classList.add("hidden");
-        document.getElementById("home")?.classList.remove("hidden");
+
+        const loginEl = document.getElementById("login");
+        if (loginEl) loginEl.classList.add("hidden");
+        const homeEl = document.getElementById("home");
+        if (homeEl) homeEl.classList.remove("hidden");
+        const profileEl = document.getElementById("userProfileWidget");
+        if (profileEl) profileEl.classList.remove("hidden");
+
         applyHomeCardByRole();
         checkWarnings();
         applyBackground("home");
-        showToggleBtn(false); // Đảm bảo luôn ẩn khi về home
+        showToggleBtn(false);
 
         // TẢI DỮ LIỆU SẴN
-        preLoadData();
+        preLoadData(true);
         preloadUserProfile();
+        startGlobalAutoRefresh();
       } else {
-        document.getElementById("login")?.classList.remove("hidden");
+        const loginEl = document.getElementById("login");
+        if (loginEl) loginEl.classList.remove("hidden");
         applyBackground("login");
       }
       fetchBackgrounds();
@@ -4513,6 +5369,12 @@ Hết hạn: ${w.ngay_he} <br>
     /* ================= UI NAV ================= */
     function applyHomeCardByRole() {
       if (!USER_ROLE) return;
+
+      const body = document.body;
+      // Cập nhật class role để CSS selector hoạt động
+      body.classList.remove('role-manager', 'role-admin', 'role-taixe');
+      body.classList.add('role-' + USER_ROLE);
+
       const allowTags = ROLE_PERMISSION[USER_ROLE] || [];
 
       // 1. Ẩn/Hiện card ở HOME
@@ -4520,6 +5382,9 @@ Hết hạn: ${w.ngay_he} <br>
         const tag = card.dataset.tag;
         card.style.display = allowTags.includes(tag) ? "" : "none";
       });
+
+      // 2. Ẩn/Hiện nút rpt_fuel_bsx btnExportExcel.. dựa trên role (nếu cần)
+      // (Bulma classes like .is-manager-only are already handled by CSS above)
 
       updateLichLamViecBadge();
       updateNhiemVuBadge();
@@ -4534,8 +5399,11 @@ Hết hạn: ${w.ngay_he} <br>
         .then(r => r.json())
         .then(data => {
           if (!Array.isArray(data)) return;
-          // Tạm thời tính số nhiệm vụ "Mới giao"
-          const count = data.filter(d => String(d.trang_thai).toLowerCase() === "mới giao").length;
+          // Đếm số nhiệm vụ "Mới giao" (case-insensitive)
+          const count = data.filter(d => {
+            const st = String(d.trang_thai || "").toLowerCase();
+            return st === "mới giao" || st === "moii giao"; // Support slight typos if any
+          }).length;
           if (count > 0) {
             badge.textContent = count > 99 ? "99+" : count;
             badge.style.display = "flex";
@@ -4607,22 +5475,37 @@ Hết hạn: ${w.ngay_he} <br>
 
       // ===== NHIỆM VỤ: PHÂN QUYỀN THEO ROLE =====
       if (tagId === 'nhiemvu') {
-        if (USER_ROLE === 'taixe' || USER_ROLE === 'driver') {
+        if (USER_ROLE === 'taixe' || USER_ROLE === 'driver' || USER_MNV.startsWith('TX')) {
           // TÀI XẾ: Ẩn form giao việc + ô tìm kiếm, hiện bảng nhiệm vụ của mình
           document.getElementById('nhiemvu_form_box').style.display = 'none';
           document.getElementById('nhiemvu_search_box').style.display = 'none';
           document.getElementById('nhiemvu_history_area').style.display = 'none';
           document.getElementById('nhiemvu_taixe_area').classList.remove('hidden');
-          if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
+          if (USER_MNV) loadNhiemVuTaixe(USER_MNV, true);
         } else {
           // MANAGER / ADMIN: Mặc định hiện Lịch sử + Tìm kiếm, ẩn Form
           document.getElementById('nhiemvu_form_box').classList.add('hidden');
           document.getElementById('nhiemvu_search_box').style.display = '';
           document.getElementById('nhiemvu_history_area').style.display = '';
           document.getElementById('nhiemvu_taixe_area').classList.add('hidden');
-          // Tự động load lịch sử giao nhiệm vụ
-          loadNhiemVuHistory();
+          // Tự động load lịch sử giao nhiệm vụ (Silent if already pre-loaded)
+          loadNhiemVuHistory("", true);
         }
+      }
+
+      // ===== THÔNG BÁO NỘI BỘ =====
+      if (tagId === 'thongbao') {
+        loadNotices(true);
+      }
+
+      // ===== QUẢN LÝ LỐP XE =====
+      if (tagId === 'lopxe') {
+        loadLopXeHistory(true);
+      }
+
+      // ===== QUẢN LÝ ĐIỂM GIAO HÀNG =====
+      if (tagId === 'diemgiaohang') {
+        loadDeliveryPoints(true);
       }
     }
 
@@ -4634,13 +5517,64 @@ Hết hạn: ${w.ngay_he} <br>
       const fBox = document.getElementById('nhiemvu_form_box');
       fBox.classList.remove('hidden');
       fBox.style.display = '';
-      // Reset & Điền mã NV người giao
-      document.getElementById('nhiemvuForm').reset();
+
+      const nvForm = document.getElementById('nhiemvuForm');
+      nvForm.reset();
       document.getElementById('nv_id').value = '';
       document.getElementById('nhiemvu_form_title').textContent = '1️⃣ Giao việc';
       document.getElementById('nhiemvu_save_btn').textContent = '💾 LƯU';
       if (USER_MNV) document.getElementById('nv_nguoi_giao').value = USER_MNV;
+
+      // LOAD DANH SÁCH NHÂN VIÊN ĐỂ GIAO VIỆC (ROLE-BASED)
+      loadNhanVienListForAssign();
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Hiện tất cả các trường và reset trạng thái readOnly cho Admin/Manager
+      document.getElementById('nhiemvu_assign_fields').style.display = '';
+      if (document.getElementById('nv_trang_thai')) {
+        document.getElementById('nv_trang_thai').closest('.column').style.display = '';
+      }
+      nvForm.querySelector('[name="noi_dung"]').readOnly = false;
+      nvForm.querySelector('[name="ngay_bat_dau"]').readOnly = false;
+      nvForm.querySelector('[name="han_hoan_thanh"]').readOnly = false;
+      nvForm.querySelector('[name="nguoi_nhan"]').readOnly = false;
+      nvForm.querySelector('[name="nguoi_nhan"]').disabled = false;
+    }
+
+    function loadNhanVienListForAssign() {
+      const datalist = document.getElementById("nhanvien_list");
+      if (!datalist) return;
+      datalist.innerHTML = "";
+
+      // Lấy data taixe (đã được preLoadData hoặc fetch mới)
+      fetch(`${SCRIPT_URL}?tag=taixe&_t=${Date.now()}`)
+        .then(res => res.json())
+        .then(list => {
+          if (!Array.isArray(list)) return;
+          list.forEach(item => {
+            const role = String(item.role || "driver").toLowerCase();
+            const mnv = String(item.ma_nv || "").toUpperCase();
+            const name = item.ho_ten || "";
+
+            // LOGIC PHÂN QUYỀN GIAO VIỆC
+            // Manager: giao cho Admin, Manager (khác), Driver
+            // Admin: chỉ giao cho Driver
+            let canAssign = false;
+            if (USER_ROLE === "manager") {
+              if (mnv !== USER_MNV) canAssign = true; // Không giao cho chính mình
+            } else if (USER_ROLE === "admin") {
+              if (role === "driver" || role === "taixe") canAssign = true;
+            }
+
+            if (canAssign) {
+              const opt = document.createElement("option");
+              opt.value = mnv;
+              opt.textContent = `${mnv} - ${name} (${role})`;
+              datalist.appendChild(opt);
+            }
+          });
+        });
     }
 
     function backToNhiemVuHistory() {
@@ -4774,7 +5708,8 @@ Hết hạn: ${w.ngay_he} <br>
 
         const response = await fetch(SCRIPT_URL, {
           method: "POST",
-          body: fd
+          body: new URLSearchParams(fd),
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
         });
 
         const result = await response.json();
@@ -4796,7 +5731,7 @@ Hết hạn: ${w.ngay_he} <br>
             }
 
             if (tag === 'nhiemvu') {
-              if (USER_ROLE === 'taixe' || USER_ROLE === 'driver') {
+              if (USER_ROLE === 'taixe' || USER_ROLE === 'driver' || USER_MNV.startsWith('TX')) {
                 document.getElementById('nhiemvu_form_box').style.display = 'none';
                 document.getElementById('nhiemvu_taixe_area').classList.remove('hidden');
                 if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
@@ -4808,8 +5743,12 @@ Hết hạn: ${w.ngay_he} <br>
             }
 
             // Các form nhập liệu nhật ký, nhiên liệu, bảo dưỡng thì reset và giữ nguyên tag
-            if (['nhatky', 'fuel', 'baoduong', 'danhgia'].includes(tag)) {
+            if (['nhatky', 'fuel', 'baoduong', 'danhgia', 'thongbao'].includes(tag)) {
               form.reset();
+              if (tag === 'thongbao') {
+                document.getElementById('notice_form_box').classList.add('hidden');
+                loadNotices();
+              }
               // Tự động điền lại các thông tin mặc định nếu cần
               if (tag === 'nhatky' && USER_MNV) autoFillTaiXe(USER_MNV, form.querySelector('[name="ho_ten"]'));
             }
@@ -4996,138 +5935,284 @@ Hết hạn: ${w.ngay_he} <br>
       window.scrollTo({ top: 0 });
     }
     function searchNhiemVu() {
-      const key =
-        document.getElementById("search_nhiemvu_key").value.trim();
-      if (!key && USER_ROLE !== "manager" && USER_ROLE !== "admin") return showAlert("Thiếu từ khóa", "is-warning");
-      ALL_TAGS.forEach(t => {
-        document.getElementById(t)?.classList.add("hidden");
-      });
-      document
-        .getElementById("nhiemvu_table")
-        ?.classList.remove("hidden");
-
-      // Cùng gọi hàm loadTableByKey (vì data sẽ được backend xử lý)
-      // Backend có thể search the key on cả ma_nv hoặc bien_so_xe
-      loadTableByKey(
-        "nhiemvu",
-        "key",
-        key,
-        "nhiemvuResultTable"
-      );
-      window.scrollTo({ top: 0 });
+      const key = document.getElementById("search_nhiemvu_key").value.trim().toUpperCase();
+      // Thay đổi: Search thẳng vào vùng history cho Manager/Admin để đồng bộ UI
+      loadNhiemVuHistory(key);
     }
 
-    /* ===== NHIỆM VỤ: LOAD BẢNG CHO TÀI XẾ (có nút Nhận + Báo cáo) ===== */
-    function loadNhiemVuTaixe(maNV) {
-      const table = document.getElementById("nhiemvuTaixeTable");
-      if (!table) return;
-      const thead = table.querySelector("thead");
-      const tbody = table.querySelector("tbody");
-      thead.innerHTML = "";
-      tbody.innerHTML = '<tr><td colspan="100%" class="has-text-centered">⏳ Đang tải...</td></tr>';
 
-      const url = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(maNV)}&_t=${Date.now()}`;
+
+    /* ===== MAP LƯU DỮ LIỆU NHIỆM VỤ TÀI XẾ (tránh bug JSON trong onclick) ===== */
+    const nvTaixeDataMap = {};
+
+    /* ===== NHIỆM VỤ: LOAD CARD CHO TÀI XẾ ===== */
+    function loadNhiemVuTaixe(maNV, isSilent) {
+      if (isSilent === undefined) isSilent = false;
+      const container = document.getElementById('nhiemvu_taixe_cards');
+      if (!container) return;
+
+      if (!isSilent) {
+        container.innerHTML = '<p class="has-text-centered has-text-grey py-4">⏳ Đang tải...</p>';
+      }
+
+      const url = SCRIPT_URL + "?tag=nhiemvu&key=" + encodeURIComponent(maNV) + "&_t=" + Date.now();
       fetch(url)
-        .then(res => res.json())
-        .then(list => {
-          thead.innerHTML = "";
-          tbody.innerHTML = "";
+        .then(function (res) { return res.json(); })
+        .then(function (list) {
           if (!Array.isArray(list) || list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="100%" class="has-text-centered">Bạn chưa có nhiệm vụ nào</td></tr>';
+            container.innerHTML = '<p class="has-text-centered has-text-grey py-4">📭 Bạn chưa có nhiệm vụ nào</p>';
             return;
           }
-          if (list.length === 1 && list[0].error) {
-            tbody.innerHTML = `<tr><td colspan="100%" class="has-text-danger">${list[0].error}</td></tr>`;
-            return;
-          }
-
-          // Header: Thao tác + các cột dữ liệu (bỏ id, created_at cho gọn)
-          const displayCols = ["nguoi_giao", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ghi_chu_ket_qua"];
-          const colLabels = {
-            nguoi_giao: "Người giao",
-            loai_nhiem_vu: "Loại NV",
-            trang_thai: "Trạng thái",
-            noi_dung: "Nội dung",
-            ngay_bat_dau: "Bắt đầu",
-            han_hoan_thanh: "Hạn HT",
-            ghi_chu_ket_qua: "Kết quả"
-          };
-          thead.innerHTML = "<tr><th>Thao tác</th>" +
-            displayCols.map(h => `<th>${colLabels[h] || h}</th>`).join("") +
-            "</tr>";
-
-          list.forEach(row => {
-            const tr = document.createElement("tr");
-            const trangThai = String(row.trang_thai || "").trim();
-
-            // === CỘT THAO TÁC ===
-            const tdAction = document.createElement("td");
-            tdAction.style.whiteSpace = "nowrap";
-
-            if (trangThai === "Mới giao") {
-              // Nút NHẬN NHIỆM VỤ
-              const btnNhan = document.createElement("button");
-              btnNhan.textContent = "✅ Nhận";
-              btnNhan.className = "button is-small is-success";
-              btnNhan.style.marginRight = "4px";
-              btnNhan.onclick = () => nhanNhiemVu(row);
-              tdAction.appendChild(btnNhan);
-            }
-
-            if (trangThai === "Đang thực hiện") {
-              // Nút BÁO CÁO KẾT QUẢ
-              const btnBaoCao = document.createElement("button");
-              btnBaoCao.textContent = "📝 Báo cáo";
-              btnBaoCao.className = "button is-small is-warning";
-              btnBaoCao.onclick = () => baoCaoNhiemVu(row);
-              tdAction.appendChild(btnBaoCao);
-            }
-
-            if (trangThai === "Đã hoàn thành") {
-              tdAction.innerHTML = '<span class="tag is-success is-light">✔ Xong</span>';
-            }
-            if (trangThai === "Hủy") {
-              tdAction.innerHTML = '<span class="tag is-danger is-light">✖ Hủy</span>';
-            }
-
-            tr.appendChild(tdAction);
-
-            // === CÁC CỘT DỮ LIỆU ===
-            displayCols.forEach(h => {
-              const td = document.createElement("td");
-              td.textContent = row[h] ?? "";
-              // Tô màu trạng thái
-              if (h === "trang_thai") {
-                td.style.fontWeight = "bold";
-                if (trangThai === "Mới giao") td.style.color = "#3273dc";
-                if (trangThai === "Đang thực hiện") td.style.color = "#ff9900";
-                if (trangThai === "Đã hoàn thành") td.style.color = "#23d160";
-                if (trangThai === "Hủy") td.style.color = "#ff3860";
-              }
-              tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-          });
-          enablePinchZoom("nhiemvuTaixeTable");
+          renderNhiemVuTaixeCards(list, container);
         })
-        .catch(() => {
-          tbody.innerHTML = '<tr><td colspan="100%" class="has-text-danger">Lỗi tải dữ liệu</td></tr>';
+        .catch(function (err) {
+          console.error("Lỗi tải nhiệm vụ:", err);
+          container.innerHTML = '<p class="has-text-centered has-text-danger py-4">Lỗi tải dữ liệu. Nhấn 🔄 để thử lại.</p>';
         });
     }
 
+    function renderNhiemVuTaixeCards(list, container) {
+      // Lưu data vào Map để dùng trong modal
+      list.forEach(nv => {
+        if (nv.id) nvTaixeDataMap[nv.id] = nv;
+      });
+
+      // Sắp xếp: Mới giao -> Chưa nhận -> Đã nhận -> Hoàn thành -> Hủy
+      const sortOrder = { 'mới giao': 0, 'chưa nhận': 1, 'đã nhận': 2, 'hoàn thành': 8, 'hủy': 9 };
+      list.sort((a, b) => {
+        const stA = String(a.trang_thai || '').trim().toLowerCase();
+        const stB = String(b.trang_thai || '').trim().toLowerCase();
+        return (sortOrder[stA] ?? 5) - (sortOrder[stB] ?? 5);
+      });
+
+      let html = '';
+      list.forEach(function (nv) {
+        const ttRaw = String(nv.trang_thai || 'Mới giao').trim();
+        const tt = ttRaw.toLowerCase();
+        const kqRaw = String(nv.ket_qua || '').trim();
+        const kq = kqRaw.toLowerCase();
+        const id = nv.id || '';
+
+        // Màu sắc theo trạng thái
+        let borderColor = '#3273dc', badgeBg = 'rgba(50,115,220,0.15)', ttIcon = '🆕';
+        if (tt === 'đã nhận') { borderColor = '#23d160'; badgeBg = 'rgba(35,209,96,0.15)'; ttIcon = '📩'; }
+        else if (tt === 'chưa nhận') { borderColor = '#ff9900'; badgeBg = 'rgba(255,153,0,0.15)'; ttIcon = '🚫'; }
+        else if (tt === 'hoàn thành' || tt === 'đã hoàn thành') { borderColor = '#48c774'; badgeBg = 'rgba(72,199,116,0.15)'; ttIcon = '✅'; }
+        else if (tt === 'hủy') { borderColor = '#ff3860'; badgeBg = 'rgba(255,56,96,0.15)'; ttIcon = '❌'; }
+
+        // Badge kết quả (Đang thực hiện)
+        let kqBadge = '';
+        if (kq === 'đang thực hiện') {
+          kqBadge = '<span style="background:rgba(255,153,0,0.25);color:#ff9900;border:1px solid #ff9900;border-radius:12px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:5px;">⏳ Đang thực hiện</span>';
+        }
+
+        // Nút hành động
+        let actionBtn = '';
+        const safeId = String(id).replace(/'/g, "\\'");
+
+        if (tt === 'mới giao') {
+          actionBtn = '<button class="button is-success is-small is-fullwidth-mobile" onclick="openNhanModal(\'' + safeId + '\')">✅ Nhận việc</button>';
+        } else if (tt === 'đã nhận') {
+          actionBtn = '<button class="button is-warning is-small is-fullwidth-mobile" onclick="openBaoCaoModal(\'' + safeId + '\')">📝 Báo cáo kết quả</button>';
+        } else if (tt === 'hoàn thành' || tt === 'đã hoàn thành') {
+          actionBtn = '<span class="tag is-success is-light is-medium">✔ Đã xong</span>';
+        } else if (tt === 'chưa nhận') {
+          actionBtn = '<span class="tag is-info is-light">🚫 Đã từ chối</span>';
+        } else if (tt === 'hủy') {
+          actionBtn = '<span class="tag is-danger is-light">✖ Đã hủy</span>';
+        }
+
+        html +=
+          '<div style="border-left:5px solid ' + borderColor + '; background:rgba(255,255,255,0.06); ' +
+          'border-radius:12px; padding:15px; margin-bottom:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">' +
+          '<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">' +
+          '<div style="flex:1; min-width:0;">' +
+          '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:8px;">' +
+          '<span style="background:' + badgeBg + '; color:' + borderColor + '; border:1px solid ' + borderColor + '; ' +
+          'border-radius:20px; padding:2px 12px; font-size:11px; font-weight:700; text-transform:uppercase;">' + ttIcon + ' ' + ttRaw + '</span>' +
+          kqBadge +
+          '<span style="background:rgba(255,255,255,0.1); color:#fff; border-radius:6px; padding:2px 8px; font-size:11px; font-weight:600;">' + (nv.loai_nhiem_vu || 'Khác') + '</span>' +
+          '</div>' +
+          '<div style="font-weight:700; font-size:15px; color:#fff; margin-bottom:6px; line-height:1.4;">' + (nv.noi_dung || '(Không có nội dung)') + '</div>' +
+          '<div style="font-size:12px; color:rgba(255,255,255,0.6); display:flex; flex-wrap:wrap; gap:10px;">' +
+          '<span>👤 Giao: <strong style="color:rgba(255,255,255,0.9);">' + (nv.nguoi_giao || '?') + '</strong></span>' +
+          (nv.ngay_bat_dau ? '<span>📅 BĐ: <strong style="color:rgba(255,255,255,0.9);">' + nv.ngay_bat_dau + '</strong></span>' : '') +
+          (nv.han_hoan_thanh ? '<span>⏰ Hạn: <strong style="color:#ffdd57;">' + nv.han_hoan_thanh + '</strong></span>' : '') +
+          '</div>' +
+          (nv.ghi_chu ? '<div style="background:rgba(255,221,87,0.1); border-radius:6px; padding:8px 10px; font-size:12px; color:#ffdd57; margin-top:10px; border-left:3px solid #ffdd57;">' +
+            '<strong>Báo cáo của bạn:</strong> ' + nv.ghi_chu + '</div>' : '') +
+          '</div>' +
+          '<div style="flex-shrink:0; padding-top:4px;">' + actionBtn + '</div>' +
+          '</div>' +
+          '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    /* ===== MODAL: MỞ FORM NHẬN/TỪ CHỐI NHIỆM VỤ ===== */
+    function openNhanModal(nvId) {
+      const rowData = nvTaixeDataMap[nvId];
+      if (!rowData) { showAlert('Không tìm thấy dữ liệu nhiệm vụ', 'is-warning'); return; }
+      _fillModalData(rowData);
+      document.getElementById('modal_bc_mode').value = 'nhan';
+      document.getElementById('modal_bc_title').textContent = '📥 Nhận / Từ chối nhiệm vụ';
+      document.getElementById('modal_bc_nhan_section').style.display = '';
+      document.getElementById('modal_bc_ketqua_section').style.display = 'none';
+      document.getElementById('modal_taixe_baocao').classList.add('is-active');
+    }
+
+    /* ===== MODAL: MỞ FORM BÁO CÁO KẾT QUẢ ===== */
+    function openBaoCaoModal(nvId) {
+      const rowData = nvTaixeDataMap[nvId];
+      if (!rowData) { showAlert('Không tìm thấy dữ liệu nhiệm vụ', 'is-warning'); return; }
+      _fillModalData(rowData);
+      document.getElementById('modal_bc_mode').value = 'baocao';
+      document.getElementById('modal_bc_title').textContent = '📝 Báo cáo kết quả nhiệm vụ';
+      document.getElementById('modal_bc_nhan_section').style.display = 'none';
+      document.getElementById('modal_bc_ketqua_section').style.display = '';
+      document.getElementById('modal_taixe_baocao').classList.add('is-active');
+    }
+
+    function _fillModalData(rowData) {
+      document.getElementById('modal_bc_id').value = rowData.id || '';
+      document.getElementById('modal_bc_nguoi_giao').value = rowData.nguoi_giao || '';
+      document.getElementById('modal_bc_nguoi_nhan').value = rowData.nguoi_nhan || '';
+      document.getElementById('modal_bc_loai_nv').value = rowData.loai_nhiem_vu || '';
+      document.getElementById('modal_bc_noi_dung').value = rowData.noi_dung || '';
+      document.getElementById('modal_bc_ngay_bat_dau').value = rowData.ngay_bat_dau || '';
+      document.getElementById('modal_bc_han_ht').value = rowData.han_hoan_thanh || '';
+      document.getElementById('modal_bc_ket_qua').value = rowData.ket_qua || '';
+      document.getElementById('modal_bc_ghi_chu').value = rowData.ghi_chu || '';
+      document.getElementById('modal_bc_info').textContent =
+        `📋 Loại: ${rowData.loai_nhiem_vu || 'Khác'}\n📝 ${rowData.noi_dung || ''}\n📅 Bắt đầu: ${rowData.ngay_bat_dau || '—'}  |  ⏰ Hạn: ${rowData.han_hoan_thanh || '—'}`;
+    }
+
+    function closeBaoCaoModal() {
+      document.getElementById('modal_taixe_baocao').classList.remove('is-active');
+    }
+
+    /* ===== XÁC NHẬN NHẬN / TỪ CHỐI NHIỆM VỤ ===== */
+    function confirmNhanNhiemVu(trangThai) {
+      const id = document.getElementById('modal_bc_id').value;
+      const fd = new FormData();
+      fd.append('tag', 'nhiemvu');
+      fd.append('id', id);
+      fd.append('nguoi_giao', document.getElementById('modal_bc_nguoi_giao').value);
+      fd.append('nguoi_nhan', document.getElementById('modal_bc_nguoi_nhan').value);
+      fd.append('loai_nhiem_vu', document.getElementById('modal_bc_loai_nv').value);
+      fd.append('noi_dung', document.getElementById('modal_bc_noi_dung').value);
+      fd.append('ngay_bat_dau', document.getElementById('modal_bc_ngay_bat_dau').value);
+      fd.append('han_hoan_thanh', document.getElementById('modal_bc_han_ht').value);
+      fd.append('trang_thai', trangThai);
+      fd.append('ket_qua', '');
+      fd.append('ghi_chu', '');
+
+      const label = trangThai === 'Đã nhận' ? 'nhận nhiệm vụ' : 'từ chối nhiệm vụ';
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: new URLSearchParams(fd),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      })
+        .then(res => res.json())
+        .then(r => {
+          if (r.status === 'success') {
+            showAlert(`✅ Đã ${label} thành công!`, 'is-success');
+            closeBaoCaoModal();
+            // Cập nhật ngay trong Map để nút thay đổi ngay lập tức
+            if (id && nvTaixeDataMap[id]) {
+              nvTaixeDataMap[id].trang_thai = trangThai;
+              nvTaixeDataMap[id].ket_qua = '';
+            }
+            // Re-render cards từ Map (không cần fetch lại)
+            const container = document.getElementById('nhiemvu_taixe_cards');
+            if (container) renderNhiemVuTaixeCards(Object.values(nvTaixeDataMap), container);
+            // Vẫn fetch lại sau 2s để đồng bộ với sheet
+            setTimeout(() => { if (USER_MNV) loadNhiemVuTaixe(USER_MNV); }, 2000);
+            updateNhiemVuBadge();
+          } else {
+            showAlert('Lỗi: ' + (r.message || 'Không thể cập nhật'), 'is-danger');
+          }
+        })
+        .catch(() => showAlert('Lỗi kết nối server', 'is-danger'));
+    }
+
+    /* ===== GỬI BÁO CÁO KẾT QUẢ (TỪ MODAL) ===== */
+    function submitBaoCaoModal() {
+      const ketQua = document.getElementById('modal_bc_ket_qua').value;
+      if (!ketQua) {
+        showAlert('Vui lòng chọn kết quả thực hiện', 'is-warning');
+        return;
+      }
+      const id = document.getElementById('modal_bc_id').value;
+      const ghiChu = document.getElementById('modal_bc_ghi_chu').value;
+      const fd = new FormData();
+      fd.append('tag', 'nhiemvu');
+      fd.append('id', id);
+      fd.append('nguoi_giao', document.getElementById('modal_bc_nguoi_giao').value);
+      fd.append('nguoi_nhan', document.getElementById('modal_bc_nguoi_nhan').value);
+      fd.append('loai_nhiem_vu', document.getElementById('modal_bc_loai_nv').value);
+      fd.append('noi_dung', document.getElementById('modal_bc_noi_dung').value);
+      fd.append('ngay_bat_dau', document.getElementById('modal_bc_ngay_bat_dau').value);
+      fd.append('han_hoan_thanh', document.getElementById('modal_bc_han_ht').value);
+      if (ketQua === 'Đã hoàn hoàn thành' || ketQua === 'Đã hoàn thành') {
+        fd.append('trang_thai', 'Hoàn thành');
+      } else if (ketQua === 'Đang thực hiện') {
+        fd.append('trang_thai', 'Đang thực hiện');
+      } else {
+        fd.append('trang_thai', 'Đã nhận');
+      }
+      fd.append('ket_qua', ketQua);
+      fd.append('ghi_chu', ghiChu);
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: new URLSearchParams(fd),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      })
+        .then(res => res.json())
+        .then(r => {
+          if (r.status === 'success') {
+            showAlert('📤 Đã gửi báo cáo thành công!', 'is-success');
+            closeBaoCaoModal();
+            // Cập nhật ngay trong Map
+            if (id && nvTaixeDataMap[id]) {
+              nvTaixeDataMap[id].ket_qua = ketQua;
+              nvTaixeDataMap[id].ghi_chu = ghiChu;
+            }
+            const container = document.getElementById('nhiemvu_taixe_cards');
+            if (container) renderNhiemVuTaixeCards(Object.values(nvTaixeDataMap), container);
+            setTimeout(() => { if (USER_MNV) loadNhiemVuTaixe(USER_MNV); }, 2000);
+            updateNhiemVuBadge();
+          } else {
+            showAlert('Lỗi: ' + (r.message || 'Không thể gửi báo cáo'), 'is-danger');
+          }
+        })
+        .catch(() => showAlert('Lỗi kết nối server', 'is-danger'));
+    }
+
+    /* ===== MAP LỊCH SỬ NHIỆM VỤ (Admin/Manager) ===== */
+    const nvHistoryDataMap = {};
+
     /* ===== LỊCH SỬ GIAO NHIỆM VỤ (Manager/Admin) ===== */
-    function loadNhiemVuHistory() {
+    function loadNhiemVuHistory(searchKey = "", isSilent = false) {
       const container = document.getElementById('nhiemvu_history_list');
       if (!container) return;
-      container.innerHTML = '<p class="has-text-centered has-text-grey py-4"><span class="button is-loading is-white" style="border:none;"></span> Đang tải lịch sử...</p>';
+
+      // Chỉ hiện loading nếu không phải silent refresh
+      if (!isSilent) {
+        container.innerHTML = '<p class="has-text-centered has-text-grey py-4"><span class="button is-loading is-white" style="border:none;"></span> Đang tải dữ liệu...</p>';
+      }
 
       // Lấy tất cả nhiệm vụ - backend cần key để filter, dùng USER_MNV
       const fetchAll = async () => {
         const roleToken = String(USER_ROLE || "").toLowerCase();
         // Manager cần lấy tất cả nhiệm vụ nên truyền key rỗng
         const myMnv = (roleToken === 'manager') ? '' : (USER_MNV || '');
-        // Fetch tất cả bằng cách gọi với key = mã NV hiện tại
-        const url1 = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(myMnv)}&_t=${Date.now()}`;
+
+        // Nếu có searchKey thì ưu tiên dùng searchKey
+        const keyToSearch = searchKey || myMnv;
+
+        const url1 = `${SCRIPT_URL}?tag=nhiemvu&key=${encodeURIComponent(keyToSearch)}&_t=${Date.now()}`;
         const res1 = await fetch(url1);
         return await res1.json();
       };
@@ -5160,80 +6245,98 @@ Hết hạn: ${w.ngay_he} <br>
           });
 
           let html = '';
-          filtered.forEach(nv => {
-            const tt = String(nv.trang_thai || 'Mới giao').trim();
+          filtered.forEach(function (nv) {
+            if (nv.id) nvHistoryDataMap[nv.id] = nv;
+            const ttRaw = String(nv.trang_thai || 'Mới giao').trim();
+            const tt = ttRaw.toLowerCase();
+            const kqRaw = String(nv.ket_qua || '').trim();
+            const kq = kqRaw.toLowerCase();
+
             let statusColor = '#3273dc';
             let statusBg = 'rgba(50,115,220,0.1)';
             let statusIcon = '🆕';
-            if (tt === 'Đang thực hiện') { statusColor = '#ff9900'; statusBg = 'rgba(255,153,0,0.1)'; statusIcon = '⏳'; }
-            else if (tt === 'Đã hoàn thành') { statusColor = '#23d160'; statusBg = 'rgba(35,209,96,0.1)'; statusIcon = '✅'; }
-            else if (tt === 'Hủy') { statusColor = '#ff3860'; statusBg = 'rgba(255,56,96,0.1)'; statusIcon = '❌'; }
+
+            if (tt === 'đã nhận') { statusColor = '#23d160'; statusBg = 'rgba(35,209,96,0.1)'; statusIcon = '📩'; }
+            else if (tt === 'đang thực hiện') { statusColor = '#ff9900'; statusBg = 'rgba(255,153,0,0.1)'; statusIcon = '⏳'; }
+            else if (tt === 'chưa nhận') { statusColor = '#ff3860'; statusBg = 'rgba(255,56,96,0.1)'; statusIcon = '🚫'; }
+            else if (tt === 'hoàn thành' || tt === 'đã hoàn thành') { statusColor = '#48c774'; statusBg = 'rgba(72,199,116,0.1)'; statusIcon = '✅'; }
+            else if (tt === 'hủy') { statusColor = '#ff3860'; statusBg = 'rgba(255,56,96,0.1)'; statusIcon = '❌'; }
+
+            let resultLabel = '';
+            if (kq === 'đang thực hiện' || tt === 'đang thực hiện') {
+              resultLabel = '<span style="color:#ffdd57; border:1px solid #ffdd57; border-radius:10px; padding:1px 8px; font-size:10px; font-weight:700; margin-left:8px;">⏳ Đang thực hiện</span>';
+            } else if (kq === 'đã hoàn thành' || kq === 'hoàn thành' || tt === 'hoàn thành') {
+              resultLabel = '<span style="color:#48c774; border:1px solid #48c774; border-radius:10px; padding:1px 8px; font-size:10px; font-weight:700; margin-left:8px;">✅ Hoàn thành</span>';
+            }
 
             const ngayGiao = nv.created_at ? new Date(nv.created_at).toLocaleDateString('vi-VN') : '';
             const hanHT = nv.han_hoan_thanh || '';
 
-            html += `
-              <div class="nhiemvu-history-card" onclick="editNhiemVuFromHistory(${JSON.stringify(nv).replace(/"/g, '&quot;')})" 
-                style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); border-left: 4px solid ${statusColor};
-                border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
-                transition: all 0.2s ease; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-                  <div style="flex: 1; min-width: 0;">
-                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;">
-                      <span style="background: ${statusBg}; color: ${statusColor}; border: 1px solid ${statusColor}; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; white-space: nowrap;">
-                        ${statusIcon} ${tt}
-                      </span>
-                      <span style="font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap;">📅 ${ngayGiao}</span>
-                      <span style="background: rgba(255,255,255,0.1); color: #fff; border-radius: 6px; padding: 1px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
-                        ${nv.loai_nhiem_vu || 'Khác'}
-                      </span>
-                    </div>
-                    <div style="font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
-                      ${nv.noi_dung || '(Không có nội dung)'}
-                    </div>
-                    <div style="font-size: 11px; color: rgba(255,255,255,0.6);">
-                      👤 <strong style="color: rgba(255,255,255,0.8);">${nv.nguoi_giao || '?'}</strong> → <strong style="color: rgba(255,255,255,0.8);">${nv.nguoi_nhan || '?'}</strong>
-                      ${hanHT ? ' &nbsp;|&nbsp; ⏰ Hạn: <strong style="color: rgba(255,255,255,0.8);">' + hanHT + '</strong>' : ''}
-                    </div>
-                    ${nv.ghi_chu_ket_qua ? '<div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">💬 ' + nv.ghi_chu_ket_qua + '</div>' : ''}
-                  </div>
-                  <span style="color: rgba(255,255,255,0.3); font-size: 16px; flex-shrink: 0;">›</span>
-                </div>
-              </div>`;
+            const safeHistId = String(nv.id || '').replace(/'/g, "\\'");
+            html +=
+              '<div class="nhiemvu-history-card" onclick="editNhiemVuFromHistory(\'' + safeHistId + '\')" ' +
+              'style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); border-left:5px solid ' + statusColor + '; ' +
+              'border-radius:12px; padding:15px; margin-bottom:12px; cursor:pointer; ' +
+              'transition:all 0.2s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">' +
+              '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">' +
+              '<div style="flex:1; min-width:0;">' +
+              '<div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap;">' +
+              '<span style="background:' + statusBg + '; color:' + statusColor + '; border:1px solid ' + statusColor + '; border-radius:20px; padding:2px 12px; font-size:11px; font-weight:700; text-transform:uppercase;">' +
+              statusIcon + ' ' + ttRaw +
+              '</span>' +
+              resultLabel +
+              '<span style="font-size:11px; color:rgba(255,255,255,0.4); margin-left:8px;">📅 ' + ngayGiao + '</span>' +
+              '</div>' +
+              '<div style="font-weight:700; font-size:14px; color:#fff; margin-bottom:5px; line-height:1.4;">' +
+              (nv.noi_dung || '(Không có nội dung)') +
+              '</div>' +
+              '<div style="font-size:12px; color:rgba(255,255,255,0.6); display:flex; flex-wrap:wrap; gap:10px;">' +
+              '<span>👤 <strong>' + (nv.nguoi_giao || '?') + '</strong> → <strong>' + (nv.nguoi_nhan || '?') + '</strong></span>' +
+              (hanHT ? '<span>⏰ Hạn: <strong style="color:rgba(255,255,255,0.85);">' + hanHT + '</strong></span>' : '') +
+              '<span style="background:rgba(255,255,255,0.1); color:#fff; border-radius:6px; padding:1px 8px; font-size:10px; font-weight:600;">' + (nv.loai_nhiem_vu || 'Khác') + '</span>' +
+              '</div>' +
+              (nv.ghi_chu ? '<div style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; border:1px dashed rgba(255,255,255,0.2); font-size:12px; color:#fff;">' +
+                '<strong style="color:#ffdd57;">📝 Báo cáo từ tài xế:</strong><br>' + nv.ghi_chu + '</div>' : '') +
+              '</div>' +
+              '<span style="color:rgba(255,255,255,0.3); font-size:20px; flex-shrink:0;">›</span>' +
+              '</div>' +
+              '</div>';
           });
 
           container.innerHTML = html;
 
           // Thêm hover effect cho các card
-          container.querySelectorAll('.nhiemvu-history-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
+          container.querySelectorAll('.nhiemvu-history-card').forEach(function (card) {
+            card.addEventListener('mouseenter', function () {
               card.style.background = 'rgba(255,255,255,0.2)';
               card.style.transform = 'translateX(4px)';
             });
-            card.addEventListener('mouseleave', () => {
+            card.addEventListener('mouseleave', function () {
               card.style.background = 'rgba(255,255,255,0.12)';
               card.style.transform = 'translateX(0)';
             });
           });
         })
-        .catch(err => {
+        .catch(function (err) {
           console.error('Lỗi tải lịch sử nhiệm vụ:', err);
           container.innerHTML = '<p class="has-text-centered has-text-danger py-4">Lỗi tải dữ liệu. Nhấn 🔄 để thử lại.</p>';
         });
     }
 
     /* ===== CLICK VÀO CARD LỊCH SỬ ĐỂ CHỈNH SỬA ===== */
-    function editNhiemVuFromHistory(rowData) {
-      const form = document.getElementById('nhiemvuForm');
-      if (!form) return;
+    function editNhiemVuFromHistory(nvId) {
+      const rowData = nvHistoryDataMap[nvId];
+      if (!rowData) { showAlert('Không tìm thấy dữ liệu nhiệm vụ', 'is-warning'); return; }
+      const nvForm = document.getElementById('nhiemvuForm');
+      if (!nvForm) return;
 
       // Điền dữ liệu vào form
       document.getElementById('nv_id').value = rowData.id || '';
-      form.querySelector('[name="nguoi_giao"]').value = rowData.nguoi_giao || '';
-      form.querySelector('[name="nguoi_nhan"]').value = rowData.nguoi_nhan || '';
+      nvForm.querySelector('[name="nguoi_giao"]').value = rowData.nguoi_giao || '';
+      nvForm.querySelector('[name="nguoi_nhan"]').value = rowData.nguoi_nhan || '';
 
       // Set loại nhiệm vụ
-      const loaiSelect = form.querySelector('[name="loai_nhiem_vu"]');
+      const loaiSelect = nvForm.querySelector('[name="loai_nhiem_vu"]');
       if (loaiSelect) {
         for (let opt of loaiSelect.options) {
           if (opt.text === rowData.loai_nhiem_vu || opt.value === rowData.loai_nhiem_vu) {
@@ -5243,17 +6346,13 @@ Hết hạn: ${w.ngay_he} <br>
       }
 
       // Set trạng thái
-      const trangThaiSelect = form.querySelector('[name="trang_thai"]');
-      if (trangThaiSelect) {
-        for (let opt of trangThaiSelect.options) {
-          if (opt.value === rowData.trang_thai) { opt.selected = true; break; }
-        }
-      }
+      nvForm.querySelector('[name="trang_thai"]').value = rowData.trang_thai || 'Mới giao';
+      nvForm.querySelector('[name="ket_qua"]').value = rowData.ket_qua || '';
+      nvForm.querySelector('[name="ghi_chu"]').value = rowData.ghi_chu || '';
 
-      form.querySelector('[name="noi_dung"]').value = rowData.noi_dung || '';
-      form.querySelector('[name="ngay_bat_dau"]').value = rowData.ngay_bat_dau || '';
-      form.querySelector('[name="han_hoan_thanh"]').value = rowData.han_hoan_thanh || '';
-      form.querySelector('[name="ghi_chu_ket_qua"]').value = rowData.ghi_chu_ket_qua || '';
+      nvForm.querySelector('[name="noi_dung"]').value = rowData.noi_dung || '';
+      nvForm.querySelector('[name="ngay_bat_dau"]').value = formatDateForInput(rowData.ngay_bat_dau);
+      nvForm.querySelector('[name="han_hoan_thanh"]').value = formatDateForInput(rowData.han_hoan_thanh);
 
       // Đổi tiêu đề + nút
       document.getElementById('nhiemvu_form_title').textContent = '✏️ Chỉnh sửa nhiệm vụ';
@@ -5266,111 +6365,22 @@ Hết hạn: ${w.ngay_he} <br>
       fBox.classList.remove('hidden');
       fBox.style.display = '';
 
+      // Hiện tất cả các trường cho Admin/Manager & Reset readOnly
+      document.getElementById('nhiemvu_assign_fields').style.display = '';
+      if (document.getElementById('nv_trang_thai')) {
+        document.getElementById('nv_trang_thai').closest('.column').style.display = '';
+      }
+      nvForm.querySelector('[name="noi_dung"]').readOnly = false;
+      nvForm.querySelector('[name="ngay_bat_dau"]').readOnly = false;
+      nvForm.querySelector('[name="han_hoan_thanh"]').readOnly = false;
+      nvForm.querySelector('[name="nguoi_nhan"]').readOnly = false;
+      nvForm.querySelector('[name="nguoi_nhan"]').disabled = false;
+
       // Scroll lên form
       fBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    /* ===== TÀI XẾ: NHẬN NHIỆM VỤ → Chuyển trạng thái sang "Đang thực hiện" ===== */
-    function nhanNhiemVu(rowData) {
-      if (!confirm("Bạn xác nhận NHẬN nhiệm vụ này?")) return;
 
-      const fd = new FormData();
-      fd.append("tag", "nhiemvu");
-      fd.append("id", rowData.id || "");
-      fd.append("nguoi_giao", rowData.nguoi_giao || "");
-      fd.append("nguoi_nhan", rowData.nguoi_nhan || "");
-      fd.append("loai_nhiem_vu", rowData.loai_nhiem_vu || "");
-      fd.append("trang_thai", "Đang thực hiện");
-      fd.append("noi_dung", rowData.noi_dung || "");
-      fd.append("ngay_bat_dau", rowData.ngay_bat_dau || "");
-      fd.append("han_hoan_thanh", rowData.han_hoan_thanh || "");
-      fd.append("ghi_chu_ket_qua", rowData.ghi_chu_ket_qua || "");
-
-      fetch(SCRIPT_URL, { method: "POST", body: fd })
-        .then(res => res.json())
-        .then(r => {
-          if (r.status === "success") {
-            showAlert("✅ Đã nhận nhiệm vụ thành công!", "is-success");
-            // Reload bảng
-            if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
-            updateNhiemVuBadge();
-          } else {
-            showAlert("Lỗi: " + (r.message || "Không thể nhận nhiệm vụ"), "is-danger");
-          }
-        })
-        .catch(() => showAlert("Lỗi kết nối server", "is-danger"));
-    }
-
-    /* ===== TÀI XẾ: MỞ FORM BÁO CÁO KẾT QUẢ ===== */
-    function baoCaoNhiemVu(rowData) {
-      // Hiện form ở chế độ báo cáo
-      const formBox = document.getElementById('nhiemvu_form_box');
-      const taixeArea = document.getElementById('nhiemvu_taixe_area');
-      if (formBox) formBox.style.display = '';
-      if (taixeArea) taixeArea.classList.add('hidden');
-
-      // Điền dữ liệu vào form
-      const form = document.getElementById('nhiemvuForm');
-      document.getElementById('nv_id').value = rowData.id || "";
-      form.querySelector('[name="nguoi_giao"]').value = rowData.nguoi_giao || "";
-      form.querySelector('[name="nguoi_nhan"]').value = rowData.nguoi_nhan || "";
-
-      const loaiSelect = form.querySelector('[name="loai_nhiem_vu"]');
-      if (loaiSelect) {
-        for (let opt of loaiSelect.options) {
-          if (opt.text === rowData.loai_nhiem_vu || opt.value === rowData.loai_nhiem_vu) {
-            opt.selected = true; break;
-          }
-        }
-      }
-
-      const trangThaiSelect = form.querySelector('[name="trang_thai"]');
-      if (trangThaiSelect) {
-        for (let opt of trangThaiSelect.options) {
-          if (opt.value === "Đã hoàn thành") { opt.selected = true; break; }
-        }
-      }
-
-      form.querySelector('[name="noi_dung"]').value = rowData.noi_dung || "";
-      form.querySelector('[name="ngay_bat_dau"]').value = rowData.ngay_bat_dau || "";
-      form.querySelector('[name="han_hoan_thanh"]').value = rowData.han_hoan_thanh || "";
-      form.querySelector('[name="ghi_chu_ket_qua"]').value = rowData.ghi_chu_ket_qua || "";
-
-      // Đổi tiêu đề + nút
-      document.getElementById('nhiemvu_form_title').textContent = '📝 Báo cáo kết quả nhiệm vụ';
-      document.getElementById('nhiemvu_save_btn').textContent = '📤 GỬI BÁO CÁO';
-
-      // Khóa các trường giao việc (tài xế không sửa được)
-      form.querySelector('[name="nguoi_giao"]').readOnly = true;
-      form.querySelector('[name="nguoi_nhan"]').readOnly = true;
-      form.querySelector('[name="noi_dung"]').readOnly = true;
-
-      form.scrollIntoView({ behavior: "smooth" });
-    }
-    /* ===== TÍNH SỐ NGÀY CÒN LẠI ===== */
-    function calcRemainDays(dateStr) {
-      if (!dateStr) return "";
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const target = new Date(dateStr);
-      target.setHours(0, 0, 0, 0);
-      const diff = Math.ceil(
-        (target - today) / (1000 * 60 * 60 * 24)
-      );
-      return diff >= 0 ? diff : 0;
-    }
-    function calc(input, ignoredLimit, targetField) {
-      if (!input || !input.value) return;
-      const form = input.form;
-      if (!form || !form.elements[targetField]) return;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const target = new Date(input.value);
-      if (isNaN(target.getTime())) return;
-      target.setHours(0, 0, 0, 0);
-      const diff = Math.round((target - today) / (1000 * 60 * 60 * 24));
-      form.elements[targetField].value = diff;
-    }
     /* ===== UPDATE CÁC FIELD CÒN LẠI ===== */
     function updateRemainFields() {
       const f = document.getElementById("xeForm");
@@ -5468,13 +6478,15 @@ Hết hạn: ${w.ngay_he} <br>
         form.ngay_nghi_viec.value = ""; // xóa ngày nếu đang làm việc
       }
     }
-    function loadTableByKey(tag, keyName, keyValue, tableId) {
+    function loadTableByKey(tag, keyName, keyValue, tableId, isSilent = false) {
       const table = document.getElementById(tableId);
       if (!table) return;
       const thead = table.querySelector("thead");
       const tbody = table.querySelector("tbody");
-      thead.innerHTML = "";
-      tbody.innerHTML = "";
+      if (!isSilent) {
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+      }
       /* ✅ KHÔNG CÓ KEY → LẤY HẾT */
       let url = `${SCRIPT_URL}?tag=${encodeURIComponent(tag)}`;
       /* ✅ CHỈ GẮN KEY KHI CÓ */
@@ -5509,6 +6521,7 @@ Hết hạn: ${w.ngay_he} <br>
             headers.map(h => `<th>${h}</th>`).join("") +
             "</tr>";
           /* ===== BODY ===== */
+          tbody.innerHTML = ""; // Clear just before rendering
           list.forEach(row => {
             const tr = document.createElement("tr");
             /* === CỘT CHỌN: chỉ hiện với xe / taixe === */
@@ -5671,59 +6684,71 @@ Hết hạn: ${w.ngay_he} <br>
 
       if (!data || !Array.isArray(data)) {
         console.error("Dữ liệu bảo dưỡng không hợp lệ:", data);
-        tbody.innerHTML = `<tr><td colspan="13" class="has-text-danger has-text-centered">Lỗi định dạng dữ liệu: ${typeof data === 'object' ? JSON.stringify(data) : data}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="13" class="has-text-danger has-text-centered py-4">❌ Lỗi định dạng dữ liệu từ máy chủ. Vui lòng thử lại sau.</td></tr>`;
         return;
       }
 
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="13" class="has-text-centered">Chưa có dữ liệu bảo dưỡng</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="13" class="has-text-centered py-4">📅 Hiện chưa có kế hoạch bảo dưỡng nào.</td></tr>';
         return;
       }
 
       const formatDateShort = (d) => {
-        if (!d || d === "" || d === "Invalid Date") return "";
+        if (!d || d === "" || d === "Invalid Date") return "—";
         const date = new Date(d);
-        if (isNaN(date)) return "";
+        if (isNaN(date)) return d;
         return date.toLocaleDateString('vi-VN');
       };
 
       const fmt = (val) => {
-        if (val === null || val === undefined || val === "") return "";
+        if (val === null || val === undefined || val === "") return "—";
         const n = Number(val);
         if (isNaN(n)) return val;
         return n.toLocaleString("vi-VN");
       }
 
       tbody.innerHTML = data.map((item, index) => {
-        let kmClass = "";
-        if (item.km_remain < 0) kmClass = "has-text-danger has-text-weight-bold";
-        else if (item.km_remain < 1000) kmClass = "has-text-warning has-text-weight-bold";
+        let kmClass = "has-text-success";
+        let kmIcon = "✅";
+        if (item.km_remain < 0) {
+          kmClass = "has-text-danger has-text-weight-bold";
+          kmIcon = "🚨";
+        } else if (item.km_remain < 1000) {
+          kmClass = "has-text-warning has-text-weight-bold";
+          kmIcon = "⚠️";
+        }
 
-        let dayClass = "";
-        if (item.days_remain < 0) dayClass = "has-text-danger has-text-weight-bold";
-        else if (item.days_remain < 15) dayClass = "has-text-warning has-text-weight-bold";
+        let dayClass = "has-text-info";
+        let dayIcon = "📅";
+        if (item.days_remain < 0) {
+          dayClass = "has-text-danger has-text-weight-bold";
+          dayIcon = "🚨";
+        } else if (item.days_remain < 15) {
+          dayClass = "has-text-warning has-text-weight-bold";
+          dayIcon = "⏳";
+        }
 
         return `
-        <tr style="background: white; color: black;">
+        <tr class="maintenance-row">
             <td class="has-text-centered">${index + 1}</td>
-            <td class="has-text-weight-bold">${item.bks}</td>
-            <td>${item.loai_xe || ""}</td>
-            <td>${item.trong_tai || ""}</td>
-            <td>${fmt(item.avg_km_day)}</td>
+            <td class="has-text-weight-bold">${item.bks || "—"}</td>
+            <td class="is-size-7">${item.loai_xe || "—"}</td>
+            <td class="is-size-7">${item.trong_tai || "—"}</td>
+            <td class="has-text-right">${fmt(item.avg_km_day)}</td>
             
             <!-- Kỳ trước -->
-            <td class="has-text-right" style="background: #f0f0ff;">${fmt(item.km_L2)}</td>
-            <td class="has-text-centered" style="background: #f0f0ff;">${formatDateShort(item.ngay_L2)}</td>
+            <td class="has-text-right bg-light-blue">${fmt(item.km_L2)}</td>
+            <td class="has-text-centered bg-light-blue">${formatDateShort(item.ngay_L2)}</td>
             
-            <!--Kế hoạch kỳ này-->
+            <!-- Kế hoạch kỳ này -->
             <td class="has-text-right">${fmt(item.km_L1)}</td>
             <td class="has-text-centered">${formatDateShort(item.ngay_L1)}</td>
-            <td class="has-text-right has-text-weight-bold" style="color: #0000ff;">${fmt(item.km_plan)}</td>
-            <td class="has-text-centered has-text-weight-bold" style="color: #0000ff;">${formatDateShort(item.ngay_plan)}</td>
+            <td class="has-text-right has-text-weight-bold has-text-link">${fmt(item.km_plan)}</td>
+            <td class="has-text-centered has-text-weight-bold has-text-link">${formatDateShort(item.ngay_plan)}</td>
             
-            <!--Cảnh báo-->
-            <td class="has-text-right ${kmClass}" style="background: #ffffcc;">${fmt(item.km_remain)}</td>
-            <td class="has-text-centered ${dayClass}" style="background: #ffffcc;">${item.days_remain} ngày</td>
+            <!-- Cảnh báo -->
+            <td class="has-text-right ${kmClass}" style="background: rgba(255, 255, 204, 0.4);">${kmIcon} ${fmt(item.km_remain)}</td>
+            <td class="has-text-centered ${dayClass}" style="background: rgba(255, 255, 204, 0.4);">${dayIcon} ${item.days_remain} ngày</td>
           </tr>
         `;
       }).join("");
@@ -5880,7 +6905,7 @@ Hết hạn: ${w.ngay_he} <br>
         });
     }
     const API_URL =
-      "https://script.google.com/macros/s/AKfycbzctfLVldlBEnlbHTFUylllJ1QM1NTuvBDJamkoLDlN7FYLNOHHUz5rxjrdu7W7M2mx/exec";
+      "https://script.google.com/macros/s/AKfycbya7Dglug6AIquYYUqt8Qqo3FhX3czlAUWa18VeSk29Oags8M86AiEwtrIdHqrMNL68/exec";
     function autoFillTaiXe(mnv, targetInput) {
       if (!mnv) {
         targetInput.value = "";
@@ -5987,6 +7012,7 @@ Hết hạn: ${w.ngay_he} <br>
       // Ẩn home, hiện login
       document.getElementById("home")?.classList.add("hidden");
       document.getElementById("login")?.classList.remove("hidden");
+      document.getElementById("userProfileWidget")?.classList.add("hidden");
       showToggleBtn(false); // Ẩn nút khi logout
     }
     /* ================= PINCH ZOOM LOGIC ================= */
@@ -6790,6 +7816,343 @@ Hết hạn: ${w.ngay_he} <br>
         else { showAlert("Lỗi: " + (result.message || ""), "is-danger"); }
       } catch (err) { showAlert("Lỗi kết nối", "is-danger"); }
     }
+
+    /* ================= STEP 1: LOGIC THÔNG BÁO NỘI BỘ ================= */
+    async function loadNotices(isSilent = false) {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?tag=thongbao&_t=${Date.now()}`);
+        const data = await res.json();
+        if (!data || data.length === 0) {
+          const banner = document.getElementById('home_notice_banner');
+          if (banner) banner.classList.add('hidden');
+          const listContainer = document.getElementById('notice_list');
+          if (listContainer) {
+            listContainer.innerHTML = '<p class="has-text-centered py-5 has-text-grey">Chưa có thông báo nào.</p>';
+          }
+          return;
+        }
+
+        if (data[0].error) {
+          const listContainer = document.getElementById('notice_list');
+          if (listContainer) {
+            listContainer.innerHTML = `<p class="has-text-centered py-5 has-text-danger">${data[0].error}</p>`;
+          }
+          return;
+        }
+
+        // 1. Hiển thị banner ở Home
+        const banner = document.getElementById('home_notice_banner');
+        if (banner) banner.classList.remove('hidden');
+
+        // Note: data is sorted from oldest to newest if Google Sheet appendRow is used.
+        // We probably want the newest info on the banner. We should reverse the array.
+        const reversedData = [...data].reverse();
+        const latestInfo = reversedData[0];
+        const marquee = document.getElementById('notice_marquee');
+        if (marquee) marquee.innerText = `${latestInfo.uu_tien || 'Tin mới'}: ${latestInfo.tieu_de} - ${latestInfo.noi_dung} (Ngày đăng: ${latestInfo.ngay_dang || '...'})`;
+
+        // 2. Render danh sách chi tiết ở Tab
+        const listContainer = document.getElementById('notice_list');
+        if (listContainer) {
+          listContainer.innerHTML = reversedData.map(n => `
+            <div class="notice-card notice-${(n.uu_tien || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '')}">
+              <div class="is-flex is-justify-content-space-between">
+                <span class="has-text-weight-bold is-size-6">${n.tieu_de}</span>
+                <span class="tag is-small ${n.uu_tien === 'Khẩn cấp' ? 'is-danger' : (n.uu_tien === 'Quan trọng' ? 'is-warning' : 'is-info')}">${n.uu_tien}</span>
+              </div>
+              <p class="is-size-7 mt-2" style="white-space: pre-wrap;">${n.noi_dung}</p>
+              <div class="notice-date">Đăng bởi: <strong>${n.nguoi_dang}</strong> | ${n.ngay_dang}</div>
+            </div>
+          `).join('');
+        }
+      } catch (err) { console.warn("Lỗi tải thông báo:", err); }
+    }
+
+    function openCreateNotice() {
+      const box = document.getElementById('notice_form_box');
+      if (box) box.classList.remove('hidden');
+      const author = document.getElementById('notice_author');
+      if (author) author.value = (document.getElementById('up_hoten')?.innerText || USER_MNV).trim();
+      const dateInp = document.querySelector('#noticeForm input[name="ngay_dang"]');
+      if (dateInp) dateInp.value = new Date().toLocaleDateString('vi-VN');
+    }
+
+    /* ================= STEP 2: LOGIC QUẢN LÝ LỐP XE ================= */
+    function openLopXeForm() {
+      const box = document.getElementById('lopxe_form_box');
+      if (box) {
+        box.classList.remove('hidden');
+        document.getElementById('lopxeForm').reset();
+        // Set default date to today
+        const dateInput = box.querySelector('input[name="ngay_thay"]');
+        if (dateInput) {
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          dateInput.value = `${y}-${m}-${d}`;
+        }
+      }
+    }
+
+    function searchLopXe() {
+      const bsx = document.getElementById('lopxe_search_key').value.trim();
+      if (!bsx) {
+        showAlert("Vui lòng nhập Biển số xe để tra cứu!", "is-warning");
+        return;
+      }
+      loadLopXeHistory(bsx);
+    }
+
+    async function loadLopXeHistory(isSilentOrBSX = false) {
+      const container = document.getElementById('lopxe_list');
+      if (!container) return;
+
+      let searchBSX = "";
+      let isSilent = false;
+
+      if (typeof isSilentOrBSX === "string") {
+        searchBSX = isSilentOrBSX;
+      } else if (typeof isSilentOrBSX === "boolean") {
+        isSilent = isSilentOrBSX;
+        // Nếu refresh ngầm, lấy search key hiện tại từ UI (nếu có)
+        const inp = document.getElementById('lopxe_search_key');
+        if (inp && inp.value.trim()) {
+          searchBSX = inp.value.trim().toUpperCase();
+        }
+      }
+
+      if (!isSilent) {
+        container.innerHTML = `<p class="has-text-centered py-5"><button class="button is-loading is-white">Đang tải dữ liệu...</button></p>`;
+      }
+
+      try {
+        let url = `${SCRIPT_URL}?tag=lopxe&_t=${Date.now()}`;
+        if (searchBSX) url += `&bien_so_xe=${encodeURIComponent(searchBSX)}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+          container.innerHTML = `<p class="has-text-centered py-5 has-text-grey">Không tìm thấy dữ liệu lốp xe${searchBSX ? ` cho xe ${searchBSX}` : ''}.</p>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="columns is-multiline mx-1">
+            ${data.map(item => `
+              <div class="column is-12-mobile is-6-tablet is-4-desktop">
+                <div class="box p-4" style="border-top: 5px solid #00d1b2; border-radius: 12px; background: #1a2340; box-shadow: 0 8px 24px rgba(0,0,0,0.3); transition: transform 0.2s; position: relative; overflow: hidden; color: #fff;">
+                  <div style="position: absolute; top: 10px; right: 10px; opacity: 0.15; font-size: 4rem; color: #fff;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" style="width: 1em; height: 1em;">
+                      <path d="M492.3 224L480 183.1 433.2 196l-20.9-46.1 40-27L420.2 87.2l-45.1 22.8-35.9-35.9L362.1 29.1 326.3 0c-10.7 30-18.6 32-70.3 32s-60.1-2-70.3-32L149.9 29.1l22.9 45.1-35.9 35.9-45.1-22.8-31.9 35.7 40 27-21 46.1L32 183.1 19.7 224h43.3c-2 10.5-3 21.2-3 32s1 21.5 3 32H19.7L32 328.9l46.8-12.9 20.9 46.1-40 27 31.9 35.7 45.1-22.8 35.9 35.9-22.9 45.1 35.8 29.1c10.3-29.8 18.2-31 69.4-31s59.1 1 69.4 31l36.2-29.1-22.9-45.1 35.9-35.9 45.1 22.8 32-35.7-40-27 21-46.1 46.8 12.9 12.3-40.9h-43.3c2-10.5 3-21.2 3-32s-1-21.5-3-32h43.3zM256 368c-61.9 0-112-50.1-112-112s50.1-112 112-112 112 50.1 112 112-50.1 112-112 112zm64-112c0 35.3-28.7 64-64 64s-64-28.7-64-64 28.7-64 64-64 64 28.7 64 64z"/>
+                      <circle cx="256" cy="256" r="32"/>
+                    </svg>
+                  </div>
+                  <div class="is-flex is-justify-content-space-between is-align-items-center mb-3 pb-2" style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                    <span class="is-size-5 has-text-weight-bold" style="color: #00ffcc;">${item.bien_so_xe || '-'}</span>
+                    <span class="tag is-medium is-white is-light has-text-weight-bold" style="color:#1a2340 !important;">${item.vi_tri_lop || '-'}</span>
+                  </div>
+                  <div class="content is-size-6 mb-0 mt-2">
+                    <p class="mb-2 is-flex is-justify-content-space-between" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                      <span class="has-text-weight-semibold" style="color: #ccc;">📅 Ngày thay:</span> 
+                      <strong style="color: #fff;">${item.ngay_thay || '-'}</strong>
+                    </p>
+                    <p class="mb-2 is-flex is-justify-content-space-between" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                      <span class="has-text-weight-semibold" style="color: #ccc;">🏎️ ODO lúc thay:</span> 
+                      <strong style="color: #00ffcc;">${item.km_thay ? Number(item.km_thay).toLocaleString('vi-VN') + ' KM' : '-'}</strong>
+                    </p>
+                    <p class="mb-2 is-flex is-justify-content-space-between" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                      <span class="has-text-weight-semibold" style="color: #ccc;">🏷️ Thương hiệu:</span> 
+                      <strong style="color: #fff;">${item.thuong_hieu || '-'}</strong>
+                    </p>
+                    <p class="mb-0 is-flex is-justify-content-space-between">
+                      <span class="has-text-weight-semibold" style="color: #ccc;">🔋 Tình trạng:</span> 
+                      ${item.tinh_trang === 'Mới 100%' ? '<span class="tag is-primary has-text-weight-bold">Mới 100%</span>' :
+            (item.tinh_trang === 'Cũ' ? '<span class="tag is-warning has-text-weight-bold">Cũ</span>' :
+              '<span class="tag is-info has-text-weight-bold">' + (item.tinh_trang || '-') + '</span>')}
+                    </p>
+                  </div>
+                  ${item.ghi_chu ? `<div class="mt-3 p-2" style="background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid #00d1b2;">
+                    <span class="is-size-7 has-text-weight-bold" style="color: #aaa;">📝 GHI CHÚ:</span>
+                    <p class="is-size-7" style="color: #eee; margin-top: 2px;">${item.ghi_chu}</p>
+                  </div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } catch (err) {
+        console.error("Lỗi tải lịch sử lốp xe:", err);
+        container.innerHTML = `<p class="has-text-centered py-5 has-text-danger">Lỗi kết nối máy chủ.</p>`;
+      }
+    }
+
+    // ================= QUẢN LÝ ĐIỂM GIAO HÀNG =================
+    let allDeliveryPoints = [];
+
+    async function loadDeliveryPoints(isSilent = false) {
+      const container = document.getElementById('deliveryPointsList');
+      if (!container) return;
+
+      // Phân quyền hiện nút Thêm điểm - MỞ CHO TẤT CẢ VÌ LÀ CƠ SỞ DỮ LIỆU CHUNG
+      const btnAdd = document.getElementById('btnAddPoint');
+      if (btnAdd) {
+        btnAdd.style.display = 'block';
+      }
+
+      if (!isSilent) {
+        container.innerHTML = `<div class="column is-12 has-text-centered py-5"><button class="button is-loading is-white">Đang tải dữ liệu...</button></div>`;
+      }
+
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=get_delivery_points&_t=${Date.now()}`);
+        const result = await res.json();
+
+        if (result.status === "success") {
+          allDeliveryPoints = result.data;
+          filterDeliveryPoints(); // Dùng filter để giữ lại kết quả tìm kiếm nếu đang gõ
+        } else {
+          container.innerHTML = `<div class="column is-12 has-text-centered py-5 has-text-danger">Lỗi: ${result.message}</div>`;
+        }
+      } catch (err) {
+        console.error("Lỗi tải điểm giao hàng:", err);
+        container.innerHTML = `<div class="column is-12 has-text-centered py-5 has-text-danger">Lỗi kết nối máy chủ.</div>`;
+      }
+    }
+
+    function renderDeliveryPoints(data) {
+      const container = document.getElementById('deliveryPointsList');
+      if (!container) return;
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="column is-12 has-text-centered py-5 has-text-grey">Chưa có điểm giao hàng nào.</div>`;
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <div class="column is-6-mobile is-4-tablet is-3-desktop p-2">
+          <div class="box p-2 h-100 is-flex is-flex-direction-column" style="border-radius:10px; border-left: 4px solid #485fc7; position:relative; background:#fff !important; color:#333 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;">
+            <div class="is-flex is-justify-content-space-between is-align-items-start mb-1">
+              <h4 class="has-text-weight-bold is-size-6 mb-0" style="color:#2c3e50 !important; text-shadow:none !important; line-height:1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${item.ten_diem || 'Chưa đặt tên'}</h4>
+              <button class="button is-small is-white p-0" style="height:20px; width:20px;" onclick="openEditPoint('${item.id}')"><i class="fas fa-edit" style="font-size:10px;"></i></button>
+            </div>
+            <p class="is-size-7 has-text-grey-dark mb-1" style="font-size: 10px !important; line-height:1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><i class="fas fa-map-marker-alt mr-1"></i>${item.dia_chi || 'Không có địa chỉ'}</p>
+            
+            <div class="is-flex is-align-items-center mb-1" style="gap: 5px; flex-wrap: wrap;">
+              <span class="is-size-7 has-text-grey" style="font-size: 9px !important;"><i class="fas fa-location-arrow mr-1"></i>${item.lat || '-'},${item.lng || '-'}</span>
+              ${item.maps_link ? `<span class="tag is-success is-light" style="font-size: 8px; padding: 0 4px; height: 16px;"><i class="fas fa-link mr-1"></i>Link</span>` : ''}
+            </div>
+
+            ${item.ghi_chu ? `<p class="is-size-7 mb-2" style="font-style:italic; color:#7f8c8d; font-size: 10px !important; line-height:1.2; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">"${item.ghi_chu}"</p>` : ''}
+            
+            <div class="mt-auto pt-1">
+              <button class="button is-info is-fullwidth is-small is-rounded has-text-weight-bold" style="font-size: 9px !important; height: 24px;" onclick="navigateToPoint('${item.lat}', '${item.lng}', '${item.dia_chi}', '${item.maps_link ? encodeURIComponent(item.maps_link) : ''}')">
+                <i class="fas fa-directions mr-1"></i> CHỈ ĐƯỜNG
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterDeliveryPoints() {
+      const q = document.getElementById('searchPoint').value.toLowerCase().trim();
+      const filtered = allDeliveryPoints.filter(i =>
+        (i.ten_diem || "").toLowerCase().includes(q) ||
+        (i.dia_chi || "").toLowerCase().includes(q)
+      );
+      renderDeliveryPoints(filtered);
+    }
+
+    function navigateToPoint(lat, lng, address, maps_link) {
+      let url = "";
+      // Ưu tiên dùng link trực tiếp nếu có
+      if (maps_link && maps_link !== "") {
+        url = decodeURIComponent(maps_link);
+      } else if (lat && lng && lat !== "undefined" && lng !== "undefined" && lat !== "" && lng !== "") {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      } else if (address) {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+      } else {
+        showAlert("Điểm này chưa có phối hợp hoặc link chỉ đường!", "is-warning");
+        return;
+      }
+      window.open(url, '_blank');
+    }
+
+    function openAddPointModal() {
+      document.getElementById('formPoint').reset();
+      document.getElementById('p_id').value = "";
+      document.getElementById('pointModalTitle').innerText = "📍 THÊM ĐIỂM GIAO HÀNG";
+      document.getElementById('modalPoint').classList.add('is-active');
+    }
+
+    function openEditPoint(id) {
+      const item = allDeliveryPoints.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('p_id').value = item.id;
+      document.getElementById('p_ten').value = item.ten_diem || "";
+      document.getElementById('p_diachi').value = item.dia_chi || "";
+      document.getElementById('p_maps_link').value = item.maps_link || "";
+      document.getElementById('p_lat').value = item.lat || "";
+      document.getElementById('p_lng').value = item.lng || "";
+      document.getElementById('p_ghichu').value = item.ghi_chu || "";
+
+      document.getElementById('pointModalTitle').innerText = "📍 CẬP NHẬT ĐIỂM GIAO";
+      document.getElementById('modalPoint').classList.add('is-active');
+    }
+
+    function closePointModal() {
+      document.getElementById('modalPoint').classList.remove('is-active');
+    }
+
+    async function savePoint(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSavePoint');
+      const originalText = btn.innerText;
+
+      const data = {
+        action: "save",
+        tag: "diemgiaohang",
+        id: document.getElementById('p_id').value,
+        ten_diem: document.getElementById('p_ten').value,
+        dia_chi: document.getElementById('p_diachi').value,
+        maps_link: document.getElementById('p_maps_link').value,
+        lat: document.getElementById('p_lat').value,
+        lng: document.getElementById('p_lng').value,
+        ghi_chu: document.getElementById('p_ghichu').value,
+        auth_mnv: USER_MNV,
+        auth_role: USER_ROLE
+      };
+
+      btn.classList.add('is-loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: new URLSearchParams(data)
+        });
+        const result = await res.json();
+
+        if (result.status === "success") {
+          showAlert("Đã lưu điểm giao hàng thành công!", "is-success");
+          closePointModal();
+          loadDeliveryPoints();
+        } else {
+          showAlert("Lỗi: " + result.message, "is-danger");
+        }
+      } catch (err) {
+        showAlert("Lỗi kết nối khi lưu dữ liệu.", "is-danger");
+      } finally {
+        btn.classList.remove('is-loading');
+        btn.disabled = false;
+        btn.innerText = originalText;
+      }
+    }
+
 
   </script>
   <!-- Nút ẩn hiện bảng -->
