@@ -2022,8 +2022,141 @@
           <div class="app-name">Quản lý lốp</div>
         </div>
 
+        <div class="app-card" data-tag="diemgiaohang" onclick="openTag('diemgiaohang');">
+          <div class="app-icon">
+            <svg viewBox="0 0 384 512" width="1em" height="1em" fill="currentColor">
+              <defs>
+                <linearGradient id="pinGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ee5253;stop-opacity:1" />
+                </linearGradient>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+                  <feOffset dx="0" dy="4" result="offsetblur" />
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.5" />
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path filter="url(#shadow)" fill="url(#pinGradient)"
+                d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
+            </svg>
+          </div>
+          <div class="app-name">Điểm giao hàng</div>
+        </div>
+
       </div>
     </div>
+    <!-- ================= START TAG: ĐIỂM GIAO HÀNG ================= -->
+    <div id="diemgiaohang" class="hidden form-box">
+      <button class="floating-back-btn" type="button" onclick="backHome()">⬅ Quay lại</button>
+      <div class="is-flex is-justify-content-space-between is-align-items-center mb-4 mt-2">
+        <h2 class="title is-4 has-text-weight-bold mb-0" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.8rem; display: flex; align-items: center; color: white;">
+            <svg viewBox="0 0 384 512" width="1em" height="1em" fill="currentColor">
+              <path
+                d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z" />
+            </svg>
+          </span>
+          ĐIỂM GIAO HÀNG
+        </h2>
+        <button class="button is-primary is-small" onclick="openAddPointModal()" id="btnAddPoint" style="display:none;">
+          ➕ Thêm điểm
+        </button>
+      </div>
+
+      <div class="field mb-4">
+        <div class="control has-icons-left">
+          <input class="input is-rounded" type="text" id="searchPoint" placeholder="Tìm tên điểm hoặc địa chỉ..."
+            onkeyup="filterDeliveryPoints()">
+          <span class="icon is-left">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+
+      <div id="deliveryPointsList" class="columns is-multiline">
+        <!-- JS đổ dữ liệu vào đây -->
+        <div class="column is-12 has-text-centered py-5">
+          <button class="button is-loading is-white">Đang tải dữ liệu...</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL THÊM/SỬA ĐIỂM GIAO HÀNG -->
+    <div id="modalPoint" class="modal">
+      <div class="modal-background" onclick="closePointModal()"
+        style="background: rgba(0,0,0,0.7) !important; backdrop-filter: blur(5px);"></div>
+      <div class="modal-content" style="max-width: 500px; width: 95%;">
+        <div class="box p-5"
+          style="border-radius: 24px; background: rgba(25, 33, 56, 0.9) !important; backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: 0 24px 64px rgba(0,0,0,0.5) !important;">
+          <h3 class="title is-4 has-text-centered mb-5" id="pointModalTitle"
+            style="color:#fff !important; text-shadow: 0 2px 10px rgba(0,0,0,0.5) !important; letter-spacing: 1px;">📍
+            THÊM ĐIỂM GIAO HÀNG</h3>
+          <form id="formPoint" onsubmit="savePoint(event)">
+            <input type="hidden" id="p_id">
+            <div class="field">
+              <label class="label">Tên điểm giao</label>
+              <div class="control has-icons-left">
+                <input class="input" type="text" id="p_ten" required placeholder="Ví dụ: Kho A - Thủ Đức">
+                <span class="icon is-small is-left"><i class="fas fa-tag"></i></span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">🏠 Địa chỉ</label>
+              <div class="control has-icons-left">
+                <input class="input" type="text" id="p_diachi" required placeholder="Nhập địa chỉ chi tiết">
+                <span class="icon is-small is-left"><i class="fas fa-map-marker-alt"></i></span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">🔗 Link Google Maps</label>
+              <div class="control has-icons-left">
+                <input class="input" type="text" id="p_maps_link" placeholder="Dán link Google Maps vào đây">
+                <span class="icon is-small is-left"><i class="fas fa-link"></i></span>
+              </div>
+              <p class="help is-info">Lái xe có thể dán link tọa độ thực tế tại đây.</p>
+            </div>
+            <div class="columns is-mobile">
+              <div class="column">
+                <div class="field">
+                  <label class="label">Latitude</label>
+                  <div class="control">
+                    <input class="input" type="text" id="p_lat" placeholder="10.123456">
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">Longitude</label>
+                  <div class="control">
+                    <input class="input" type="text" id="p_lng" placeholder="106.123456">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="help is-light mb-4 opacity-75">Bạn có thể lấy tọa độ từ Google Maps (chuột phải vào điểm trên bản
+              đồ).</p>
+            <div class="field">
+              <label class="label">Ghi chú</label>
+              <div class="control">
+                <textarea class="textarea" id="p_ghichu" rows="2" placeholder="Chỉ dẫn thêm..."></textarea>
+              </div>
+            </div>
+            <div class="buttons is-centered mt-5">
+              <button class="button is-primary is-fullwidth has-text-weight-bold" type="submit" id="btnSavePoint"
+                style="height: 50px; border-radius: 12px; font-size: 1.1rem;">LƯU DỮ LIỆU</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close" onclick="closePointModal()"></button>
+    </div>
+
     <!-- ================= START TAG: LỊCH LÀM VIỆC ================= -->
     <div id="lichlamviec" class="hidden form-box"
       style="margin-left: -12px !important; margin-right: -12px !important; width: calc(100% + 24px) !important; max-width: none !important; padding: 0 5px !important;">
@@ -4031,16 +4164,16 @@
       }, 4000);
     }
     /* ================= CONFIG ================= */
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_B-sg7-C_MCNl5HNdZcvcuPXRUsBVyFnbt4g9fJzl8R3MLtPqIGtPWxg8SfBV2-I/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbya7Dglug6AIquYYUqt8Qqo3FhX3czlAUWa18VeSk29Oags8M86AiEwtrIdHqrMNL68/exec";
     const ACCOUNT_SS_ID = "1i0CFkUWJoY18C-DKIlavRpbsYYVIM4fpKtIYGkdPZ-A";
 
     let USER_ROLE = null; // manager | admin | taixe
     let USER_MNV = null;
     const ROLE_PERMISSION = {
-      manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"],
-      admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"],
-      taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"],
-      driver: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe"]
+      manager: ["xe", "taixe", "nhatky", "baoduong", "fuel", "danhgia", "baocao", "kehoachbaoduong", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"],
+      admin: ["nhatky", "baoduong", "fuel", "danhgia", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"],
+      taixe: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"],
+      driver: ["nhatky", "baoduong", "fuel", "kehoachbaoduong", "baocao", "fuelgrid", "lichlamviec", "nhiemvu", "thongbao", "lopxe", "diemgiaohang"]
     };
 
     const ALL_TAGS = [
@@ -4062,7 +4195,8 @@
       "nhiemvu",
       "nhiemvu_table",
       "thongbao",
-      "lopxe"
+      "lopxe",
+      "diemgiaohang"
     ];
     /* ================= LOGIN ================= */
     const LOGIN_API = "https://script.google.com/macros/s/AKfycbxX3bSw1X7E5YAiSImtaWivFjovi-_xWl7klWtgMznGbzguch9w9s-7DWB0REtDBc3-/exec";
@@ -4567,12 +4701,17 @@ Hết hạn: ${w.ngay_he} <br>
                 if (USER_ROLE === 'taixe' || USER_ROLE === 'driver' || (USER_MNV && USER_MNV.startsWith('TX'))) {
                   loadNhiemVuTaixe(USER_MNV, true);
                 } else {
-                  loadNhiemVuHistory("", true);
+                  const sKey = document.getElementById("search_nhiemvu_key")?.value?.trim() || "";
+                  loadNhiemVuHistory(sKey, true);
                 }
               } else if (tag === 'baocao') {
                 loadReport(true);
               } else if (tag === 'thongbao') {
                 loadNotices(true);
+              } else if (tag === 'lopxe') {
+                loadLopXeHistory(true);
+              } else if (tag === 'diemgiaohang') {
+                loadDeliveryPoints(true);
               }
             }
           });
@@ -5098,8 +5237,9 @@ Hết hạn: ${w.ngay_he} <br>
       loadFuelGridBackground(fuelM, fuelY, fuelBsxVal, isSilent);
       loadKmGridBackground(kmM, kmY, kmBsxVal, isSilent);
 
-      loadNotices();
+      loadNotices(isSilent);
       loadLopXeHistory(isSilent);
+      loadDeliveryPoints(isSilent);
     }
 
     async function loadFuelGridBackground(m, y, bsx, isSilent = false) {
@@ -5341,26 +5481,31 @@ Hết hạn: ${w.ngay_he} <br>
           document.getElementById('nhiemvu_search_box').style.display = 'none';
           document.getElementById('nhiemvu_history_area').style.display = 'none';
           document.getElementById('nhiemvu_taixe_area').classList.remove('hidden');
-          if (USER_MNV) loadNhiemVuTaixe(USER_MNV);
+          if (USER_MNV) loadNhiemVuTaixe(USER_MNV, true);
         } else {
           // MANAGER / ADMIN: Mặc định hiện Lịch sử + Tìm kiếm, ẩn Form
           document.getElementById('nhiemvu_form_box').classList.add('hidden');
           document.getElementById('nhiemvu_search_box').style.display = '';
           document.getElementById('nhiemvu_history_area').style.display = '';
           document.getElementById('nhiemvu_taixe_area').classList.add('hidden');
-          // Tự động load lịch sử giao nhiệm vụ
-          loadNhiemVuHistory();
+          // Tự động load lịch sử giao nhiệm vụ (Silent if already pre-loaded)
+          loadNhiemVuHistory("", true);
         }
       }
 
       // ===== THÔNG BÁO NỘI BỘ =====
       if (tagId === 'thongbao') {
-        loadNotices();
+        loadNotices(true);
       }
 
       // ===== QUẢN LÝ LỐP XE =====
       if (tagId === 'lopxe') {
-        loadLopXeHistory();
+        loadLopXeHistory(true);
+      }
+
+      // ===== QUẢN LÝ ĐIỂM GIAO HÀNG =====
+      if (tagId === 'diemgiaohang') {
+        loadDeliveryPoints(true);
       }
     }
 
@@ -6760,7 +6905,7 @@ Hết hạn: ${w.ngay_he} <br>
         });
     }
     const API_URL =
-      "https://script.google.com/macros/s/AKfycby_B-sg7-C_MCNl5HNdZcvcuPXRUsBVyFnbt4g9fJzl8R3MLtPqIGtPWxg8SfBV2-I/exec";
+      "https://script.google.com/macros/s/AKfycbya7Dglug6AIquYYUqt8Qqo3FhX3czlAUWa18VeSk29Oags8M86AiEwtrIdHqrMNL68/exec";
     function autoFillTaiXe(mnv, targetInput) {
       if (!mnv) {
         targetInput.value = "";
@@ -7673,7 +7818,7 @@ Hết hạn: ${w.ngay_he} <br>
     }
 
     /* ================= STEP 1: LOGIC THÔNG BÁO NỘI BỘ ================= */
-    async function loadNotices() {
+    async function loadNotices(isSilent = false) {
       try {
         const res = await fetch(`${SCRIPT_URL}?tag=thongbao&_t=${Date.now()}`);
         const data = await res.json();
@@ -7770,6 +7915,11 @@ Hết hạn: ${w.ngay_he} <br>
         searchBSX = isSilentOrBSX;
       } else if (typeof isSilentOrBSX === "boolean") {
         isSilent = isSilentOrBSX;
+        // Nếu refresh ngầm, lấy search key hiện tại từ UI (nếu có)
+        const inp = document.getElementById('lopxe_search_key');
+        if (inp && inp.value.trim()) {
+          searchBSX = inp.value.trim().toUpperCase();
+        }
       }
 
       if (!isSilent) {
@@ -7835,6 +7985,171 @@ Hết hạn: ${w.ngay_he} <br>
       } catch (err) {
         console.error("Lỗi tải lịch sử lốp xe:", err);
         container.innerHTML = `<p class="has-text-centered py-5 has-text-danger">Lỗi kết nối máy chủ.</p>`;
+      }
+    }
+
+    // ================= QUẢN LÝ ĐIỂM GIAO HÀNG =================
+    let allDeliveryPoints = [];
+
+    async function loadDeliveryPoints(isSilent = false) {
+      const container = document.getElementById('deliveryPointsList');
+      if (!container) return;
+
+      // Phân quyền hiện nút Thêm điểm - MỞ CHO TẤT CẢ VÌ LÀ CƠ SỞ DỮ LIỆU CHUNG
+      const btnAdd = document.getElementById('btnAddPoint');
+      if (btnAdd) {
+        btnAdd.style.display = 'block';
+      }
+
+      if (!isSilent) {
+        container.innerHTML = `<div class="column is-12 has-text-centered py-5"><button class="button is-loading is-white">Đang tải dữ liệu...</button></div>`;
+      }
+
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=get_delivery_points&_t=${Date.now()}`);
+        const result = await res.json();
+
+        if (result.status === "success") {
+          allDeliveryPoints = result.data;
+          filterDeliveryPoints(); // Dùng filter để giữ lại kết quả tìm kiếm nếu đang gõ
+        } else {
+          container.innerHTML = `<div class="column is-12 has-text-centered py-5 has-text-danger">Lỗi: ${result.message}</div>`;
+        }
+      } catch (err) {
+        console.error("Lỗi tải điểm giao hàng:", err);
+        container.innerHTML = `<div class="column is-12 has-text-centered py-5 has-text-danger">Lỗi kết nối máy chủ.</div>`;
+      }
+    }
+
+    function renderDeliveryPoints(data) {
+      const container = document.getElementById('deliveryPointsList');
+      if (!container) return;
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="column is-12 has-text-centered py-5 has-text-grey">Chưa có điểm giao hàng nào.</div>`;
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <div class="column is-12-mobile is-6-tablet is-4-desktop">
+          <div class="box p-3 h-100 is-flex is-flex-direction-column" style="border-radius:12px; border-left: 5px solid #485fc7; position:relative; background:#fff !important; color:#333 !important;">
+            <div class="is-flex is-justify-content-space-between is-align-items-start mb-2">
+              <h4 class="has-text-weight-bold is-size-5 mb-0" style="color:#2c3e50 !important; text-shadow:none !important;">${item.ten_diem || 'Chưa đặt tên'}</h4>
+              <button class="button is-small is-white" onclick="openEditPoint('${item.id}')"><i class="fas fa-edit"></i></button>
+            </div>
+            <p class="is-size-7 has-text-grey-dark mb-1"><i class="fas fa-map-marker-alt mr-2"></i>${item.dia_chi || 'Không có địa chỉ'}</p>
+            
+            <div class="is-flex is-align-items-center mb-2" style="gap: 15px;">
+              <span class="is-size-7 has-text-grey"><i class="fas fa-location-arrow mr-1"></i>${item.lat || '-'}, ${item.lng || '-'}</span>
+              ${item.maps_link ? `<span class="tag is-success is-light is-small"><i class="fas fa-link mr-1"></i>Link Maps</span>` : ''}
+            </div>
+
+            ${item.ghi_chu ? `<p class="is-size-7 mb-3" style="font-style:italic; color:#7f8c8d;">"${item.ghi_chu}"</p>` : ''}
+            
+            <div class="mt-auto pt-2">
+              <button class="button is-info is-fullwidth is-small is-rounded has-text-weight-bold" onclick="navigateToPoint('${item.lat}', '${item.lng}', '${item.dia_chi}', '${item.maps_link ? encodeURIComponent(item.maps_link) : ''}')">
+                <i class="fas fa-directions mr-2"></i> CHỈ ĐƯỜNG (MAPS)
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterDeliveryPoints() {
+      const q = document.getElementById('searchPoint').value.toLowerCase().trim();
+      const filtered = allDeliveryPoints.filter(i =>
+        (i.ten_diem || "").toLowerCase().includes(q) ||
+        (i.dia_chi || "").toLowerCase().includes(q)
+      );
+      renderDeliveryPoints(filtered);
+    }
+
+    function navigateToPoint(lat, lng, address, maps_link) {
+      let url = "";
+      // Ưu tiên dùng link trực tiếp nếu có
+      if (maps_link && maps_link !== "") {
+        url = decodeURIComponent(maps_link);
+      } else if (lat && lng && lat !== "undefined" && lng !== "undefined" && lat !== "" && lng !== "") {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      } else if (address) {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+      } else {
+        showAlert("Điểm này chưa có phối hợp hoặc link chỉ đường!", "is-warning");
+        return;
+      }
+      window.open(url, '_blank');
+    }
+
+    function openAddPointModal() {
+      document.getElementById('formPoint').reset();
+      document.getElementById('p_id').value = "";
+      document.getElementById('pointModalTitle').innerText = "📍 THÊM ĐIỂM GIAO HÀNG";
+      document.getElementById('modalPoint').classList.add('is-active');
+    }
+
+    function openEditPoint(id) {
+      const item = allDeliveryPoints.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('p_id').value = item.id;
+      document.getElementById('p_ten').value = item.ten_diem || "";
+      document.getElementById('p_diachi').value = item.dia_chi || "";
+      document.getElementById('p_maps_link').value = item.maps_link || "";
+      document.getElementById('p_lat').value = item.lat || "";
+      document.getElementById('p_lng').value = item.lng || "";
+      document.getElementById('p_ghichu').value = item.ghi_chu || "";
+
+      document.getElementById('pointModalTitle').innerText = "📍 CẬP NHẬT ĐIỂM GIAO";
+      document.getElementById('modalPoint').classList.add('is-active');
+    }
+
+    function closePointModal() {
+      document.getElementById('modalPoint').classList.remove('is-active');
+    }
+
+    async function savePoint(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSavePoint');
+      const originalText = btn.innerText;
+
+      const data = {
+        action: "save",
+        tag: "diemgiaohang",
+        id: document.getElementById('p_id').value,
+        ten_diem: document.getElementById('p_ten').value,
+        dia_chi: document.getElementById('p_diachi').value,
+        maps_link: document.getElementById('p_maps_link').value,
+        lat: document.getElementById('p_lat').value,
+        lng: document.getElementById('p_lng').value,
+        ghi_chu: document.getElementById('p_ghichu').value,
+        auth_mnv: USER_MNV,
+        auth_role: USER_ROLE
+      };
+
+      btn.classList.add('is-loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: new URLSearchParams(data)
+        });
+        const result = await res.json();
+
+        if (result.status === "success") {
+          showAlert("Đã lưu điểm giao hàng thành công!", "is-success");
+          closePointModal();
+          loadDeliveryPoints();
+        } else {
+          showAlert("Lỗi: " + result.message, "is-danger");
+        }
+      } catch (err) {
+        showAlert("Lỗi kết nối khi lưu dữ liệu.", "is-danger");
+      } finally {
+        btn.classList.remove('is-loading');
+        btn.disabled = false;
+        btn.innerText = originalText;
       }
     }
 
