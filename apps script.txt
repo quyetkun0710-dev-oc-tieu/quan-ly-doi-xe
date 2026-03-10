@@ -16,7 +16,8 @@ function getSheetByTag(tag) {
     dangkylich: "DangKyLich",
     nhiemvu: "nhiemvu",
     thongbao: "ThongBao",
-    lopxe: "LopXe"
+    lopxe: "LopXe",
+    diemgiaohang: "DiemGiaoHang"
   };
 
   if (!MAP[tag]) {
@@ -56,6 +57,25 @@ function now() {
     "Asia/Ho_Chi_Minh",
     "yyyy-MM-dd HH:mm:ss"
   );
+}
+
+/**
+ * Chuyển đổi dữ liệu sheet thành mảng Object dựa trên header
+ */
+function getListData(sh) {
+  const values = sh.getDataRange().getDisplayValues();
+  if (values.length < 2) return [];
+
+  const headersRaw = values.shift();
+  const headers = headersRaw.map(h => normalizeHeader(h));
+
+  return values.map(row => {
+    const obj = {};
+    headers.forEach((h, i) => {
+      obj[h] = row[i];
+    });
+    return obj;
+  });
 }
 
 function normalizeHeader(h) {
@@ -160,6 +180,8 @@ function mapDataToRow(sh, data, headers) {
     var field = hNorm[i];
     if (field === "created_at") return data[field] || data[h] || now();
     if (field === "updated_at") return now();
+    if (field === "created_by") return data[field] || data[h] || data["auth_mnv"] || ""; 
+    if (field === "updated_by") return data["auth_mnv"] || "";
     if (field === "id" && !data[field] && !data[h]) return "ID_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
 
     // Công thức tính ngày còn lại cho Sheet Xe
@@ -321,6 +343,20 @@ function doPost(e) {
       data.tinh_trang_hoat_dong = "dang_hoat_dong";
     }
 
+    // Tự động bóc tách tọa độ nếu có link Google Maps
+    if (tag === "diemgiaohang") {
+      const link = String(data.maps_link || "").trim();
+      if (link) {
+        // Regex tìm @lat,lng trong link Google Maps
+        const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+        const match = link.match(regex);
+        if (match) {
+          if (!data.lat || data.lat === "") data.lat = match[1];
+          if (!data.lng || data.lng === "") data.lng = match[2];
+        }
+      }
+    }
+
     // --- KIỂM TRA KEY BẮT BUỘC ---
     const KEY_MAP = {
       xe: "bien_so_xe",
@@ -331,12 +367,15 @@ function doPost(e) {
       danhgia: "ma_nv",
       dangkylich: "id",
       nhiemvu: "id",
-      lopxe: "id"
+      lopxe: "id",
+      diemgiaohang: "id"
     };
 
     const requiredKey = KEY_MAP[tag];
-    if (requiredKey && (!data[requiredKey] || String(data[requiredKey]).trim() === "")) {
-      const label = requiredKey === "bien_so_xe" ? "Biển số xe" : "Mã nhân viên";
+    if (requiredKey && requiredKey !== "id" && (!data[requiredKey] || String(data[requiredKey]).trim() === "")) {
+      let label = "Mã nhân viên";
+      if (requiredKey === "bien_so_xe") label = "Biển số xe";
+      if (requiredKey === "id") label = "ID";
       throw `Lỗi: Thiếu thông tin định danh (${label}) bắt buộc.`;
     }
     // ----------------------------
@@ -475,7 +514,7 @@ function doPost(e) {
     const headers = getHeaders(sh);
 
     let keyName = KEY_MAP[tag] || "";
-    const ALLOW_UPDATE = ["xe", "taixe", "dangkylich", "nhiemvu", "lopxe"];
+    const ALLOW_UPDATE = ["xe", "taixe", "dangkylich", "nhiemvu", "lopxe", "diemgiaohang"];
     if (!ALLOW_UPDATE.includes(tag)) keyName = "";
 
     const keyValue = keyName ? (data[keyName] || "").trim() : "";
@@ -531,7 +570,8 @@ function setupSheetHeaders() {
     dangkylich: ["id", "ma_nv", "ho_ten", "thang_nam", "cac_ngay", "loai_nghi", "ly_do", "trang_thai", "nguoi_duyet", "created_at", "updated_at"],
     nhiemvu: ["id", "nguoi_giao", "nguoi_nhan", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ket_qua", "ghi_chu", "created_at"],
     thongbao: ["tieu_de", "noi_dung", "nguoi_dang", "uu_tien", "ngay_dang", "created_at"],
-    lopxe: ["id", "bien_so_xe", "vi_tri_lop", "ngay_thay", "km_thay", "thuong_hieu", "tinh_trang", "ghi_chu", "created_at"]
+    lopxe: ["id", "bien_so_xe", "vi_tri_lop", "ngay_thay", "km_thay", "thuong_hieu", "tinh_trang", "ghi_chu", "created_at"],
+    diemgiaohang: ["id", "ten_diem", "dia_chi", "maps_link", "lat", "lng", "ghi_chu", "created_by", "updated_by", "created_at", "updated_at"]
   };
 
   const MAP_NAME = {
@@ -544,7 +584,8 @@ function setupSheetHeaders() {
     dangkylich: "DangKyLich",
     nhiemvu: "nhiemvu",
     thongbao: "ThongBao",
-    lopxe: "LopXe"
+    lopxe: "LopXe",
+    diemgiaohang: "DiemGiaoHang"
   };
 
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -567,6 +608,17 @@ function setupSheetHeaders() {
 function doGet(e) {
   try {
     const action = e.parameter.action;
+
+    // LẤY DANH SÁCH ĐIỂM GIAO HÀNG
+    if (action === "get_delivery_points") {
+      try {
+        const sh = getSheetByTag("diemgiaohang");
+        const list = getListData(sh);
+        return jsonOut({ status: "success", data: list });
+      } catch (err) {
+        return jsonOut({ status: "error", message: String(err) });
+      }
+    }
     
     // LẤY DANH SÁCH ẢNH NỀN
     if (action === "get_backgrounds") {
