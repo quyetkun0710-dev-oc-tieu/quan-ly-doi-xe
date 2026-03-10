@@ -149,56 +149,63 @@ function calcRemainDays(dateStr) {
 /* ================= FUEL ================= */
 /* ================= DATA MAPPING HELPER ================= */
 function mapDataToRow(sh, data, headers) {
-  const sheetName = sh.getName();
-  // ... (mapping logic) ...
-  const hNorm = headers.map(h => normalizeHeader(h));
-  const iDkiem = hNorm.indexOf("ngay_dang_kiem");
-  const iPhuHieu = hNorm.indexOf("ngay_phu_hieu");
-  const iBaoHiem = hNorm.indexOf("ngay_bao_hiem");
-  const iDangKy = hNorm.indexOf("ngay_dang_ky");
+  var sheetName = sh.getName();
+  var hNorm = headers.map(function(h) { return normalizeHeader(h); });
+  var iDkiem = hNorm.indexOf("ngay_dang_kiem");
+  var iPhuHieu = hNorm.indexOf("ngay_phu_hieu");
+  var iBaoHiem = hNorm.indexOf("ngay_bao_hiem");
+  var iDangKy = hNorm.indexOf("ngay_dang_ky");
 
-  return headers.map((hRaw, i) => {
-    const field = hNorm[i];
-    if (field === "created_at") return data[field] || data[hRaw] || now();
+  return headers.map(function(h, i) {
+    var field = hNorm[i];
+    if (field === "created_at") return data[field] || data[h] || now();
     if (field === "updated_at") return now();
-    if (field === "id" && !data[field] && !data[hRaw]) return "ID_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
+    if (field === "id" && !data[field] && !data[h]) return "ID_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000);
 
     // Công thức tính ngày còn lại cho Sheet Xe
     if (sheetName === "Xe") {
       if (field === "cb_dk" && iDangKy > -1) {
-        const offset = iDangKy - i;
-        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+        var offset = iDangKy - i;
+        return "=IF(R[0]C[" + offset + "]<>\"\"; ROUND(R[0]C[" + offset + "] - TODAY(); 0); \"\")";
       }
       if (field === "cb_dkiem" && iDkiem > -1) {
-        const offset = iDkiem - i;
-        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+        var offset = iDkiem - i;
+        return "=IF(R[0]C[" + offset + "]<>\"\"; ROUND(R[0]C[" + offset + "] - TODAY(); 0); \"\")";
       }
       if (field === "cb_ph" && iPhuHieu > -1) {
-        const offset = iPhuHieu - i;
-        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+        var offset = iPhuHieu - i;
+        return "=IF(R[0]C[" + offset + "]<>\"\"; ROUND(R[0]C[" + offset + "] - TODAY(); 0); \"\")";
       }
       if (field === "cb_bh" && iBaoHiem > -1) {
-        const offset = iBaoHiem - i;
-        return `=IF(R[0]C[${offset}]<>""; ROUND(R[0]C[${offset}] - TODAY(); 0); "")`;
+        var offset = iBaoHiem - i;
+        return "=IF(R[0]C[" + offset + "]<>\"\"; ROUND(R[0]C[" + offset + "] - TODAY(); 0); \"\")";
       }
     }
 
-    let val = (data[h] !== undefined && data[h] !== null) ? data[h] : "";
+    var val = "";
+    var hStr = String(h).toLowerCase();
+    
+    if (data[field] !== undefined && data[field] !== null) {
+      val = data[field];
+    } else if (data[h] !== undefined && data[h] !== null) {
+      val = data[h];
+    } else if (data[hStr] !== undefined && data[hStr] !== null) {
+      val = data[hStr];
+    }
 
-    if (val === "") return val;
+    if (val === "" || val === undefined || val === null) return "";
 
     // ÉP KIỂU SỐ TUYỆT ĐỐI CHO CÁC TRƯỜNG SỐ
-    if (FORMAT_NUMBER_FIELDS.includes(h) && val !== "") {
-      const num = Number(String(val).replace(/,/g, ".")); 
+    if (FORMAT_NUMBER_FIELDS.indexOf(field) !== -1 && val !== "") {
+      var num = Number(String(val).replace(/,/g, ".")); 
       if (!isNaN(num)) return num;
     }
 
     // Nếu là công thức cấu hình ở sheet Xe
-    if (typeof val === "string" && val.startsWith("=")) return val;
+    if (typeof val === "string" && val.indexOf("=") === 0) return val;
 
     // Nếu là trường thời gian, ngày tháng
-    const hStr = h.toLowerCase();
-    const isDateOrTime = hStr.includes("ngay") || hStr.includes("date") || hStr.includes("time") || hStr === "created_at" || hStr === "updated_at";
+    var isDateOrTime = hStr.indexOf("ngay") !== -1 || hStr.indexOf("date") !== -1 || hStr.indexOf("time") !== -1 || hStr === "created_at" || hStr === "updated_at";
     
     if (isDateOrTime) {
       return val;
@@ -321,8 +328,10 @@ function doPost(e) {
       nhatky: "bien_so_xe",
       baoduong: "bien_so_xe",
       fuel: "bien_so_xe",
-      danhgia: "ma_nv"
-      // Không thêm dangkylich, nhiemvu ở đây vì required key là optional (khi tạo mới chưa có id)
+      danhgia: "ma_nv",
+      dangkylich: "id",
+      nhiemvu: "id",
+      lopxe: "id"
     };
 
     const requiredKey = KEY_MAP[tag];
@@ -421,7 +430,7 @@ function doPost(e) {
         // UPDATE
         const allVals = shNv.getDataRange().getValues();
         const hdrsRaw = allVals.shift(); // Raw headers from the sheet
-        const hdrsMatch = hdrsRaw.map(h => String(h).toLowerCase().trim());
+        const hdrsMatch = hdrsRaw.map(h => normalizeHeader(h));
         const iId = hdrsMatch.indexOf("id");
 
         if (iId === -1) throw "Sheet nhiemvu thiếu cột ID";
@@ -430,11 +439,12 @@ function doPost(e) {
         if (rowIdx !== -1) {
           const sheetRow = rowIdx + 2;
 
-          // Cập nhật tất cả các trường được gửi lên, tự động khớp theo header name (ko phân biệt hoa thường)
+          // Cập nhật tất cả các trường được gửi lên, tự động khớp theo header name (ko phân biệt accents, hoa thường)
           for (let k in data) {
             const val = data[k];
-            const cIdx = hdrsMatch.indexOf(normalizeHeader(k));
-            if (cIdx > -1 && normalizeHeader(k) !== "id") {
+            const normalizedK = normalizeHeader(k);
+            const cIdx = hdrsMatch.indexOf(normalizedK);
+            if (cIdx > -1 && normalizedK !== "id") {
               shNv.getRange(sheetRow, cIdx + 1).setValue("'" + val);
             }
           }
@@ -465,7 +475,8 @@ function doPost(e) {
     const headers = getHeaders(sh);
 
     let keyName = KEY_MAP[tag] || "";
-    if (!["xe", "taixe"].includes(tag)) keyName = "";
+    const ALLOW_UPDATE = ["xe", "taixe", "dangkylich", "nhiemvu", "lopxe"];
+    if (!ALLOW_UPDATE.includes(tag)) keyName = "";
 
     const keyValue = keyName ? (data[keyName] || "").trim() : "";
     let row = mapDataToRow(sh, data, headers);
@@ -518,7 +529,7 @@ function setupSheetHeaders() {
     fuel: ["bien_so_xe", "km_sau", "ngay_thuc_hien", "gio_thuc_hien", "loai", "so_lit", "don_gia", "thanh_tien", "don_vi", "hoa_don", "ghi_chu", "km_truoc", "km_chenh_lech", "created_at", "updated_at"],
     danhgia: ["ma_nv", "ho_ten", "ngay", "loi", "muc_do", "so_lan", "ket_luan", "ghi_chu", "created_at"],
     dangkylich: ["id", "ma_nv", "ho_ten", "thang_nam", "cac_ngay", "loai_nghi", "ly_do", "trang_thai", "nguoi_duyet", "created_at", "updated_at"],
-    nhiemvu: ["id", "nguoi_giao", "nguoi_nhan", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ghi_chu_ket_qua", "created_at"],
+    nhiemvu: ["id", "nguoi_giao", "nguoi_nhan", "loai_nhiem_vu", "trang_thai", "noi_dung", "ngay_bat_dau", "han_hoan_thanh", "ket_qua", "ghi_chu", "created_at"],
     thongbao: ["tieu_de", "noi_dung", "nguoi_dang", "uu_tien", "ngay_dang", "created_at"],
     lopxe: ["id", "bien_so_xe", "vi_tri_lop", "ngay_thay", "km_thay", "thuong_hieu", "tinh_trang", "ghi_chu", "created_at"]
   };
