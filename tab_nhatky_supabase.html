@@ -489,6 +489,70 @@
         .hidden {
             display: none;
         }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.5rem;
+                margin-bottom: 2.5rem;
+                text-align: center;
+            }
+
+            .logo-area h1 { font-size: 1.8rem; }
+
+            .controls {
+                flex-direction: column;
+                width: 100%;
+                margin-left: 0 !important;
+                gap: 1rem;
+            }
+
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; }
+            .btn-add { width: 100%; justify-content: center; }
+
+            .date-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card { padding: 1.2rem; }
+            .stat-card .value { font-size: 1.5rem; }
+
+            .filter-bar {
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .log-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .log-card {
+                padding: 1.2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                border-radius: 20px;
+            }
+        }
     </style>
 </head>
 

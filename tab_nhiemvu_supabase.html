@@ -213,6 +213,68 @@
     @keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body { padding: 15px; }
+
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .logo-area h1 { font-size: 1.8rem; }
+
+      .controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+      }
+
+      .search-box { width: 100%; }
+      .search-box input { width: 100%; }
+      .btn-add { width: 100%; justify-content: center; }
+
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-card { padding: 1rem; }
+      .stat-card .value { font-size: 1.5rem; }
+
+      .filter-bar {
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .task-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
+
+      .task-card {
+        padding: 1.2rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .modal-content {
+        padding: 1.5rem;
+        border-radius: 20px;
+      }
+
+      .task-meta {
+          grid-template-columns: 1fr;
+          gap: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>

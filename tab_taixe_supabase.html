@@ -519,10 +519,65 @@
             to { opacity: 1; }
         }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            header { flex-direction: column; gap: 2rem; text-align: center; }
+        /* Comprehensive Mobile Responsive */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.5rem;
+                margin-bottom: 2.5rem;
+                padding: 10px 0;
+                text-align: center;
+            }
+
+            .logo-area h1 { font-size: 1.8rem; }
+            .logo-area p { font-size: 0.8rem; }
+
+            .controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .search-box { width: 100%; }
             .search-box input { width: 100%; }
+            .btn-add { width: 100%; justify-content: center; }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card { padding: 1.2rem; }
+            .stat-card .value { font-size: 1.6rem; }
+
+            .filter-bar {
+                justify-content: center;
+                gap: 6px;
+                margin-bottom: 1.5rem;
+            }
+
+            .driver-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .driver-card {
+                padding: 1.2rem;
+            }
+
+            .driver-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem;
+            }
         }
     </style>
 </head>
