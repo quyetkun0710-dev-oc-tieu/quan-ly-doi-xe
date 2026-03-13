@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Nhiên liệu - Fleet Core Supabase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #00ffcc;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-area h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-area p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            width: 250px;
+            font-size: 1rem;
+            margin-left: 10px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-add:hover { transform: scale(1.05) translateY(-2px); }
+
+        /* Controls / Date Bar */
+        .date-bar {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+            padding: 0.75rem 1.25rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+            margin-bottom: 1.5rem; backdrop-filter: blur(15px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .date-group { display: flex; flex-direction: column; gap: 4px; }
+        .date-group label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .date-group input, .date-group select {
+            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.5rem 0.8rem; border-radius: 10px; color: white; outline: none;
+            font-family: 'Outfit', sans-serif; font-size: 0.85rem; transition: all 0.2s;
+        }
+        .btn-refresh {
+            background: var(--primary); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 12px;
+            font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+        .stat-card h3 {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Fuel Grid */
+        .fuel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding-bottom: 5rem;
+        }
+
+        .fuel-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fuel-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .fuel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plate-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .fuel-type {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255, 221, 87, 0.1);
+            color: #ffdd57;
+            text-transform: uppercase;
+        }
+
+        .info-pane {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .info-item { display: flex; flex-direction: column; }
+        .info-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .info-value { font-size: 0.9rem; font-weight: 600; }
+
+        .cost-badge {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--accent);
+            text-align: right;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1e293b;
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem;
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+        }
+        .form-group input:focus { border-color: var(--primary); }
+
+        .modal-actions {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 0.8rem 2.5rem;
+            border-radius: 12px; font-weight: 600;
+            border: none; cursor: pointer;
+        }
+
+        .btn-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); color: var(--text-dim);
+            border: none; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-icon:hover { background: var(--primary); color: white; }
+
+        /* Helpers */
+        .hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-area">
+            <h1>FUEL MANAGEMENT</h1>
+            <p>Quản lý nhiên liệu và định mức tiêu hao</p>
+        </div>
+        <div class="controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm biển số, ngày..." oninput="filterFuel()">
+            </div>
+            <button class="btn-add" onclick="openModal()">
+                <i class="fas fa-gas-pump"></i> CẤP NHIÊN LIỆU
+            </button>
+        </div>
+    </header>
+
+    <div class="date-bar">
+        <div class="date-group">
+            <label>Từ ngày</label>
+            <input type="date" id="fromDate">
+        </div>
+        <div class="date-group">
+            <label>Đến ngày</label>
+            <input type="date" id="toDate">
+        </div>
+        <div class="date-group">
+            <label>Thời điểm</label>
+            <select id="quickRange" onchange="applyQuickRange()">
+                <option value="month" selected>Tháng này</option>
+                <option value="7">7 ngày qua</option>
+                <option value="30">30 ngày qua</option>
+                <option value="all">Tất cả các tháng</option>
+            </select>
+        </div>
+        <button class="btn-refresh" onclick="loadFuelData()">
+            <i class="fas fa-sync-alt"></i> Tải lại
+        </button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card" onclick="filterByType('all')">
+            <h3>Tổng chi phí</h3>
+            <div class="value" id="statTotalCost">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByType('Dầu')">
+            <h3>Dầu (Lít)</h3>
+            <div class="value" id="statDau">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByType('Ure')">
+            <h3>Ure (Lít)</h3>
+            <div class="value" id="statUre">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByType('Xăng')">
+            <h3>Xăng (Lít)</h3>
+            <div class="value" id="statXang">0</div>
+        </div>
+    </div>
+
+    <div class="fuel-grid" id="fuelGrid">
+        <!-- Cards injected here -->
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="fuelModal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div>
+                <h2 id="modalTitle" style="font-weight: 800; font-size: 1.8rem">Cấp Nhiên Liệu Mới</h2>
+                <p style="color: var(--text-dim)">Vui lòng xác thực thông tin đổ dầu/nhiên liệu.</p>
+            </div>
+            <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form id="fuelForm">
+            <input type="hidden" id="editId">
+            
+            <h3 style="color: var(--primary); font-size: 0.9rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">THÔNG TIN XE & ODO</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Biển Số Xe</label>
+                    <input type="text" id="bien_so_xe" list="vehicleList" required placeholder="Chọn xe..." onchange="fetchLastKM()">
+                    <datalist id="vehicleList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>KM Lúc Đổ</label>
+                    <input type="number" id="km_sau" required placeholder="Nhập ODO..." oninput="calcKmDiff()">
+                </div>
+                <div class="form-group">
+                    <label>KM Lần Trước (Tự động)</label>
+                    <input type="number" id="km_truoc" readonly placeholder="---" style="background: rgba(255,255,255,0.05)">
+                </div>
+                <div class="form-group">
+                    <label>KM Chênh Lệch</label>
+                    <input type="number" id="km_chenh_lech" readonly placeholder="0" style="background: rgba(255,255,255,0.05)">
+                </div>
+                <div class="form-group">
+                    <label>Ngày Thực Hiện</label>
+                    <input type="date" id="ngay_thuc_hien" required>
+                </div>
+                <div class="form-group">
+                    <label>Giờ Thực Hiện</label>
+                    <input type="time" id="gio_thuc_hien" required>
+                </div>
+            </div>
+
+            <h3 style="color: var(--primary); font-size: 0.9rem; margin: 2rem 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">CHI TIẾT NHIÊN LIỆU</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Loại Nhiên Liệu</label>
+                    <select id="loai">
+                        <option value="Dầu">Dầu (Diesel)</option>
+                        <option value="Ure">Dung dịch Ure</option>
+                        <option value="Xăng">Xăng</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số Lít (L)</label>
+                    <input type="number" id="so_lit" step="0.01" required placeholder="0.00" oninput="calcTotalMoney()">
+                </div>
+                <div class="form-group">
+                    <label>Đơn Giá (VNĐ/L)</label>
+                    <input type="number" id="don_gia" required placeholder="VD: 20000" oninput="calcTotalMoney()">
+                </div>
+                <div class="form-group">
+                    <label>Thành Tiền (VNĐ)</label>
+                    <input type="text" id="thanh_tien" readonly placeholder="0" style="background: rgba(255,255,255,0.05)">
+                </div>
+            </div>
+
+            <h3 style="color: var(--primary); font-size: 0.9rem; margin: 2rem 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">ĐƠN VỊ CUNG CẤP</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Cây Dầu / Đơn vị</label>
+                    <select id="don_vi">
+                        <option value="Cây dầu hợp đồng">Cây dầu hợp đồng</option>
+                        <option value="Cây dầu ngoài">Cây dầu ngoài</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Hóa Đơn</label>
+                    <select id="hoa_don">
+                        <option value="Có">Có hóa đơn</option>
+                        <option value="Không">Không hóa đơn</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2">
+                    <label>Ghi Chú</label>
+                    <textarea id="ghi_chu" rows="2" placeholder="Thông tin thêm..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-icon" style="width: auto; padding: 0 1.5rem" onclick="closeModal()">Đóng</button>
+                <button type="submit" class="btn-save" id="saveBtn">Lưu Dữ Liệu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+    
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allFuelData = [];
+
+    async function initialize() {
+        applyQuickRange();
+        await loadFuelData();
+        await loadVehicles();
+    }
+
+    function applyQuickRange() {
+        const val = document.getElementById('quickRange').value;
+        const today = new Date();
+        let from = new Date();
+        
+        if (val === 'all') {
+            from = new Date('2020-01-01');
+        } else if (val === 'month') {
+            from.setDate(1);
+        } else {
+            from.setDate(today.getDate() - parseInt(val));
+        }
+        
+        document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+        document.getElementById('toDate').value = today.toISOString().split('T')[0];
+        
+        if (allFuelData.length > 0) loadFuelData();
+    }
+
+    async function loadFuelData() {
+        const grid = document.getElementById('fuelGrid');
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        
+        try {
+            const { data, error } = await _supabase
+                .from('fuel')
+                .select('*')
+                .gte('ngay_thuc_hien', fromDate)
+                .lte('ngay_thuc_hien', toDate)
+                .order('ngay_thuc_hien', { ascending: false })
+                .order('gio_thuc_hien', { ascending: false });
+
+            if (error) throw error;
+            allFuelData = data || [];
+            renderGrid(allFuelData);
+            updateStats(allFuelData);
+        } catch (error) {
+            grid.innerHTML = `<div style="color: var(--danger)">Lỗi: ${error.message}</div>`;
+        }
+    }
+
+    async function loadVehicles() {
+        const { data: xe } = await _supabase.from('xe').select('bien_so_xe');
+        const xeList = document.getElementById('vehicleList');
+        if (xe) xeList.innerHTML = xe.map(v => `<option value="${v.bien_so_xe}">`).join('');
+    }
+
+    function renderGrid(data) {
+        const grid = document.getElementById('fuelGrid');
+        grid.innerHTML = '';
+
+        if (data.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim)">Chưa có dữ liệu nhiên liệu.</div>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'fuel-card';
+            
+            card.innerHTML = `
+                <div class="fuel-header">
+                    <span class="plate-tag">${item.bien_so_xe}</span>
+                    <span class="fuel-type">${item.loai}</span>
+                </div>
+                
+                <div class="info-pane">
+                    <div class="info-item">
+                        <span class="info-label">Ngày cấp</span>
+                        <span class="info-value">${formatDate(item.ngay_thuc_hien)}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Số Lít</span>
+                        <span class="info-value">${item.so_lit} L</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">KM lúc đổ</span>
+                        <span class="info-value">${item.km_sau} KM</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Đơn vị</span>
+                        <span class="info-value">${item.don_vi || '-'}</span>
+                    </div>
+                </div>
+
+                <div class="cost-badge">
+                    ${formatCurrency(item.thanh_tien)}
+                </div>
+
+                <div class="card-footer">
+                    <div style="font-size: 0.8rem; color: var(--text-dim)">
+                        Hóa đơn: <b>${item.hoa_don}</b>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        ${['manager', 'admin'].includes((sessionStorage.getItem('role') || '').toLowerCase()) ? `
+                            <button class="btn-icon" onclick="editItem(${item.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" style="color: var(--danger)" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i></button>
+                        ` : '<span style="font-size:0.7rem; color:var(--text-dim)">Chế độ xem</span>'}
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function updateStats(data) {
+        const totalCost = data.reduce((sum, i) => sum + (parseFloat(i.thanh_tien) || 0), 0);
+        const totalDau = data.filter(i=>i.loai==='Dầu').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
+        const totalUre = data.filter(i=>i.loai==='Ure').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
+        const totalXang = data.filter(i=>i.loai==='Xăng').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
+        
+        document.getElementById('statTotalCost').innerText = formatCurrency(totalCost);
+        document.getElementById('statDau').innerText = totalDau.toFixed(0) + ' L';
+        document.getElementById('statUre').innerText = totalUre.toFixed(0) + ' L';
+        document.getElementById('statXang').innerText = totalXang.toFixed(0) + ' L';
+    }
+
+    function filterByType(type) {
+        if (type === 'all') {
+            renderGrid(allFuelData);
+        } else {
+            const filtered = allFuelData.filter(i => i.loai === type);
+            renderGrid(filtered);
+        }
+    }
+
+    function calcKmDiff() {
+        const kAfter = parseFloat(document.getElementById('km_sau').value) || 0;
+        const kBefore = parseFloat(document.getElementById('km_truoc').value) || 0;
+        const diffInput = document.getElementById('km_chenh_lech');
+        
+        if (kAfter > 0 && kBefore > 0) {
+            const diff = kAfter - kBefore;
+            diffInput.value = diff > 0 ? diff : 0;
+        } else {
+            diffInput.value = 0;
+        }
+    }
+
+    async function fetchLastKM() {
+        const editId = document.getElementById('editId').value;
+        if (editId) return; // Đang sửa bản ghi cũ thì không tự đè dữ liệu ODO cũ
+
+        const plate = document.getElementById('bien_so_xe').value.trim();
+        if (!plate) return;
+
+        const kBeforeInput = document.getElementById('km_truoc');
+        kBeforeInput.value = "Đang tải...";
+
+        try {
+            // Ưu tiên tìm trong dữ liệu đã tải về máy (allFuelData) để nhanh
+            const lastEntry = allFuelData.find(f => f.bien_so_xe === plate);
+            
+            if (lastEntry) {
+                kBeforeInput.value = lastEntry.km_sau || 0;
+                calcKmDiff();
+            } else {
+                // Nếu không thấy trong local, fetch từ server cho chắc
+                const { data, error } = await _supabase
+                    .from('fuel')
+                    .select('km_sau')
+                    .eq('bien_so_xe', plate)
+                    .order('ngay_thuc_hien', { ascending: false })
+                    .order('gio_thuc_hien', { ascending: false })
+                    .limit(1);
+                
+                if (data && data.length > 0) {
+                    kBeforeInput.value = data[0].km_sau || 0;
+                } else {
+                    kBeforeInput.value = 0;
+                }
+                calcKmDiff();
+            }
+        } catch (e) {
+            kBeforeInput.value = 0;
+        }
+    }
+
+    function calcTotalMoney() {
+        const lit = parseFloat(document.getElementById('so_lit').value) || 0;
+        const gia = parseFloat(document.getElementById('don_gia').value) || 0;
+        document.getElementById('thanh_tien').value = Math.round(lit * gia);
+    }
+
+    function filterFuel() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allFuelData.filter(f => 
+            f.bien_so_xe.toLowerCase().includes(q) || 
+            f.ngay_thuc_hien.includes(q)
+        );
+        renderGrid(filtered);
+    }
+
+    function openModal(editData = null) {
+        const form = document.getElementById('fuelForm');
+        form.reset();
+        document.getElementById('ngay_thuc_hien').value = new Date().toISOString().split('T')[0];
+        document.getElementById('gio_thuc_hien').value = new Date().toTimeString().slice(0,5);
+
+        if (editData) {
+            document.getElementById('modalTitle').innerText = "Cập Nhật Cấp Nhiên Liệu";
+            document.getElementById('editId').value = editData.id;
+            const fields = [
+                'bien_so_xe', 'km_sau', 'km_truoc', 'km_chenh_lech',
+                'ngay_thuc_hien', 'gio_thuc_hien', 'loai', 'so_lit', 'don_gia',
+                'thanh_tien', 'don_vi', 'hoa_don', 'ghi_chu'
+            ];
+            fields.forEach(f => {
+                const el = document.getElementById(f);
+                if (el) el.value = editData[f] || '';
+            });
+        } else {
+            document.getElementById('modalTitle').innerText = "Cấp Nhiên Liệu Mới";
+            document.getElementById('editId').value = '';
+        }
+        document.getElementById('fuelModal').classList.add('active');
+    }
+
+    function closeModal() { document.getElementById('fuelModal').classList.remove('active'); }
+
+    document.getElementById('fuelForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const role = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+        if (!['manager', 'admin'].includes(role) && document.getElementById('editId').value) {
+            alert("Bạn không có quyền sửa dữ liệu của người khác.");
+            return;
+        }
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+
+        const fields = [
+            'bien_so_xe', 'km_sau', 'km_truoc', 'km_chenh_lech',
+            'ngay_thuc_hien', 'gio_thuc_hien', 'loai', 'so_lit', 'don_gia',
+            'thanh_tien', 'don_vi', 'hoa_don', 'ghi_chu'
+        ];
+        
+        const payload = { updated_at: new Date().toISOString() };
+        fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) {
+                if (el.type === 'number' || f.includes('thanh_tien')) payload[f] = parseFloat(el.value) || 0;
+                else payload[f] = el.value;
+            }
+        });
+
+        const id = document.getElementById('editId').value;
+        try {
+            let res;
+            if (id) res = await _supabase.from('fuel').update(payload).eq('id', id);
+            else res = await _supabase.from('fuel').insert([payload]);
+
+            if (res.error) throw res.error;
+
+            closeModal();
+            loadFuelData();
+        } catch (error) { 
+            alert("Lỗi lưu dữ liệu: " + error.message); 
+        } finally { 
+            btn.disabled = false; 
+        }
+    };
+
+    function editItem(id) {
+        const item = allFuelData.find(i => i.id === id);
+        if (item) openModal(item);
+    }
+
+    async function deleteItem(id) {
+        const role = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+        if (!['manager', 'admin'].includes(role)) {
+            alert("Bạn không có quyền xóa dữ liệu này.");
+            return;
+        }
+        if (!confirm("Xóa bản ghi này?")) return;
+        await _supabase.from('fuel').delete().eq('id', id);
+        loadFuelData();
+    }
+
+    function formatDate(d) {
+        if (!d) return '-';
+        return new Date(d).toLocaleDateString('vi-VN');
+    }
+
+    function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+
+</body>
+</html>

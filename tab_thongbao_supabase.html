@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông Báo Nội Bộ - Fleet Core V2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #a855f7;
+      --accent: #00ffcc;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1), transparent);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2.5rem;
+    }
+    .container { max-width:1000px; margin:0 auto; }
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:2.5rem; animation:fadeInDown 0.8s ease-out;
+    }
+    .logo-area h1 {
+      font-size:2.2rem; font-weight:800;
+      background:linear-gradient(to right,#fff,var(--primary));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .logo-area p { color:var(--text-dim); font-size:0.9rem; margin-top:4px; }
+    .controls { display:flex; gap:1rem; align-items:center; }
+    .search-box {
+      background:var(--card-bg); border-radius:12px; padding:0.5rem 1rem;
+      border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(10px);
+      display:flex; align-items:center; gap:8px; transition:all 0.3s;
+    }
+    .search-box:focus-within { border-color:var(--primary); box-shadow:0 0 15px rgba(99,102,241,0.3); }
+    .search-box input { background:transparent; border:none; color:white; outline:none; width:220px; font-size:0.95rem; font-family:'Outfit',sans-serif; }
+    .btn-add {
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      color:white; border:none; padding:0.75rem 1.4rem; border-radius:12px;
+      font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;
+      transition:all 0.3s; box-shadow:0 10px 20px rgba(99,102,241,0.2); font-family:'Outfit',sans-serif;
+    }
+    .btn-add:hover { transform:scale(1.05) translateY(-2px); }
+
+    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-btn {
+      padding:6px 14px; border-radius:20px;
+      border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
+      color:var(--text-dim); cursor:pointer; font-size:0.82rem; font-weight:600;
+      transition:all 0.2s; font-family:'Outfit',sans-serif;
+    }
+    .filter-btn.active, .filter-btn:hover { background:var(--primary); border-color:var(--primary); color:white; }
+
+    /* Notice feed */
+    .notice-feed { display:flex; flex-direction:column; gap:1.5rem; padding-bottom:5rem; }
+    .notice-card {
+      background:var(--card-bg); border-radius:20px; padding:1.5rem;
+      border:1px solid rgba(255,255,255,0.05); backdrop-filter:blur(12px);
+      transition:all 0.3s; animation:slideUp 0.5s ease-out forwards; opacity:0;
+      display:flex; gap:1.2rem; position:relative; overflow:hidden;
+    }
+    .notice-card:hover { transform:translateY(-3px); box-shadow:0 20px 40px rgba(0,0,0,0.3); }
+    .notice-icon-wrap {
+      width:54px; height:54px; border-radius:14px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center; font-size:1.6rem;
+    }
+    .mucdo-khancap .notice-card { border-left:4px solid var(--danger); }
+    .mucdo-khancap .notice-icon-wrap { background:rgba(239,68,68,0.2); color:var(--danger); }
+    .mucdo-quantrong .notice-card { border-left:4px solid var(--warning); }
+    .mucdo-quantrong .notice-icon-wrap { background:rgba(245,158,11,0.2); color:var(--warning); }
+    .mucdo-binhthuong .notice-card { border-left:4px solid var(--primary); }
+    .mucdo-binhthuong .notice-icon-wrap { background:rgba(99,102,241,0.2); color:var(--primary); }
+
+    .notice-content { flex:1; display:flex; flex-direction:column; gap:8px; }
+    .notice-header { display:flex; justify-content:space-between; align-items:flex-start; }
+    .notice-title { font-size:1.2rem; font-weight:800; line-height:1.3; margin-bottom:4px; }
+    .notice-meta { font-size:0.8rem; color:var(--text-dim); display:flex; gap:12px; align-items:center; }
+    .notice-meta span { display:flex; align-items:center; gap:4px; }
+    .notice-body { font-size:0.95rem; line-height:1.6; color:rgba(255,255,255,0.9); white-space:pre-line; background:rgba(15,23,42,0.3); padding:1rem; border-radius:12px; margin-top:5px; }
+    
+    .notice-actions { display:flex; gap:8px; margin-top:-5px; }
+    .btn-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); color:var(--text-dim); border:none; cursor:pointer; transition:all 0.2s; }
+    .btn-icon:hover { background:var(--primary); color:white; }
+
+    /* Modal */
+    .modal { position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(15px); display:none; justify-content:center; align-items:center; z-index:1000; padding:1rem; }
+    .modal.active { display:flex; }
+    .modal-content { background:#1e293b; padding:2.5rem; border-radius:28px; width:100%; max-width:600px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 40px 80px rgba(0,0,0,0.5); }
+    .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:1.2rem; }
+    .form-group label { font-size:0.8rem; color:var(--text-dim); font-weight:600; text-transform:uppercase; }
+    .form-group input, .form-group select, .form-group textarea { background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1); padding:0.8rem; border-radius:12px; color:white; outline:none; font-family:'Outfit',sans-serif; transition:all 0.2s; }
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus { border-color:var(--primary); }
+    .modal-actions { margin-top:2rem; display:flex; justify-content:flex-end; gap:1rem; }
+    .btn-cancel { background:#334155; color:white; padding:0.8rem 1.5rem; border-radius:12px; font-weight:600; border:none; cursor:pointer; font-family:'Outfit',sans-serif; }
+    .btn-save { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; padding:0.8rem 1.8rem; border-radius:12px; font-weight:700; border:none; cursor:pointer; font-family:'Outfit',sans-serif; }
+
+    .manager-only { display: none; }
+
+    @keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo-area">
+      <h1>🔔 THÔNG BÁO NỘI BỘ</h1>
+      <p>Bảng tin cập nhật và thông báo từ ban quản lý</p>
+    </div>
+    <div class="controls">
+      <div class="search-box">
+        <i class="fas fa-search" style="color:var(--text-dim)"></i>
+        <input type="text" id="searchInput" placeholder="Tìm thông báo..." oninput="applyFilter()">
+      </div>
+      <!-- Nút dành riêng cho manager -->
+      <button class="btn-add manager-only" onclick="openModal()">
+        <i class="fas fa-bullhorn"></i> ĐĂNG THÔNG BÁO
+      </button>
+    </div>
+  </header>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">Tất cả</button>
+    <button class="filter-btn" onclick="setFilter('Khẩn cấp',this)">🔴 Khẩn cấp</button>
+    <button class="filter-btn" onclick="setFilter('Quan trọng',this)">🟡 Quan trọng</button>
+    <button class="filter-btn" onclick="setFilter('Bình thường',this)">🔵 Bình thường</button>
+  </div>
+
+  <div class="notice-feed" id="noticeFeed"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="noticeModal">
+  <div class="modal-content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem">
+      <div>
+        <h2 id="modalTitle" style="font-weight:800;font-size:1.8rem;margin-bottom:4px">Đăng Thông Báo</h2>
+        <p style="color:var(--text-dim);font-size:0.85rem">Thông báo sẽ được gửi tới toàn bộ đội ngũ</p>
+      </div>
+      <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="noticeForm">
+      <input type="hidden" id="editId">
+      <div class="form-group">
+        <label>Tiêu đề thông báo *</label>
+        <input type="text" id="tieu_de" required placeholder="Nhập tiêu đề...">
+      </div>
+      <div class="form-group">
+        <label>Mức độ quan trọng</label>
+        <select id="muc_do">
+          <option value="Bình thường">🔵 Bình thường</option>
+          <option value="Quan trọng">🟡 Quan trọng</option>
+          <option value="Khẩn cấp">🔴 Khẩn cấp</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nội dung *</label>
+        <textarea id="noi_dung" rows="5" required placeholder="Nội dung chi tiết..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
+        <button type="submit" class="btn-save" id="saveBtn">Đăng Thông Báo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let ROLE = sessionStorage.getItem('role') || 'taixe';
+  let USER_NAME = sessionStorage.getItem('name') || 'Người dùng';
+  
+  let allNotices = [];
+  let currentFilter = 'all';
+
+  function safeNotifyParent() {
+    try {
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage('refreshStats', '*');
+      }
+      if (window.parent && window.parent.updateHomeStats) {
+        window.parent.updateHomeStats();
+      }
+    } catch (e) {
+      console.warn("Parent update blocked (Cross-Origin), using postMessage instead.");
+    }
+  }
+
+  async function loadNotices() {
+    const feed = document.getElementById('noticeFeed');
+    feed.innerHTML = '<div style="text-align:center;padding:5rem"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+    try {
+      const { data, error } = await _supabase.from('thongbao').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      allNotices = data || [];
+      applyFilter();
+    } catch(e) {
+      feed.innerHTML = `<div style="color:var(--warn);padding:2rem;text-align:center">Bảng dữ liệu "thongbao" chưa được tạo. Hãy yêu cầu quản trị viên cấu hình cơ sở dữ liệu.</div>`;
+    }
+  }
+
+  // --- PREMIUM UI HELPERS ---
+  const _pendingConfirms = {};
+  function premiumAlert(msg, theme='success') {
+    if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+    } else alert(msg);
+  }
+
+  function premiumConfirm(title, message, callback) {
+    const id = Date.now() + Math.random();
+    _pendingConfirms[id] = callback;
+    if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({ type: 'confirmRequest', title: title, message: message, requestId: id }, '*');
+    } else {
+        if (confirm(message)) callback(true);
+        else callback(false);
+    }
+  }
+
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'confirmResponse') {
+        const cb = _pendingConfirms[e.data.requestId];
+        if (cb) {
+            cb(e.data.result);
+            delete _pendingConfirms[e.data.requestId];
+        }
+    }
+  });
+
+  function setFilter(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter();
+  }
+
+  function applyFilter() {
+    let filtered = [...allNotices];
+    if (currentFilter !== 'all') filtered = filtered.filter(n=>n.muc_do === currentFilter);
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (q) filtered = filtered.filter(n=>(n.tieu_de||'').toLowerCase().includes(q) || (n.noi_dung||'').toLowerCase().includes(q));
+    renderNotices(filtered);
+  }
+
+  function formatRelativeTime(dateStr) {
+    const d = new Date(dateStr);
+    const diff = (new Date() - d) / 1000;
+    if (diff < 60) return `Vừa xong`;
+    if (diff < 3600) return `${Math.floor(diff/60)} phút trước`;
+    if (diff < 86400) return `${Math.floor(diff/3600)} giờ trước`;
+    return d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function renderNotices(data) {
+    const feed = document.getElementById('noticeFeed');
+    feed.innerHTML = '';
+    if (data.length === 0) {
+      feed.innerHTML = '<div style="text-align:center;padding:5rem;color:var(--text-dim)">Không có thông báo nào.</div>';
+      return;
+    }
+    data.forEach((n, idx) => {
+      const div = document.createElement('div');
+      const mucDoCls = n.muc_do === 'Khẩn cấp' ? 'mucdo-khancap' : n.muc_do === 'Quan trọng' ? 'mucdo-quantrong' : 'mucdo-binhthuong';
+      const icon = n.muc_do === 'Khẩn cấp' ? '🚨' : n.muc_do === 'Quan trọng' ? '⭐' : '📢';
+      div.className = `notice-card-wrap ${mucDoCls}`;
+      
+      const isManager = ['manager','admin'].includes(ROLE);
+      const actionHtml = isManager ? `
+        <div class="notice-actions">
+          <button class="btn-icon" onclick="editNotice(${n.id})" title="Sửa"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon" style="color:var(--danger)" onclick="deleteNotice(${n.id})" title="Xóa"><i class="fas fa-trash"></i></button>
+        </div>
+      ` : '';
+
+      div.innerHTML = `
+        <div class="notice-card" style="animation-delay:${idx*0.06}s">
+          <div class="notice-icon-wrap">${icon}</div>
+          <div class="notice-content">
+            <div class="notice-header">
+              <div>
+                <div class="notice-title">${n.tieu_de}</div>
+                <div class="notice-meta">
+                  <span><i class="fas fa-clock"></i> ${formatRelativeTime(n.created_at)}</span>
+                  <span><i class="fas fa-user-circle"></i> ${n.nguoi_dang || 'Ban Quản Trị'}</span>
+                </div>
+              </div>
+              ${actionHtml}
+            </div>
+            <div class="notice-body">${n.noi_dung}</div>
+          </div>
+        </div>
+      `;
+      feed.appendChild(div);
+    });
+  }
+
+  function openModal(editData=null) {
+    document.getElementById('noticeForm').reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('muc_do').value = 'Bình thường';
+    if (editData) {
+      document.getElementById('modalTitle').innerText = 'Sửa Thông Báo';
+      document.getElementById('editId').value = editData.id;
+      ['tieu_de','muc_do','noi_dung'].forEach(f=>{
+        const el = document.getElementById(f); if(el) el.value = editData[f]||'';
+      });
+    } else {
+      document.getElementById('modalTitle').innerText = 'Đăng Thông Báo';
+    }
+    document.getElementById('noticeModal').classList.add('active');
+  }
+
+  function closeModal() { document.getElementById('noticeModal').classList.remove('active'); }
+  function editNotice(id) { const t = allNotices.find(x=>x.id===id); if(t) openModal(t); }
+
+  async function deleteNotice(id) {
+    premiumConfirm("Xóa thông báo?", "Hành động này không thể hoàn tác. Bạn có chắc chắn không?", async (res) => {
+        if (!res) return;
+        const { error } = await _supabase.from('thongbao').delete().eq('id', id);
+        if (!error) {
+            loadNotices();
+            safeNotifyParent();
+            premiumAlert("Đã xóa thông báo thành công!");
+        } else premiumAlert('Lỗi: ' + error.message, 'error');
+    });
+  }
+
+  document.getElementById('noticeForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Đang đăng...';
+    const id = document.getElementById('editId').value;
+    const payload = {
+      tieu_de: document.getElementById('tieu_de').value,
+      noi_dung: document.getElementById('noi_dung').value,
+      muc_do: document.getElementById('muc_do').value,
+      trang_thai: 'Hiển thị'
+    };
+    if (!id) {
+      payload.nguoi_dang = USER_NAME;
+    } else {
+      payload.updated_at = new Date().toISOString();
+    }
+    
+    try {
+      let res;
+      if (id) res = await _supabase.from('thongbao').update(payload).eq('id', id);
+      else res = await _supabase.from('thongbao').insert([payload]);
+      if (res.error) throw res.error;
+      closeModal(); 
+      loadNotices();
+      safeNotifyParent();
+      premiumAlert(id ? "Cập nhật thành công!" : "Đã đăng thông báo mới!");
+    } catch(err) { premiumAlert('Lỗi: '+err.message, 'error'); }
+    finally { btn.disabled=false; btn.innerHTML='Đăng Thông Báo'; }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (['manager','admin'].includes(ROLE)) {
+      document.querySelectorAll('.manager-only').forEach(el=>el.style.display='flex');
+    }
+    loadNotices();
+    _supabase.channel('thongbao-changes').on('postgres_changes',{event:'*',schema:'public',table:'thongbao'},()=>loadNotices()).subscribe();
+  });
+</script>
+</body>
+</html>

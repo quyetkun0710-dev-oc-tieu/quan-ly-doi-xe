@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký & Phê Duyệt Lịch - Fleet Core</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --secondary: #a855f7;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255, 255, 255, 0.1);
+      --card-gradient: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      --glass: rgba(30, 41, 59, 0.7);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+    body { 
+      background: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.5) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.3) 0px, transparent 50%);
+      color: var(--text); 
+      padding: 1.5rem; 
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    
+    .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2rem; }
+    .header h1 { font-size:2rem; font-weight:900; color:var(--text); letter-spacing: -0.025em; }
+    .header p { color:var(--text-dim); font-size:1rem; margin-top: 4px; }
+
+    .tabs-nav { 
+      display:flex; 
+      gap:8px; 
+      margin-bottom:2rem; 
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px;
+      border-radius: 14px;
+      width: fit-content;
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+    }
+    .tab-link { 
+      padding:0.75rem 1.6rem; 
+      cursor:pointer; 
+      font-weight:700; 
+      color: var(--text-dim); 
+      border-radius: 10px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tab-link.active { 
+      background: var(--primary);
+      color: #ffffff; 
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+    .tab-link:hover:not(.active) { background:rgba(255, 255, 255, 0.1); color: #ffffff; }
+
+    .card { 
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border-radius:24px; 
+      padding:2rem; 
+      border:1px solid var(--border); 
+      box-shadow: 0 10px 30px -5px rgba(0,0,0,0.04);
+      margin-bottom:1.5rem;
+      transition: transform 0.3s;
+    }
+    .card:hover { transform: translateY(-2px); }
+
+    /* Registration Form */
+    .form-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem; }
+    .form-group { display:flex; flex-direction:column; gap:8px; }
+    .form-group label { font-size:0.75rem; font-weight:800; color:var(--text-dim); text-transform:uppercase; letter-spacing: 0.05em; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding:0.85rem 1rem; border-radius:12px; border:1px solid var(--border); outline:none; transition:0.3s; font-size:1rem;
+      background: rgba(15, 23, 42, 0.7);
+      color: #ffffff;
+    }
+    .form-group input::placeholder, .form-group textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.9rem;
+    }
+    .form-group select option {
+      background: #1e293b;
+      color: #fff;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+      border-color:var(--primary); 
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+      background: rgba(15, 23, 42, 0.9);
+    }
+    
+    .btn {
+      padding:0.9rem 1.8rem; border-radius:14px; font-weight:700; cursor:pointer; 
+      border:none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display:flex; align-items:center; gap:10px; justify-content:center;
+      font-size: 0.95rem;
+    }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); 
+      color:white; 
+      box-shadow: 0 4px 14px 0 var(--primary-glow);
+    }
+    .btn-primary:hover { 
+      opacity:1; 
+      transform:translateY(-2px); 
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+    .btn-primary:active { transform: scale(0.98); }
+    
+    /* Stats Row */
+    .stats-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.2rem; margin-bottom:2rem; }
+    .stat-card { 
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      padding:1.4rem; 
+      border-radius:20px; 
+      border:1px solid var(--border); 
+      text-align:center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .stat-val { font-size:1.8rem; font-weight:900; display:block; margin-bottom: 2px; }
+    .stat-label { font-size:0.7rem; color:var(--text-dim); font-weight:800; text-transform:uppercase; letter-spacing: 0.1em; }
+
+    /* Table Styles */
+    .table-wrapper { overflow-x:auto; border-radius: 12px; }
+    table { width:100%; border-collapse:collapse; }
+    th { 
+      text-align:left; 
+      padding:16px 12px; 
+      font-size:0.75rem; 
+      color:var(--text-dim); 
+      border-bottom:2px solid var(--border);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    td { padding:18px 12px; border-bottom:1px solid var(--border); font-size:0.95rem; vertical-align: middle; }
+    
+    .badge { padding:6px 14px; border-radius:50px; font-size:0.7rem; font-weight:800; text-transform: uppercase; }
+    .badge-pending { background:#fef3c7; color:#92400e; border: 1px solid #fde68a; }
+    .badge-approved { background:#dcfce7; color:#166534; border: 1px solid #bbf7d0; }
+    .badge-rejected { background:#fee2e2; color:#991b1b; border: 1px solid #fecaca; }
+
+    .action-btns { display:flex; gap:10px; }
+    .btn-sm { padding:8px 14px; font-size:0.8rem; border-radius: 10px; }
+    .btn-success { background:var(--success); color:white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+    .btn-danger { background:var(--danger); color:white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+    .btn-success:hover, .btn-danger:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+    #requestsTable tr:hover { background: rgba(99, 102, 241, 0.02); }
+
+    .user-profile-badge { display:none; }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+    .user-info-text b { font-size: 0.9rem; color: var(--text); }
+    .user-info-text p { font-size: 0.7rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; }
+
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; gap: 1rem; }
+    }
+    /* Animations */
+    @keyframes checkPop {
+        0% { transform: scale(0); opacity: 0; }
+        70% { transform: scale(1.2); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .success-anim {
+        text-align: center; padding: 3rem; animation: checkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .success-anim i { font-size: 4rem; color: var(--success); margin-bottom: 1rem; }
+    .success-anim h2 { font-weight: 900; color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>📝 Đăng Ký & Phê Duyệt</h1>
+      <p>Yêu cầu thay đổi lịch làm việc, nghỉ phép, trực hành chính</p>
+    </div>
+  </div>
+
+  <div class="stats-grid" id="statsArea">
+    <div class="stat-card">
+      <span class="stat-val" id="countPending">0</span>
+      <span class="stat-label">Chờ duyệt</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-val" id="countApproved" style="color: var(--success)">0</span>
+        <span class="stat-label">Đã duyệt</span>
+    </div>
+  </div>
+
+  <div class="tabs-nav">
+    <div class="tab-link active" id="tabRegisterLink" onclick="switchMainTab('register')">ĐĂNG KÝ MỚI</div>
+    <div class="tab-link" id="tabHistoryLink" onclick="switchMainTab('history')">LỊCH SỬ GỬI</div>
+    <div class="tab-link" id="tabManageLink" style="display:none;" onclick="switchMainTab('manage')">QUẢN LÝ PHÊ DUYỆT</div>
+  </div>
+
+  <!-- Content Sections -->
+  <div id="sectionRegister" class="tab-content">
+    <div class="card">
+        <h2 style="margin-bottom:1.5rem; font-size:1.2rem;">Gửi yêu cầu mới</h2>
+        <form id="requestForm" class="form-grid">
+            <div class="form-group">
+                <label>Tháng/Năm</label>
+                <input type="text" id="thang_nam" placeholder="3/2026" required>
+            </div>
+            <div class="form-group">
+                <label>Các ngày muốn thay đổi</label>
+                <input type="text" id="cac_ngay" placeholder="Ví dụ: 10, 15, 20" required title="Danh sách các ngày, cách nhau dấu phẩy">
+            </div>
+            <div class="form-group">
+                <label>Loại yêu cầu</label>
+                <select id="loai_nghi">
+                    <option value="OFF">Nghỉ bù / Đổi ca</option>
+                    <option value="P">Nghỉ phép có lương</option>
+                    <option value="HC">Trực hành chính</option>
+                    <option value="Ca 1">Chuyển Ca 1</option>
+                    <option value="Ca 2">Chuyển Ca 2</option>
+                    <option value="Ca 3">Chuyển Ca 3</option>
+                </select>
+            </div>
+            <div class="form-group" id="groupPartner" style="display:none;">
+                <label>Người trực thay / Đổi ca</label>
+                <select id="ma_nv_doi">
+                    <option value="">-- Chọn tài xế --</option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2">
+                <label>Lý do chi tiết</label>
+                <textarea id="ly_do" rows="2" placeholder="Giải trình lý do thay đổi..."></textarea>
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" id="btnSubmit">
+                    <i class="fas fa-paper-plane"></i> GỬI YÊU CẦU
+                </button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+  <div id="sectionHistory" class="tab-content" style="display:none;">
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Ngày gửi</th>
+              <th>Tháng</th>
+              <th>Ngày đăng ký</th>
+              <th>Loại</th>
+              <th>Lý do</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:40px;">Đang tải lịch sử...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="sectionManage" class="tab-content" style="display:none;">
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Tài xế / MNV</th>
+              <th>Tháng</th>
+              <th>Ngày đăng ký</th>
+              <th>Loại</th>
+              <th>Lý do</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="manageBody">
+             <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:40px;">Không có yêu cầu chờ duyệt.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const MY_MNV = sessionStorage.getItem('mnv');
+  const MY_NAME = sessionStorage.getItem('name') || sessionStorage.getItem('ho_ten') || 'Khách';
+  const USER_ROLE = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+
+  function init() {
+    const d = new Date();
+    document.getElementById('thang_nam').value = `${d.getMonth() + 1}/${d.getFullYear()}`;
+    
+    if (USER_ROLE === 'manager') {
+      document.getElementById('tabRegisterLink').style.display = 'none';
+      document.getElementById('tabHistoryLink').style.display = 'none';
+      document.getElementById('tabManageLink').style.display = 'block';
+      switchMainTab('manage');
+    } else if (USER_ROLE === 'admin') {
+      document.getElementById('tabManageLink').style.display = 'block';
+    }
+    
+    // Initial state check for partner field
+    if (document.getElementById('loai_nghi').value === 'OFF') {
+        document.getElementById('groupPartner').style.display = 'flex';
+    }
+    
+    setupEventListeners();
+    loadData();
+    document.getElementById('requestForm').onsubmit = handleFormSubmit;
+  }
+
+  function switchMainTab(tab) {
+    document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    
+    if (tab === 'register') {
+      document.getElementById('tabRegisterLink').classList.add('active');
+      document.getElementById('sectionRegister').style.display = 'block';
+    } else if (tab === 'history') {
+      document.getElementById('tabHistoryLink').classList.add('active');
+      document.getElementById('sectionHistory').style.display = 'block';
+      loadHistory();
+    } else {
+      document.getElementById('tabManageLink').classList.add('active');
+      document.getElementById('sectionManage').style.display = 'block';
+      loadManagement();
+    }
+  }
+
+  function setupEventListeners() {
+    document.getElementById('loai_nghi').onchange = (e) => {
+        const isSwap = e.target.value === 'OFF';
+        document.getElementById('groupPartner').style.display = isSwap ? 'flex' : 'none';
+    };
+  }
+
+  async function loadData() {
+    // Load partners based on role
+    let query = _supabase.from('taixe').select('ma_nv, ho_ten, role').neq('ma_nv', MY_MNV).neq('trang_thai', 'Đã nghỉ');
+    
+    // Logic: Driver only swaps with Driver, Admin only swaps with Admin
+    if (USER_ROLE === 'taixe' || USER_ROLE === 'driver') {
+        query = query.eq('role', 'taixe'); 
+    } else if (USER_ROLE === 'admin') {
+        query = query.eq('role', 'admin');
+    }
+
+    const { data: drs } = await query.order('ho_ten');
+
+    if (drs) {
+        const sel = document.getElementById('ma_nv_doi');
+        sel.innerHTML = `<option value="">-- Chọn người thay thế (${USER_ROLE === 'admin' ? 'Admin' : 'Tài xế'}) --</option>` + 
+            drs.map(d => `<option value="${d.ma_nv}">${d.ho_ten} (${d.ma_nv})</option>`).join('');
+    }
+    // Basic stats
+    const { data: pending } = await _supabase.from('dangkylich').select('id', { count: 'exact' }).eq('trang_thai', 'Cho duyet');
+    const { data: approved } = await _supabase.from('dangkylich').select('id', { count: 'exact' }).eq('trang_thai', 'Da duyet');
+    
+    document.getElementById('countPending').innerText = pending?.length || 0;
+    document.getElementById('countApproved').innerText = approved?.length || 0;
+  }
+
+  async function loadHistory() {
+    const tbody = document.getElementById('historyBody');
+    const { data, error } = await _supabase
+      .from('dangkylich')
+      .select('*')
+      .eq('ma_nv', MY_MNV)
+      .order('created_at', { ascending: false });
+    
+    if (error) return;
+    
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;">Bạn chưa gửi yêu cầu nào.</td></tr>`;
+      return;
+    }
+    
+    tbody.innerHTML = data.map(req => `
+      <tr>
+        <td>${new Date(req.created_at).toLocaleDateString('vi-VN')}</td>
+        <td>${req.thang_nam}</td>
+        <td style="font-weight:700">${req.cac_ngay}</td>
+        <td><span class="badge" style="background:#f1f5f9; color:#475569">${req.loai_nghi}</span></td>
+        <td style="color:var(--text-dim); font-size:0.8rem">
+            ${req.ly_do || ''} 
+            ${req.ma_nv_doi ? `<br><b style="color:var(--primary)">Đổi với: ${req.ho_ten_doi || req.ma_nv_doi}</b>` : ''}
+        </td>
+        <td><span class="badge ${req.trang_thai === 'Da duyet' ? 'badge-approved' : (req.trang_thai === 'Cho duyet' ? 'badge-pending' : 'badge-rejected')}">${req.trang_thai}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadManagement() {
+    const tbody = document.getElementById('manageBody');
+    const { data, error } = await _supabase
+      .from('dangkylich')
+      .select('*')
+      .eq('trang_thai', 'Cho duyet')
+      .order('created_at', { ascending: true });
+    
+    if (error) return;
+    
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px;">Tất cả yêu cầu đã được xử lý.</td></tr>`;
+      return;
+    }
+    
+    tbody.innerHTML = data.map(req => `
+      <tr>
+        <td style="font-weight:700">${req.ho_ten}<br><small style="color:var(--text-dim)">MNV: ${req.ma_nv}</small></td>
+        <td>${req.thang_nam}</td>
+        <td style="font-weight:800; color:var(--primary)">${req.cac_ngay}</td>
+        <td><span class="badge" style="background:#f1f5f9; color:#475569">${req.loai_nghi}</span></td>
+        <td>
+            ${req.ly_do || ''}
+            ${req.ma_nv_doi ? `<br><b style="color:var(--primary)">Đổi với: ${req.ho_ten_doi || req.ma_nv_doi}</b>` : ''}
+        </td>
+        <td class="action-btns">
+          <button class="btn btn-sm btn-success" onclick="updateStatus('${req.id}', 'Da duyet')"><i class="fas fa-check"></i> DUYỆT</button>
+          <button class="btn btn-sm btn-danger" onclick="updateStatus('${req.id}', 'Tu choi')"><i class="fas fa-times"></i> TỪ CHỐI</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG GỬI...';
+    
+    const selPartner = document.getElementById('ma_nv_doi');
+    const partnerMnv = selPartner.value;
+    const partnerName = selPartner.options[selPartner.selectedIndex].text.split(' (')[0];
+
+    if (document.getElementById('loai_nghi').value === 'OFF' && !partnerMnv) {
+        alert("Vui lòng chọn người đổi ca cùng bạn!");
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> GỬI YÊU CẦU';
+        return;
+    }
+
+    const payload = {
+        id: "DKL_" + Date.now(),
+        ma_nv: MY_MNV,
+        ho_ten: MY_NAME,
+        thang_nam: document.getElementById('thang_nam').value.trim(),
+        cac_ngay: document.getElementById('cac_ngay').value.trim(),
+        loai_nghi: document.getElementById('loai_nghi').value,
+        ly_do: document.getElementById('ly_do').value.trim(),
+        ma_nv_doi: partnerMnv || null,
+        ho_ten_doi: partnerMnv ? partnerName : null,
+        trang_thai: 'Cho duyet'
+    };
+    
+    const { error } = await _supabase.from('dangkylich').insert([payload]);
+    
+    if (error) {
+      alert("Lỗi khi gửi yêu cầu: " + error.message);
+    } else {
+      const container = document.getElementById('sectionRegister').querySelector('.card');
+      const originalHTML = container.innerHTML;
+      container.innerHTML = `
+        <div class="success-anim">
+            <i class="fas fa-check-circle"></i>
+            <h2>GỬI THÀNH CÔNG!</h2>
+            <p style="color:var(--text-dim); margin-top:10px;">Yêu cầu của bạn đã được chuyển đến quản lý.</p>
+        </div>
+      `;
+      setTimeout(() => {
+          container.innerHTML = originalHTML;
+          document.getElementById('requestForm').reset();
+          switchMainTab('history');
+          // Re-attach listener after innerHTML swap
+          document.getElementById('requestForm').onsubmit = handleFormSubmit;
+      }, 2500);
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> GỬI YÊU CẦU';
+  };
+
+  async function updateStatus(id, newStatus) {
+    if (!confirm(`Xác nhận ${newStatus === 'Da duyet' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} yêu cầu này?`)) return;
+    
+    const { error } = await _supabase
+      .from('dangkylich')
+      .update({ trang_thai: newStatus, nguoi_duyet: MY_NAME, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    
+    if (error) {
+      alert("Lỗi: " + error.message);
+    } else {
+      loadManagement();
+      loadData();
+    }
+  }
+
+  window.onload = init;
+</script>
+</body>
+</html>

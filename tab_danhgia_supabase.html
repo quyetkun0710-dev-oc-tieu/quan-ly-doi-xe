@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá Nhân sự - Fleet Core Supabase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #00ffcc;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-area h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-area p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            width: 250px;
+            font-size: 1rem;
+            margin-left: 10px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-add:hover { transform: scale(1.05) translateY(-2px); }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+        .stat-card h3 {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Evaluation Grid */
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+            padding-bottom: 5rem;
+        }
+
+        .evaluation-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 1.8rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            position: relative;
+        }
+
+        .evaluation-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        .evaluation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .name-mnv {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .name-mnv h4 { font-size: 1.1rem; font-weight: 700; color: white; }
+        .name-mnv span { font-size: 0.8rem; color: var(--text-dim); }
+
+        .severity-tag {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+
+        .sev-nhe { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .sev-trungbinh { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .sev-nang { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .violation-box {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .violation-title {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .violation-content {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .card-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .detail-item { display: flex; flex-direction: column; gap: 4px; }
+        .detail-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .detail-value { font-size: 0.9rem; font-weight: 600; }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+        }
+
+        .date-box { font-size: 0.8rem; color: var(--text-dim); font-weight: 500; }
+
+        .action-btns { display: flex; gap: 8px; }
+
+        .btn-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); color: var(--text-dim);
+            border: none; cursor: pointer; transition: 0.2s;
+        }
+        .btn-icon:hover { background: var(--primary); color: white; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1e293b;
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem;
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+        }
+        .form-group input:focus { border-color: var(--primary); }
+
+        .modal-actions {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 0.8rem 2.5rem;
+            border-radius: 12px; font-weight: 600;
+            border: none; cursor: pointer;
+        }
+
+        .btn-icon:hover { background: var(--primary); color: white; }
+
+        /* Controls / Date Bar */
+        .date-bar {
+            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+            padding: 0.75rem 1.25rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+            margin-bottom: 1.5rem; backdrop-filter: blur(15px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .date-group { display: flex; flex-direction: column; gap: 4px; }
+        .date-group label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .date-group input, .date-group select {
+            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.5rem 0.8rem; border-radius: 10px; color: white; outline: none;
+            font-family: 'Outfit', sans-serif; font-size: 0.85rem; transition: all 0.2s;
+        }
+        .btn-refresh {
+            background: var(--primary); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 12px;
+            font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Helpers */
+        .hidden { display: none; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-area">
+            <h1>ASSESSMENT</h1>
+            <p>Hệ thống đánh giá và quản trị hiệu suất nhân sự</p>
+        </div>
+        <div class="controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm theo tên, mã NV..." oninput="filterEvaluation()">
+            </div>
+            <button class="btn-add manager-only" onclick="openModal()">
+                <i class="fas fa-user-check"></i> ĐÁNH GIÁ MỚI
+            </button>
+        </div>
+    </header>
+
+    <div class="date-bar">
+        <div class="date-group">
+            <label>Từ ngày</label>
+            <input type="date" id="fromDate">
+        </div>
+        <div class="date-group">
+            <label>Đến ngày</label>
+            <input type="date" id="toDate">
+        </div>
+        <div class="date-group">
+            <label>Thời điểm</label>
+            <select id="quickRange" onchange="applyQuickRange()">
+                <option value="month" selected>Tháng này</option>
+                <option value="7">7 ngày qua</option>
+                <option value="30">30 ngày qua</option>
+                <option value="all">Tất cả các tháng</option>
+            </select>
+        </div>
+        <button class="btn-refresh" onclick="loadEvaluations()">
+            <i class="fas fa-sync-alt"></i> Tải lại
+        </button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card" onclick="filterByStatus('all')">
+            <h3>Tổng lượt đánh giá</h3>
+            <div class="value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByStatus('Nặng')">
+            <h3>Lỗi nghiêm trọng</h3>
+            <div class="value" id="statCritical" style="color: var(--danger)">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByStatus('Trung bình')">
+            <h3>Cần lưu ý</h3>
+            <div class="value" id="statWarning" style="color: var(--warning)">0</div>
+        </div>
+    </div>
+
+    <div class="evaluation-grid" id="evalGrid">
+        <!-- Cards injected here -->
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="evalModal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div>
+                <h2 id="modalTitle" style="font-weight: 800; font-size: 1.8rem">Phiếu Đánh Giá Nhân Sự</h2>
+                <p style="color: var(--text-dim)">Vui lòng xác thực thông tin vi phạm/đánh giá kỹ thuật.</p>
+            </div>
+            <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form id="evalForm">
+            <input type="hidden" id="editId">
+            
+            <h3 style="color: var(--primary); font-size: 0.9rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">THÔNG TIN NHÂN SỰ</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Mã Nhân Viên</label>
+                    <input type="text" id="ma_nv" list="driverList" required placeholder="VD: TX001..." onchange="autoFillDriver(this.value)">
+                    <datalist id="driverList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>Họ Tên Nhân Viên</label>
+                    <input type="text" id="ho_ten" readonly style="background: rgba(255,255,255,0.05)">
+                </div>
+                <div class="form-group">
+                    <label>Ngày Đánh Giá</label>
+                    <input type="date" id="ngay" required>
+                </div>
+                <div class="form-group">
+                    <label>Mức Độ Vi Phạm</label>
+                    <select id="muc_do">
+                        <option value="Nhẹ">Nhẹ (Nhắc nhở)</option>
+                        <option value="Trung bình">Trung bình (Cảnh cáo)</option>
+                        <option value="Nặng">Nặng (Kỷ luật)</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3 style="color: var(--primary); font-size: 0.9rem; margin: 2rem 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">CHI TIẾT ĐÁNH GIÁ</h3>
+            <div class="form-grid" style="grid-template-columns: 1fr">
+                <div class="form-group">
+                    <label>Nội dung lỗi vi phạm</label>
+                    <input type="text" id="loi" required placeholder="VD: Đi muộn, lùi xe va quẹt, không check-in...">
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 3fr">
+                    <div class="form-group">
+                        <label>Số lần vi phạm</label>
+                        <input type="number" id="so_lan" required value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Kết luận & Hình thức xử lý</label>
+                        <input type="text" id="ket_luan" required placeholder="VD: Khiển trách trừ 100k, hạ điểm thi đua...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú thêm</label>
+                    <textarea id="ghi_chu" rows="3" placeholder="Nhận xét chi tiết của quản lý..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-icon" style="width: auto; padding: 0 1.5rem" onclick="closeModal()">Đóng</button>
+                <button type="submit" class="btn-save" id="saveBtn">Lưu Đánh Giá</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+    
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allEvals = [];
+    let driversList = [];
+    let ROLE = sessionStorage.getItem('role') || 'taixe';
+    let CURRENT_MNV = '';
+    try { 
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (user) CURRENT_MNV = user.ma_nv;
+    } catch(e){}
+
+    async function initialize() {
+        if (ROLE === 'manager' || ROLE === 'admin') {
+            document.querySelectorAll('.manager-only').forEach(el => el.classList.remove('manager-only'));
+        }
+        applyQuickRange();
+        await loadEvaluations();
+        await loadDrivers();
+    }
+
+    function applyQuickRange() {
+        const val = document.getElementById('quickRange').value;
+        const today = new Date();
+        let from = new Date();
+        
+        if (val === 'all') {
+            from = new Date('2020-01-01');
+        } else if (val === 'month') {
+            from.setDate(1);
+        } else {
+            from.setDate(today.getDate() - parseInt(val));
+        }
+        
+        document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+        document.getElementById('toDate').value = today.toISOString().split('T')[0];
+        
+        if (allEvals.length > 0) loadEvaluations();
+    }
+
+    async function loadEvaluations() {
+        const grid = document.getElementById('evalGrid');
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+        
+        try {
+            let query = _supabase.from('danhgia').select('*')
+                .gte('ngay', fromDate)
+                .lte('ngay', toDate);
+            
+            // Nếu là tài xế, chỉ lấy của chính mình
+            if (ROLE !== 'manager' && ROLE !== 'admin' && CURRENT_MNV) {
+                query = query.eq('ma_nv', CURRENT_MNV);
+            }
+
+            const { data, error } = await query.order('created_at', { ascending: false });
+
+            if (error) throw error;
+            allEvals = data || [];
+            renderGrid(allEvals);
+            updateStats(allEvals);
+        } catch (error) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--danger)">Lỗi: ${error.message}</div>`;
+        }
+    }
+
+    async function loadDrivers() {
+        const { data: taixe } = await _supabase.from('taixe').select('ma_nv, ho_ten');
+        driversList = taixe || [];
+        const txList = document.getElementById('driverList');
+        if (taixe) txList.innerHTML = taixe.map(t => `<option value="${t.ma_nv}">${t.ho_ten}</option>`).join('');
+    }
+
+    function renderGrid(data) {
+        const grid = document.getElementById('evalGrid');
+        grid.innerHTML = '';
+
+        if (data.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim)">Chưa có dữ liệu đánh giá.</div>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'evaluation-card';
+            
+            const sevClass = getSevClass(item.muc_do);
+            const initials = item.ho_ten ? item.ho_ten.split(' ').pop().charAt(0) : '?';
+
+            card.innerHTML = `
+                <div class="evaluation-header">
+                    <div class="driver-info">
+                        <div class="avatar-circle">${initials}</div>
+                        <div class="name-mnv">
+                            <h4>${item.ho_ten}</h4>
+                            <span>Mã NV: ${item.ma_nv}</span>
+                        </div>
+                    </div>
+                    <span class="severity-tag ${sevClass}">${item.muc_do}</span>
+                </div>
+                
+                <div class="violation-box">
+                    <span class="violation-title">Lỗi vi phạm / Nội dung</span>
+                    <div class="violation-content">${item.loi}</div>
+                </div>
+
+                <div class="card-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Số lần lặp lại</span>
+                        <span class="detail-value">${item.so_lan} lần</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Kết luận xử lý</span>
+                        <span class="detail-value" style="color: var(--accent)">${item.ket_luan}</span>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="date-box"><i class="far fa-calendar-alt"></i> ${formatDate(item.ngay)}</div>
+                    <div class="action-btns manager-only">
+                        <button class="btn-icon" onclick="editItem(${item.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon" style="color: var(--danger)" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function getSevClass(lvl) {
+        if (lvl === 'Nhẹ') return 'sev-nhe';
+        if (lvl === 'Trung bình') return 'sev-trungbinh';
+        if (lvl === 'Nặng') return 'sev-nang';
+        return '';
+    }
+
+    function updateStats(data) {
+        document.getElementById('statTotal').innerText = data.length;
+        document.getElementById('statCritical').innerText = data.filter(i => i.muc_do === 'Nặng').length;
+        document.getElementById('statWarning').innerText = data.filter(i => i.muc_do === 'Trung bình').length;
+    }
+
+    function autoFillDriver(mnv) {
+        const driver = driversList.find(d => d.ma_nv === mnv);
+        document.getElementById('ho_ten').value = driver ? driver.ho_ten : '';
+    }
+
+    function filterEvaluation() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allEvals.filter(e => 
+            (e.ho_ten && e.ho_ten.toLowerCase().includes(q)) || 
+            (e.ma_nv && e.ma_nv.toLowerCase().includes(q)) ||
+            (e.loi && e.loi.toLowerCase().includes(q))
+        );
+        renderGrid(filtered);
+    }
+
+    function filterByStatus(status) {
+        if (status === 'all') {
+            renderGrid(allEvals);
+        } else {
+            const filtered = allEvals.filter(i => i.muc_do === status);
+            renderGrid(filtered);
+        }
+    }
+
+    function openModal(editData = null) {
+        const form = document.getElementById('evalForm');
+        form.reset();
+        document.getElementById('ngay').value = new Date().toISOString().split('T')[0];
+
+        if (editData) {
+            document.getElementById('modalTitle').innerText = "Cập Nhật Đánh Giá";
+            document.getElementById('editId').value = editData.id;
+            
+            const fields = ['ma_nv', 'ho_ten', 'ngay', 'muc_do', 'loi', 'so_lan', 'ket_luan', 'ghi_chu'];
+            fields.forEach(f => {
+                const el = document.getElementById(f);
+                if (el) el.value = editData[f] || '';
+            });
+        } else {
+            document.getElementById('modalTitle').innerText = "Phiếu Đánh Giá Nhân Sự";
+            document.getElementById('editId').value = '';
+        }
+        document.getElementById('evalModal').classList.add('active');
+    }
+
+    function closeModal() { document.getElementById('evalModal').classList.remove('active'); }
+
+    document.getElementById('evalForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+
+        const fields = ['ma_nv', 'ho_ten', 'ngay', 'muc_do', 'loi', 'so_lan', 'ket_luan', 'ghi_chu'];
+        const payload = { updated_at: new Date().toISOString() };
+        
+        fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) {
+                if (f === 'so_lan') payload[f] = parseInt(el.value) || 0;
+                else payload[f] = el.value;
+            }
+        });
+
+        const id = document.getElementById('editId').value;
+        try {
+            let res;
+            if (id) {
+                res = await _supabase.from('danhgia').update(payload).eq('id', id);
+            } else {
+                res = await _supabase.from('danhgia').insert([payload]);
+            }
+
+            if (res.error) {
+                console.error("Supabase Error:", res.error);
+                throw res.error;
+            }
+
+            console.log("Save Success:", res.data);
+            alert("✅ Đã lưu dữ liệu thành công!");
+            
+            closeModal();
+            loadEvaluations();
+        } catch (error) { 
+            console.error("Catch Error:", error);
+            alert("❌ Lỗi lưu dữ liệu: " + error.message); 
+        }
+        finally { btn.disabled = false; }
+    };
+
+    function editItem(id) {
+        const item = allEvals.find(i => i.id === id);
+        if (item) openModal(item);
+    }
+
+    async function deleteItem(id) {
+        if (!confirm("Xóa đánh giá này?")) return;
+        await _supabase.from('danhgia').delete().eq('id', id);
+        loadEvaluations();
+    }
+
+    function formatDate(d) {
+        if (!d) return '-';
+        return new Date(d).toLocaleDateString('vi-VN');
+    }
+
+    function formatCurrency(val) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Đồng bộ dữ liệu sang Supabase</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            padding: 40px;
+            background: #f4f6f8;
+        }
+
+        .box {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .log-area {
+            background: #1a2340;
+            color: #00ffcc;
+            padding: 15px;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h1 class="title has-text-centered">Công Cụ Đồng Bộ Sheets -> Supabase</h1>
+        <p class="has-text-centered mb-4">Nhấn nút bên dưới để tiến hành tải toàn bộ dữ liệu từ Google Sheets và đẩy lên
+            Supabase.</p>
+
+        <div class="has-text-centered mb-4">
+            <button id="btnSync" class="button is-primary is-large" onclick="migrateAllToSupabase()">BẮT ĐẦU ĐỒNG
+                BỘ</button>
+        </div>
+
+        <div id="logArea" class="log-area">
+            Bấm "BẮT ĐẦU ĐỒNG BỘ" để xem tiến trình...<br>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbya7Dglug6AIquYYUqt8Qqo3FhX3czlAUWa18VeSk29Oags8M86AiEwtrIdHqrMNL68/exec";
+        const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_KGgl0a2sghvPxzws_q1_2A_tp61ozcR";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function logMsg(msg, isError = false) {
+            const area = document.getElementById("logArea");
+            const div = document.createElement("div");
+            div.style.color = isError ? "#ff4d4d" : "#00ffcc";
+            div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function formatDateForSupabase(dStr) {
+            if (!dStr || dStr === "" || dStr === "-") return null;
+            let d = new Date(dStr);
+            if (isNaN(d.getTime())) {
+                const parts = String(dStr).split('/');
+                if (parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+            return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0];
+        }
+
+        function formatDataForSupabase(tag, data) {
+            const result = { ...data };
+            Object.keys(result).forEach(key => {
+                const val = String(result[key] || "");
+                if (key === 'tai_trong' || key.startsWith('km_') || key.includes('chi_phi') || key.includes('thanh_tien') || key.includes('so_lit') || key.includes('tong_km') || key.includes('tong_gio')) {
+                    result[key] = parseFloat(val.replace(',', '.')) || 0;
+                } else if (key.startsWith('ngay_') || key === 'nam_sx' || key === 'han_gplx' || key === 'ngay_dang_ky' || key === 'ngay_nhan_viec' || key === 'ngay_nghi_viec') {
+                    result[key] = formatDateForSupabase(val);
+                } else if (val.trim() === "") {
+                    result[key] = null;
+                }
+            });
+
+            return result;
+        }
+
+        async function migrateAllToSupabase() {
+            const btn = document.getElementById("btnSync");
+            btn.classList.add("is-loading");
+            btn.disabled = true;
+
+            // Thêm các bảng khác ngoài danh sách trong index.html nếu có
+            const tables = ['xe', 'taixe', 'nhiemvu', 'thongbao', 'fuel', 'nhatky', 'baoduong', 'lopxe', 'diemgiaohang', 'dangkylich', 'kehoachbaoduong', 'danhgia'];
+
+            try {
+                for (const table of tables) {
+                    logMsg(`\n➤ Bảng đang đồng bộ: [${table.toUpperCase()}] ...`);
+
+                    const res = await fetch(`${SCRIPT_URL}?tag=${table}&_t=${Date.now()}`);
+                    const data = await res.json();
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        logMsg(`➜ Google Sheets không có dữ liệu cho bảng [${table}] hoặc bảng chưa tạo. Bỏ qua.`);
+                        continue;
+                    }
+
+                    let mappedData = data.map(item => {
+                        const formatted = formatDataForSupabase(table, item);
+                        formatted.updated_at = new Date();
+                        // Xoá ID giả từ Sheets để Database tự cấp ID (trừ diemgiaohang vì nó có thể là UUID)
+                        if (table !== 'diemgiaohang' && table !== 'nhiemvu') delete formatted.id;
+                        return formatted;
+                    });
+
+                    logMsg(`➜ Tải thành công ${mappedData.length} dòng từ Google Sheets.`);
+
+                    const conflictCols = {
+                        xe: 'bien_so_xe',
+                        taixe: 'ma_nv',
+                        diemgiaohang: 'id',
+                        nhiemvu: 'id'
+                    };
+                    const options = conflictCols[table] ? { onConflict: conflictCols[table] } : {};
+
+                    let success = false;
+                    let attempts = 0;
+
+                    while (!success && attempts < 10) {
+                        attempts++;
+                        logMsg(`  Đang đẩy lên Supabase (Thử ${attempts})...`);
+
+                        const { error } = await supabaseClient.from(table).upsert(mappedData, options);
+
+                        if (error && (error.message.includes("Could not find the") || error.message.includes("column") || error.code === "42703")) {
+                            const match = error.message.match(/'([^']+)'/);
+                            const col = match ? match[1] : null;
+                            if (col) {
+                                logMsg(`  ⚠️ [Auto-Fix] Supabase thiếu cột '${col}'. Tự động xoá cột này và thử lại!`, true);
+                                mappedData.forEach(row => delete row[col]);
+                                continue; // Thử lại
+                            }
+                        }
+
+                        if (error) {
+                            logMsg(`  ❌ Lỗi Supabase tại bảng [${table}]: ${error.message} - Chi tiết: ${JSON.stringify(error)}`, true);
+                            break;
+                        }
+
+                        success = true;
+                    }
+
+                    if (success) {
+                        logMsg(`✅ XONG! Đã đồng bộ ${mappedData.length} bản ghi vào bảng [${table}].`);
+                    }
+                }
+
+                logMsg("\n🎉 HOÀN THÀNH TẤT CẢ QUÁ TRÌNH MIGRATION! 🎉");
+
+            } catch (err) {
+                logMsg(`❌ LỖI HỆ THỐNG: ${err.message}`, true);
+            } finally {
+                btn.classList.remove("is-loading");
+                btn.disabled = false;
+                btn.innerText = "ĐỒNG BỘ LẠI";
+            }
+        }
+    </script>
+
+</body>
+
+</html>

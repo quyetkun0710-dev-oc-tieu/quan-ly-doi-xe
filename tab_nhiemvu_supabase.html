@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhiệm Vụ - Fleet Core V2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #a855f7;
+      --accent: #00ffcc;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width:1400px; margin:0 auto; }
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:2.5rem; animation:fadeInDown 0.8s ease-out;
+    }
+    .logo-area h1 {
+      font-size:2.2rem; font-weight:900;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+    .logo-area p { color:var(--text-dim); font-size:0.9rem; margin-top:4px; }
+    .controls { display:flex; gap:1rem; align-items:center; }
+    .search-box {
+      background:var(--card-bg); border-radius:12px; padding:0.5rem 1rem;
+      border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(10px);
+      display:flex; align-items:center; gap:8px; transition:all 0.3s;
+    }
+    .search-box:focus-within { border-color:var(--primary); box-shadow:0 0 15px rgba(99,102,241,0.3); }
+    .search-box input { background:transparent; border:none; color:white; outline:none; width:220px; font-size:0.95rem; font-family:'Outfit',sans-serif; }
+    .btn-add {
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      color:white; border:none; padding:0.75rem 1.4rem; border-radius:12px;
+      font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;
+      transition:all 0.3s; box-shadow:0 10px 20px rgba(99,102,241,0.2);
+      font-family:'Outfit',sans-serif;
+    }
+    .btn-add:hover { transform:scale(1.05) translateY(-2px); }
+
+    /* Stats */
+    .stats-row {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:1.2rem; margin-bottom:2rem; animation:fadeIn 1s ease-out;
+    }
+    .stat-card {
+      background:var(--card-bg); padding:1.2rem 1.3rem; border-radius:20px;
+      border:1px solid rgba(255,255,255,0.05); backdrop-filter:blur(12px);
+      text-align:center; transition:all 0.3s;
+      cursor: pointer;
+    }
+    .stat-card:hover { transform:translateY(-5px); border-color:var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .stat-card h3 { font-size:0.7rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; letter-spacing:0.5px; }
+    .stat-card .value { font-size:1.9rem; font-weight:800; color:var(--accent); }
+
+    /* Filter */
+    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-btn {
+      padding:6px 14px; border-radius:20px;
+      border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
+      color:var(--text-dim); cursor:pointer; font-size:0.82rem; font-weight:600;
+      transition:all 0.2s; font-family:'Outfit',sans-serif;
+    }
+    .filter-btn.active, .filter-btn:hover { background:var(--primary); border-color:var(--primary); color:white; }
+
+    /* Task Grid */
+    .task-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:1.5rem; padding-bottom:5rem; }
+
+    .task-card {
+      background:var(--card-bg); border-radius:20px; padding:1.4rem;
+      border:1px solid rgba(255,255,255,0.05); backdrop-filter:blur(12px);
+      transition:all 0.3s; animation:slideUp 0.5s ease-out forwards; opacity:0;
+      display:flex; flex-direction:column; gap:1rem;
+      border-left:4px solid transparent;
+    }
+    .task-card:hover { transform:translateY(-5px); box-shadow:0 20px 40px rgba(0,0,0,0.3); }
+    .task-card.priority-high { border-left-color:var(--danger); }
+    .task-card.priority-med { border-left-color:var(--warning); }
+    .task-card.priority-low { border-left-color:var(--success); }
+    .task-card.status-done { opacity:0.55; }
+    .task-card.status-done::before {
+      content:'✓ Hoàn thành';
+      position:absolute; top:12px; right:12px;
+      font-size:0.65rem; background:rgba(16,185,129,0.2); color:var(--success);
+      padding:3px 8px; border-radius:20px; font-weight:700;
+    }
+    .task-card { position:relative; }
+    .my-task-card { border-top: 3px solid var(--warning) !important; background: rgba(255, 247, 237, 0.05) !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2) !important; }
+    .my-task-badge { position: absolute; top: -10px; right: 20px; background: var(--warning); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 5; }
+
+    .task-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+    .task-title { font-size:1.05rem; font-weight:800; flex:1; line-height:1.3; }
+    .priority-badge {
+      font-size:0.65rem; font-weight:700; padding:3px 10px; border-radius:20px;
+      text-transform:uppercase; flex-shrink:0;
+    }
+    .priority-badge.high { background:rgba(239,68,68,0.2); color:var(--danger); }
+    .priority-badge.med { background:rgba(245,158,11,0.2); color:var(--warning); }
+    .priority-badge.low { background:rgba(16,185,129,0.15); color:var(--success); }
+
+    .task-meta {
+      display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;
+      background:rgba(15,23,42,0.3); border-radius:12px; padding:0.8rem;
+    }
+    .meta-item { display:flex; flex-direction:column; gap:2px; }
+    .meta-label { font-size:0.65rem; color:var(--text-dim); text-transform:uppercase; }
+    .meta-value { font-size:0.85rem; font-weight:600; }
+
+    .task-desc { font-size:0.85rem; color:var(--text-dim); line-height:1.5; }
+    .progress-bar-wrap { background:rgba(255,255,255,0.06); border-radius:99px; height:6px; overflow:hidden; }
+    .progress-bar-inner { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width 0.5s; }
+
+    .task-footer { display:flex; justify-content:space-between; align-items:center; }
+    .status-tag {
+      font-size:0.7rem; font-weight:700; padding:4px 10px; border-radius:20px;
+    }
+    .status-cxl { background:rgba(239,68,68,0.15); color:var(--danger); }
+    .status-dang { background:rgba(245,158,11,0.15); color:var(--warning); }
+    .status-xong { background:rgba(16,185,129,0.15); color:var(--success); }
+    .status-cho { background:rgba(99,102,241,0.15); color:var(--primary); }
+
+    .task-actions { display:flex; gap:8px; }
+    .btn-icon {
+      width:34px; height:34px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,0.05); color:var(--text-dim);
+      border:none; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-icon:hover { background:var(--primary); color:white; }
+
+    .btn-complete {
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-complete:hover {
+      background: var(--success);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-update {
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-update:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    /* Modal */
+    .modal { position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(15px); display:none; justify-content:center; align-items:center; z-index:1000; padding:1rem; }
+    .modal.active { display:flex; }
+    .modal-content {
+      background:#1e293b; padding:2.5rem; border-radius:28px;
+      width:100%; max-width:700px; max-height:90vh; overflow-y:auto;
+      border:1px solid rgba(255,255,255,0.1); box-shadow:0 40px 80px rgba(0,0,0,0.5);
+    }
+    .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-group label { font-size:0.8rem; color:var(--text-dim); font-weight:600; text-transform:uppercase; }
+    .form-group input,.form-group select,.form-group textarea {
+      background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1);
+      padding:0.8rem; border-radius:12px; color:white; outline:none;
+      font-family:'Outfit',sans-serif; transition:all 0.2s;
+    }
+    .form-group input:focus,.form-group select:focus { border-color:var(--primary); box-shadow:0 0 10px rgba(99,102,241,0.2); }
+    .modal-actions { margin-top:2rem; display:flex; justify-content:flex-end; gap:1rem; }
+    .btn-cancel { background:#334155; color:white; padding:0.8rem 1.5rem; border-radius:12px; font-weight:600; border:none; cursor:pointer; font-family:'Outfit',sans-serif; }
+    .btn-save { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; padding:0.8rem 1.8rem; border-radius:12px; font-weight:700; border:none; cursor:pointer; font-family:'Outfit',sans-serif; }
+    .btn-cancel:hover { background:#475569; }
+
+    @keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo-area">
+      <h1>📋 NHIỆM VỤ</h1>
+      <p>Quản lý công việc và nhiệm vụ đội xe</p>
+    </div>
+    <div class="controls">
+      <div class="search-box">
+        <i class="fas fa-search" style="color:var(--text-dim)"></i>
+        <input type="text" id="searchInput" placeholder="Tìm nhiệm vụ..." oninput="applyFilter()">
+      </div>
+      <button class="btn-add manager-only" onclick="openModal()" style="display:none;">
+        <i class="fas fa-plus"></i> THÊM NHIỆM VỤ
+      </button>
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem; color:var(--text-dim); margin-left:1rem; user-select:none;">
+          <input type="checkbox" id="chkOnlyMe" onchange="applyFilter()" style="width:18px;height:18px;cursor:pointer;"> <b>Nhiệm vụ của tôi</b>
+      </label>
+    </div>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat-card" onclick="setFilter('all', document.querySelector('.filter-btn[onclick*=\'all\']'))"><h3>Tổng nhiệm vụ</h3><div class="value" id="statTotal">0</div></div>
+    <div class="stat-card" onclick="setFilter('dang', document.querySelector('.filter-btn[onclick*=\'dang\']'))"><h3>Đang thực hiện</h3><div class="value" id="statDang" style="color:var(--warning)">0</div></div>
+    <div class="stat-card" onclick="setFilter('xong', document.querySelector('.filter-btn[onclick*=\'xong\']'))"><h3>Hoàn thành</h3><div class="value" id="statXong" style="color:var(--success)">0</div></div>
+    <div class="stat-card" onclick="setFilter('cho', document.querySelector('.filter-btn[onclick*=\'cho\']'))"><h3>Chờ xử lý</h3><div class="value" id="statCho" style="color:var(--primary)">0</div></div>
+    <div class="stat-card" onclick="setFilter('high', document.querySelector('.filter-btn[onclick*=\'high\']'))"><h3>🔴 Khẩn cấp</h3><div class="value" id="statHigh" style="color:var(--danger)">0</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">📋 Tất cả</button>
+    <button class="filter-btn" onclick="setFilter('cho',this)">🔵 Chờ xử lý</button>
+    <button class="filter-btn" onclick="setFilter('dang',this)">🟡 Đang thực hiện</button>
+    <button class="filter-btn" onclick="setFilter('xong',this)">✅ Hoàn thành</button>
+    <button class="filter-btn" onclick="setFilter('high',this)">🔴 Khẩn cấp</button>
+  </div>
+
+  <div class="task-grid" id="taskGrid"></div>
+</div>
+
+<!-- Modal Quản lý (Thêm/Sửa) -->
+<div class="modal" id="taskModal">
+  <div class="modal-content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem">
+      <div>
+        <h2 id="modalTitle" style="font-weight:800;font-size:1.8rem;margin-bottom:4px">Thêm Nhiệm Vụ</h2>
+        <p style="color:var(--text-dim);font-size:0.85rem">Điền thông tin nhiệm vụ cần thực hiện</p>
+      </div>
+      <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="taskForm">
+      <input type="hidden" id="editId">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:span 2">
+          <label>Tiêu đề nhiệm vụ *</label>
+          <input type="text" id="tieu_de" required placeholder="Nội dung nhiệm vụ...">
+        </div>
+        <div class="form-group">
+          <label>Loại nhiệm vụ</label>
+          <select id="loai_nhiem_vu">
+            <option value="Vận hành">Vận hành</option>
+            <option value="Bảo dưỡng">Bảo dưỡng</option>
+            <option value="Hành chính">Hành chính</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Độ ưu tiên</label>
+          <select id="uu_tien">
+            <option value="Thấp">🟢 Thấp</option>
+            <option value="Trung bình" selected>🟡 Trung bình</option>
+            <option value="Cao">🔴 Cao (Khẩn cấp)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Người thực hiện (Mã NV)</label>
+          <input type="text" id="nguoi_thuc_hien" list="driverList" placeholder="Mã NV...">
+          <datalist id="driverList"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Hạn hoàn thành</label>
+          <input type="date" id="han_hoan_thanh">
+        </div>
+        <div class="form-group">
+          <label>Trạng thái</label>
+          <select id="trang_thai">
+            <option value="Chờ xử lý">🔵 Chờ xử lý</option>
+            <option value="Đang thực hiện">🟡 Đang thực hiện</option>
+            <option value="Hoàn thành">✅ Hoàn thành</option>
+            <option value="Đã hủy">❌ Đã hủy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Biển số xe liên quan</label>
+          <input type="text" id="bien_so_xe" list="vehicleList" placeholder="Không bắt buộc">
+          <datalist id="vehicleList"></datalist>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label>Mô tả chi tiết</label>
+          <textarea id="mo_ta" rows="3" placeholder="Mô tả nhiệm vụ..."></textarea>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label>Ghi chú</label>
+          <textarea id="ghi_chu" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Đóng</button>
+        <button type="submit" class="btn-save" id="saveBtn">Lưu Nhiệm Vụ</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Xác nhận cho Lái xe -->
+<div class="modal" id="driverConfirmModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem">
+      <div>
+        <h2 id="confirmTitle" style="font-weight:800;font-size:1.5rem;margin-bottom:4px">Xác Nhận</h2>
+        <p id="confirmSubtitle" style="color:var(--text-dim);font-size:0.85rem">Cập nhật trạng thái nhiệm vụ.</p>
+      </div>
+      <button class="btn-icon" onclick="closeDriverModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="driverConfirmForm">
+      <input type="hidden" id="confirmTaskId">
+      <input type="hidden" id="confirmStatus">
+      <div class="form-group">
+        <label id="noteLabel">Ghi chú (không bắt buộc)</label>
+        <textarea id="confirmNote" rows="3" placeholder="Nhập ghi chú hoặc báo cáo tiến độ..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeDriverModal()">Để sau</button>
+        <button type="submit" class="btn-save" id="confirmSaveBtn">Xác Nhận Xong</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const ROLE = sessionStorage.getItem('role') || 'taixe';
+  const USER_NAME = sessionStorage.getItem('name') || 'Admin';
+  const isManager = ['manager', 'admin'].includes(ROLE);
+
+  let allTasks = [];
+  let currentFilter = 'all';
+
+  async function loadTasks() {
+    const grid = document.getElementById('taskGrid');
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:5rem"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+    try {
+      const { data, error } = await _supabase.from('nhiemvu').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      allTasks = data || [];
+      updateStats(allTasks);
+      applyFilter();
+    } catch(e) {
+      grid.innerHTML = `<div style="grid-column:1/-1;color:var(--danger);padding:2rem">Lỗi: ${e.message}<br><small>Bảng 'nhiemvu' có thể chưa được tạo trong Supabase.</small></div>`;
+    }
+  }
+
+  async function loadDropdowns() {
+    const { data: xe } = await _supabase.from('xe').select('bien_so_xe');
+    if (xe) document.getElementById('vehicleList').innerHTML = xe.map(v=>`<option value="${v.bien_so_xe}">`).join('');
+    const { data: tx } = await _supabase.from('taixe').select('ma_nv,ho_ten');
+    if (tx) document.getElementById('driverList').innerHTML = tx.map(t=>`<option value="${t.ma_nv}">${t.ho_ten}</option>`).join('');
+  }
+
+  function updateStats(data) {
+    document.getElementById('statTotal').innerText = data.length;
+    document.getElementById('statDang').innerText = data.filter(t=>t.trang_thai === 'Đang thực hiện').length;
+    document.getElementById('statXong').innerText = data.filter(t=>t.trang_thai === 'Hoàn thành').length;
+    document.getElementById('statCho').innerText = data.filter(t=>t.trang_thai === 'Chờ xử lý').length;
+    document.getElementById('statHigh').innerText = data.filter(t=>t.uu_tien === 'Cao').length;
+  }
+
+  function setFilter(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter();
+  }
+
+  function applyFilter() {
+    let filtered = [...allTasks];
+    const myMnv = sessionStorage.getItem('mnv');
+    const showOnlyMe = document.getElementById('chkOnlyMe').checked;
+
+    if (showOnlyMe && myMnv) {
+      filtered = filtered.filter(t => t.nguoi_thuc_hien === myMnv);
+    }
+
+    if (currentFilter === 'cho') filtered = filtered.filter(t=>t.trang_thai === 'Chờ xử lý');
+    else if (currentFilter === 'dang') filtered = filtered.filter(t=>t.trang_thai === 'Đang thực hiện');
+    else if (currentFilter === 'xong') filtered = filtered.filter(t=>t.trang_thai === 'Hoàn thành');
+    else if (currentFilter === 'high') filtered = filtered.filter(t=>t.uu_tien === 'Cao');
+    
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (q) filtered = filtered.filter(t=>(t.tieu_de||'').toLowerCase().includes(q)||(t.mo_ta||'').toLowerCase().includes(q));
+    
+    renderTasks(filtered);
+  }
+
+  function renderTasks(data) {
+    const grid = document.getElementById('taskGrid');
+    grid.innerHTML = '';
+    if (data.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:5rem;color:var(--text-dim)">Không có nhiệm vụ nào.</div>';
+      return;
+    }
+    const myMnv = sessionStorage.getItem('mnv');
+
+    data.forEach((t, idx) => {
+      const card = document.createElement('div');
+      const isMyTask = (myMnv && t.nguoi_thuc_hien === myMnv);
+      const priorityClass = t.uu_tien === 'Cao' ? 'high' : t.uu_tien === 'Trung bình' ? 'med' : 'low';
+      const isDone = t.trang_thai === 'Hoàn thành';
+      card.className = `task-card priority-${priorityClass}${isDone ? ' status-done' : ''}${isMyTask ? ' my-task-card' : ''}`;
+      card.style.animationDelay = `${idx * 0.05}s`;
+      
+      if (isMyTask) {
+        const badge = document.createElement('div');
+        badge.className = 'my-task-badge';
+        badge.innerText = 'CỦA TÔI ⭐';
+        card.appendChild(badge);
+      }
+
+      const statusClass = t.trang_thai === 'Hoàn thành' ? 'status-xong' : t.trang_thai === 'Đang thực hiện' ? 'status-dang' : t.trang_thai === 'Chờ xử lý' ? 'status-cho' : 'status-cxl';
+      const daysLeft = t.han_hoan_thanh ? Math.ceil((new Date(t.han_hoan_thanh) - new Date()) / 86400000) : null;
+      const deadlineStr = daysLeft !== null ? (daysLeft < 0 ? `⚠ Quá hạn ${Math.abs(daysLeft)} ngày` : daysLeft === 0 ? '⏰ Hôm nay' : `📅 Còn ${daysLeft} ngày`) : '—';
+      const deadlineColor = daysLeft !== null && daysLeft < 0 ? 'var(--danger)' : daysLeft === 0 ? 'var(--warning)' : 'inherit';
+
+      card.innerHTML += `
+        <div class="task-header">
+          <div class="task-title">${t.tieu_de || '—'}</div>
+          <span class="priority-badge ${priorityClass}">${t.uu_tien || 'Thấp'}</span>
+        </div>
+        ${t.mo_ta ? `<div class="task-desc">${t.mo_ta}</div>` : ''}
+        <div class="task-meta">
+          <div class="meta-item"><span class="meta-label">Loại</span><span class="meta-value">${t.loai_nhiem_vu || '—'}</span></div>
+          <div class="meta-item"><span class="meta-label">Người thực hiện</span><span class="meta-value">${t.nguoi_thuc_hien || '—'}</span></div>
+          <div class="meta-item"><span class="meta-label">Xe liên quan</span><span class="meta-value">${t.bien_so_xe || '—'}</span></div>
+          <div class="meta-item"><span class="meta-label">Hạn hoàn thành</span><span class="meta-value" style="color:${deadlineColor}">${deadlineStr}</span></div>
+        </div>
+        <div class="task-footer">
+          <span class="status-tag ${statusClass}">${t.trang_thai || '—'}</span>
+          <div class="task-actions">
+            ${isManager ? `
+              ${!isDone ? `<button class="btn-icon" style="color:var(--warning)" onclick="sendReminder(${t.id})" title="Gửi nhắc nhở"><i class="fas fa-bell"></i></button>` : ''}
+              <button class="btn-icon" onclick="editTask(${t.id})" title="Sửa"><i class="fas fa-edit"></i></button>
+              <button class="btn-icon" style="color:var(--danger)" onclick="deleteTask(${t.id})" title="Xóa"><i class="fas fa-trash"></i></button>
+            ` : `
+              <div style="display:flex; gap:8px;">
+                ${isMyTask && t.trang_thai === 'Chờ xử lý' ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Đang thực hiện')"><i class="fas fa-play"></i> Bắt đầu</button>` : ''}
+                ${isMyTask && t.trang_thai === 'Đang thực hiện' ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Đang thực hiện')"><i class="fas fa-sync"></i> Cập nhật</button>` : ''}
+                ${isMyTask && !isDone ? `<button class="btn-complete" onclick="openDriverConfirm(${t.id}, 'Hoàn thành')"><i class="fas fa-check-circle"></i> Xong</button>` : ''}
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function openModal(editData = null) {
+    const form = document.getElementById('taskForm');
+    form.reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('han_hoan_thanh').value = new Date().toISOString().split('T')[0];
+    if (editData) {
+      document.getElementById('modalTitle').innerText = 'Cập Nhật Nhiệm Vụ';
+      document.getElementById('editId').value = editData.id;
+      ['tieu_de','loai_nhiem_vu','uu_tien','nguoi_thuc_hien','han_hoan_thanh','trang_thai','bien_so_xe','mo_ta','ghi_chu'].forEach(f=>{
+        const el = document.getElementById(f);
+        if(el) el.value = editData[f] || '';
+      });
+    } else {
+      document.getElementById('modalTitle').innerText = 'Thêm Nhiệm Vụ Mới';
+    }
+    document.getElementById('taskModal').classList.add('active');
+  }
+
+  function closeModal() { document.getElementById('taskModal').classList.remove('active'); }
+  function editTask(id) { const t = allTasks.find(x=>x.id===id); if(t) openModal(t); }
+
+  async function deleteTask(id) {
+    if (!confirm('Xóa nhiệm vụ này?')) return;
+    const { error } = await _supabase.from('nhiemvu').delete().eq('id', id);
+    if (!error) loadTasks();
+    else alert('Lỗi: ' + error.message);
+  }
+
+  function safeShowToast(msg, type = 'success') {
+    try {
+        if (window.parent && typeof window.parent.showToast === 'function') {
+            window.parent.showToast(msg, type);
+            return;
+        }
+    } catch (e) {
+        console.warn("Cannot access parent showToast due to CORS/Origin restriction.");
+    }
+    // Fallback to alert if parent is inaccessible
+    alert(msg);
+  }
+
+  async function sendReminder(taskId) {
+    const t = allTasks.find(x => x.id === taskId);
+    if (!t) return;
+    if (!confirm(`Gửi nhắc nhở công khai cho [${t.nguoi_thuc_hien}]?`)) return;
+    try {
+        const payload = {
+            tieu_de: `[NHẮC NHỞ] Nhiệm vụ - ${t.nguoi_thuc_hien}`,
+            noi_dung: `Nhắc nhở lái xe ${t.nguoi_thuc_hien} thực hiện: "${t.tieu_de}".\nVui lòng cập nhật ngay.`,
+            muc_do: 'Quan trọng', nguoi_dang: USER_NAME, trang_thai: 'Hiển thị'
+        };
+        const { error } = await _supabase.from('thongbao').insert([payload]);
+        if (error) throw error;
+        safeShowToast('Gửi nhắc nhở thành công!');
+    } catch (err) { alert('Lỗi: ' + err.message); }
+  }
+
+  function openDriverConfirm(id, status) {
+    document.getElementById('confirmTaskId').value = id;
+    document.getElementById('confirmStatus').value = status;
+    document.getElementById('confirmNote').value = '';
+    
+    if (status === 'Hoàn thành') {
+        document.getElementById('confirmTitle').innerText = 'Hoàn Thành Nhiệm Vụ';
+        document.getElementById('confirmSubtitle').innerText = 'Xác nhận bạn đã hoàn tất công việc này.';
+        document.getElementById('confirmSaveBtn').innerText = 'Xác Nhận Xong';
+    } else {
+        document.getElementById('confirmTitle').innerText = 'Cập Nhật Tiến Độ';
+        document.getElementById('confirmSubtitle').innerText = 'Báo cáo quá trình thực hiện nhiệm vụ.';
+        document.getElementById('confirmSaveBtn').innerText = 'Cập Nhật Ngay';
+    }
+    
+    document.getElementById('driverConfirmModal').classList.add('active');
+  }
+
+  function closeDriverModal() { document.getElementById('driverConfirmModal').classList.remove('active'); }
+
+  document.getElementById('driverConfirmForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('confirmSaveBtn');
+    const id = document.getElementById('confirmTaskId').value;
+    const status = document.getElementById('confirmStatus').value;
+    const note = document.getElementById('confirmNote').value;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+    try {
+        const { error } = await _supabase.from('nhiemvu').update({ 
+          trang_thai: status, 
+          ghi_chu: note ? (status === 'Hoàn thành' ? `[Xong]: ${note}` : `[Cập nhật]: ${note}`) : (status === 'Hoàn thành' ? '[Xong]' : '[Đang làm]'),
+          updated_at: new Date().toISOString()
+        }).eq('id', id);
+        if (error) throw error;
+        
+        const successMsg = status === 'Hoàn thành' ? 'Chúc mừng! Bạn đã hoàn thành nhiệm vụ 🎉' : 'Đã cập nhật tiến độ.';
+        safeShowToast(successMsg);
+        
+        // Trigger màn hình chính cập nhật badge
+        try {
+          if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage('refreshStats', '*');
+          }
+          if (window.parent && typeof window.parent.updateHomeStats === 'function') {
+            window.parent.updateHomeStats();
+          }
+        } catch(ex) {}
+
+        closeDriverModal(); loadTasks();
+    } catch (err) { alert('Lỗi: ' + err.message); }
+    finally { btn.disabled = false; btn.innerHTML = status === 'Hoàn thành' ? 'Xác Nhận Xong' : 'Cập Nhật Ngay'; }
+  };
+
+  document.getElementById('taskForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+    const id = document.getElementById('editId').value;
+    const payload = { updated_at: new Date().toISOString() };
+    ['tieu_de','loai_nhiem_vu','uu_tien','nguoi_thuc_hien','han_hoan_thanh','trang_thai','bien_so_xe','mo_ta','ghi_chu'].forEach(f=>{
+      const el = document.getElementById(f); if(el) payload[f] = el.value;
+    });
+    try {
+      if (id) await _supabase.from('nhiemvu').update(payload).eq('id', id);
+      else await _supabase.from('nhiemvu').insert([payload]);
+      
+      try {
+        if (window.parent && window.parent.postMessage) window.parent.postMessage('refreshStats', '*');
+        if (window.parent && typeof window.parent.updateHomeStats === 'function') window.parent.updateHomeStats();
+      } catch(ex) {}
+
+      closeModal(); loadTasks();
+    } catch(err) { alert('Lỗi: ' + err.message); }
+    finally { btn.disabled = false; btn.innerHTML = 'Lưu Nhiệm Vụ'; }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (isManager) document.querySelectorAll('.manager-only').forEach(el => el.style.display = 'flex');
+    loadTasks(); loadDropdowns();
+    _supabase.channel('nhiemvu-changes').on('postgres_changes', { event:'*', schema:'public', table:'nhiemvu' }, () => loadTasks()).subscribe();
+  });
+</script>
+</body>
+</html>

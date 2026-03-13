@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm Giao Hàng - Supabase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #a855f7;
+            --accent: #00ffcc;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+                radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1), transparent);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            padding: 2.5rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 0 10px;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .title-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .title-group h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            margin: -10px -10px 20px -10px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .search-wrapper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 12px 15px 12px 45px;
+            border-radius: 50px;
+            color: white;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Grid & Cards */
+        .points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .point-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .point-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .point-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .point-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-light);
+            font-size: 1.2rem;
+        }
+
+        .point-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--glass-border);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        .point-info h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .point-address {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            gap: 8px;
+            line-height: 1.5;
+        }
+
+        .point-address i { margin-top: 3px; }
+
+        .point-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            padding-top: 10px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .point-note {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: var(--primary-light);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+
+        .btn-navigate {
+            margin-top: auto;
+            background: var(--glass);
+            border: 1px solid var(--primary);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-navigate:hover {
+            background: var(--primary);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-container {
+            position: relative;
+            background: #1e293b;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 12px 15px;
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-save {
+            flex: 2;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .points-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Overlay */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--glass);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="loader"><div class="spinner"></div></div>
+
+    <div class="header-section">
+        <div class="title-group">
+            <div class="title-icon"><i class="fas fa-map-marked-alt"></i></div>
+            <div>
+                <h2>Điểm Giao Hàng</h2>
+                <p style="color:var(--text-dim); font-size:0.8rem;">Quản lý cơ sở dữ liệu điểm giao & nhận hàng</p>
+            </div>
+        </div>
+        <button class="btn-add" id="btnAddTop" onclick="openModal()">
+            <i class="fas fa-plus"></i> Thêm điểm mới
+        </button>
+    </div>
+
+    <div class="search-container">
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" class="search-input" id="searchInput" placeholder="Tìm tên kho, địa chỉ, hoặc ghi chú..." oninput="handleSearch()">
+        </div>
+    </div>
+
+    <div class="points-grid" id="pointsGrid">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Modal Point -->
+    <div class="modal" id="pointModal">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle" style="font-weight:800;">📍 THÊM ĐIỂM GIAO HÀNG</h3>
+                <button class="btn-action" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="pointForm">
+                    <input type="hidden" id="pointId">
+                    <div class="form-group">
+                        <label>Tên điểm giao hàng <span style="color:var(--danger)">*</span></label>
+                        <input type="text" class="form-control" id="ten_diem" required placeholder="Ví dụ: Kho A - Thủ Đức">
+                    </div>
+                    <div class="form-group">
+                        <label>Địa chỉ chi tiết <span style="color:var(--danger)">*</span></label>
+                        <input type="text" class="form-control" id="dia_chi" required placeholder="Số nhà, tên đường, quận/ huyện...">
+                    </div>
+                    <div class="form-group">
+                        <label>🔗 Link Google Maps</label>
+                        <input type="text" class="form-control" id="maps_link" placeholder="Dán link tọa độ tại đây">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Vĩ độ (Lat)</label>
+                            <input type="text" class="form-control" id="lat" placeholder="10.123456">
+                        </div>
+                        <div class="form-group">
+                            <label>Kinh độ (Lng)</label>
+                            <input type="text" class="form-control" id="lng" placeholder="106.123456">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Chỉ dẫn / Ghi chú</label>
+                        <textarea class="form-control" id="ghi_chu" rows="3" placeholder="Ví dụ: Cổng sau, gọi anh Nam 090xxx"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn-save" id="btnSave" onclick="savePoint()">Lưu Dữ Liệu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8"; 
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let allPoints = [];
+        let USER_ROLE = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+        let USER_MNV = sessionStorage.getItem('mnv') || '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            checkAccess();
+            await loadPoints();
+            hideLoader();
+            setupRealtime();
+        });
+
+        function checkAccess() {
+            const isStaff = ['manager', 'admin'].includes(USER_ROLE);
+            if (!isStaff) {
+                const btn = document.getElementById('btnAddTop');
+                if (btn) btn.style.display = 'none';
+            }
+        }
+
+        async function loadPoints() {
+            const { data, error } = await _supabase
+                .from('diemgiaohang')
+                .select('*')
+                .order('ten_diem', { ascending: true });
+
+            if (error) {
+                console.error("Error loading points:", error);
+                return;
+            }
+
+            allPoints = data || [];
+            renderPoints(allPoints);
+        }
+
+        function renderPoints(data) {
+            const grid = document.getElementById('pointsGrid');
+            if (data.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-dim);">Chưa có điểm giao hàng nào được lưu.</div>`;
+                return;
+            }
+
+            const isStaff = ['manager', 'admin'].includes(USER_ROLE);
+
+            grid.innerHTML = data.map((item, index) => `
+                <div class="point-card" style="animation-delay: ${index * 0.05}s">
+                    <div class="point-header">
+                        <div class="point-icon"><i class="fas fa-location-dot"></i></div>
+                        ${isStaff ? `
+                            <div class="point-actions">
+                                <button class="btn-action" onclick="openModal(${item.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-action" style="color:var(--danger)" onclick="deletePoint(${item.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="point-info">
+                        <h3>${item.ten_diem || 'Chưa đặt tên'}</h3>
+                        <div class="point-address">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${item.dia_chi || 'Không có địa chỉ'}</span>
+                        </div>
+                    </div>
+
+                    ${item.ghi_chu ? `<div class="point-note">${item.ghi_chu}</div>` : ''}
+
+                    <div class="point-meta">
+                        <div class="meta-item"><i class="fas fa-compass"></i> ${item.lat || '-'}, ${item.lng || '-'}</div>
+                        ${item.created_at ? `<div class="meta-item"><i class="fas fa-clock"></i> ${new Date(item.created_at).toLocaleDateString('vi-VN')}</div>` : ''}
+                    </div>
+
+                    <button class="btn-navigate" onclick="navigateToPoint(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                        <i class="fas fa-directions"></i> CHỈ ĐƯỜNG
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function handleSearch() {
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = allPoints.filter(p => 
+                (p.ten_diem || "").toLowerCase().includes(q) ||
+                (p.dia_chi || "").toLowerCase().includes(q) ||
+                (p.ghi_chu || "").toLowerCase().includes(q)
+            );
+            renderPoints(filtered);
+        }
+
+        function navigateToPoint(item) {
+            let url = "";
+            if (item.maps_link && item.maps_link.trim() !== "") {
+                url = item.maps_link;
+            } else if (item.lat && item.lng) {
+                url = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
+            } else if (item.dia_chi) {
+                url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.dia_chi)}`;
+            } else {
+                alert("Thông tin tọa độ hoặc link chưa có sẵn cho điểm này!");
+                return;
+            }
+            window.open(url, '_blank');
+        }
+
+        function openModal(id = null) {
+            const modal = document.getElementById('pointModal');
+            const form = document.getElementById('pointForm');
+            modal.classList.add('active');
+            form.reset();
+            document.getElementById('pointId').value = "";
+            document.getElementById('modalTitle').innerText = "📍 THÊM ĐIỂM GIAO HÀNG";
+
+            if (id) {
+                const item = allPoints.find(p => p.id === id);
+                if (item) {
+                    document.getElementById('pointId').value = item.id;
+                    document.getElementById('ten_diem').value = item.ten_diem || "";
+                    document.getElementById('dia_chi').value = item.dia_chi || "";
+                    document.getElementById('maps_link').value = item.maps_link || "";
+                    document.getElementById('lat').value = item.lat || "";
+                    document.getElementById('lng').value = item.lng || "";
+                    document.getElementById('ghi_chu').value = item.ghi_chu || "";
+                    document.getElementById('modalTitle').innerText = "📍 CẬP NHẬT ĐIỂM GIAO";
+                }
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('pointModal').classList.remove('active');
+        }
+
+        async function savePoint() {
+            const btn = document.getElementById('btnSave');
+            const id = document.getElementById('pointId').value;
+            
+            const payload = {
+                ten_diem: document.getElementById('ten_diem').value.trim(),
+                dia_chi: document.getElementById('dia_chi').value.trim(),
+                maps_link: document.getElementById('maps_link').value.trim(),
+                lat: document.getElementById('lat').value.trim(),
+                lng: document.getElementById('lng').value.trim(),
+                ghi_chu: document.getElementById('ghi_chu').value.trim(),
+                updated_at: new Date().toISOString()
+            };
+
+            if (!payload.ten_diem || !payload.dia_chi) {
+                alert("Vui lòng nhập tên điểm và địa chỉ!");
+                return;
+            }
+
+            // Extract lat/lng from maps link if missing
+            if (payload.maps_link && (!payload.lat || !payload.lng)) {
+                const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+                const match = payload.maps_link.match(regex);
+                if (match) {
+                    payload.lat = match[1];
+                    payload.lng = match[2];
+                }
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Đang xử lý...";
+
+            let error;
+            if (id) {
+                const { error: err } = await _supabase.from('diemgiaohang').update(payload).eq('id', id);
+                error = err;
+            } else {
+                payload.created_at = new Date().toISOString();
+                payload.created_by = USER_MNV;
+                const { error: err } = await _supabase.from('diemgiaohang').insert([payload]);
+                error = err;
+            }
+
+            if (error) {
+                alert("Lỗi: " + error.message);
+                btn.disabled = false;
+                btn.innerText = "Lưu Dữ Liệu";
+            } else {
+                closeModal();
+                await loadPoints();
+            }
+        }
+
+        async function deletePoint(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa điểm giao hàng này?")) return;
+            
+            const { error } = await _supabase.from('diemgiaohang').delete().eq('id', id);
+            if (error) alert("Lỗi khi xóa: " + error.message);
+            else await loadPoints();
+        }
+
+        function setupRealtime() {
+            _supabase
+                .channel('diemgiaohang_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'diemgiaohang' }, payload => {
+                    loadPoints();
+                })
+                .subscribe();
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }
+        }
+    </script>
+</body>
+</html>

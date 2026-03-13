@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Làm Việc - Fleet Core V2</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #a855f7;
+      --accent: #00ffcc;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --color-cn: #92d050; 
+      --color-hc: #d9a400;
+      --color-p: #00b0f0; 
+      --color-normal: #ffffff;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(15, 23, 42, 0.6);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem;
+      line-height: 1.5;
+    }
+    .container { max-width: 1800px; margin: 0 auto; }
+    header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 2rem; 
+      gap: 2rem;
+      padding: 0.5rem 0;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .logo-area { flex-shrink: 0; }
+    .logo-area h1 { font-size: 2.2rem; font-weight: 900; color: var(--text); letter-spacing: -0.03em; }
+    .logo-area p { color: var(--text-dim); font-size: 1rem; margin-top: 4px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; }
+    .form-group select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.2rem;
+      border-radius: 12px;
+      color: #fff;
+      outline: none;
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 140px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); }
+
+    .btn {
+      padding: 0.8rem 1.6rem;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: none;
+      font-size: 0.95rem;
+    }
+    .btn-gen { background: var(--text); color: white; }
+    .btn-save { background: linear-gradient(135deg, var(--primary), #4f46e5); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+    .btn:active { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .quota-badge {
+      background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--success);
+      padding: 8px 18px; border-radius: 50px; font-weight: 800; font-size: 0.9rem;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);
+    }
+
+    /* Professional Table Matrix */
+    .matrix-wrapper {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: auto;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      max-height: calc(100vh - 250px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      background: transparent;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    thead th {
+      background: #1e293b;
+      color: var(--text-dim);
+      padding: 14px 0;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid var(--border);
+      opacity: 1 !important;
+    }
+
+    /* Sticky Columns */
+    .col-fixed-1 {
+      position: sticky;
+      left: 0;
+      z-index: 35;
+      background: #1e293b !important;
+      width: 220px;
+      text-align: left;
+      padding-left: 15px;
+      border-right: 1px solid var(--border);
+      box-shadow: 4px 0 10px rgba(0,0,0,0.2);
+    }
+
+    .col-fixed-2 {
+      position: sticky;
+      left: 220px;
+      z-index: 34;
+      background: #1e293b !important;
+      width: 80px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    }
+
+    .col-last {
+      background: #1e293b !important;
+      font-weight: 800;
+      color: var(--primary);
+      width: 90px;
+      border-left: 1px solid var(--border);
+      opacity: 1 !important;
+    }
+
+    thead .col-fixed-1,
+    thead .col-fixed-2 {
+      background: #1e293b !important;
+      top: 0;
+      z-index: 40;
+    }
+
+    .day-cell {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      color: var(--text);
+      transition: 0.1s;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .day-cell:hover {
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+    }
+
+    tr:hover td {
+      background-color: rgba(99, 102, 241, 0.08);
+    }
+    tr:hover .col-fixed-1, tr:hover .col-fixed-2 {
+        background: #2d3b55 !important;
+    }
+
+    /* Shift Styling - Matching Screenshot */
+    .shift-unit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .shift-1 { background: transparent; color: var(--text); }
+
+    .shift-2 { background: transparent; color: var(--text); }
+
+    .shift-3 { background: transparent; color: var(--text); }
+
+    .shift-4 { background: rgba(255, 255, 255, 0.02); color: var(--text-dim); border: 1px dashed var(--border); }
+
+    .shift-OFF {
+      background: linear-gradient(135deg, #92d050 0%, #76ad3c 100%) !important;
+      color: #000 !important;
+      font-weight: 800;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .shift-P {
+      background: linear-gradient(135deg, #00b0f0 0%, #008fcc 100%) !important;
+      color: #fff !important;
+      font-weight: 800;
+      box-shadow: 0 4px 10px rgba(0, 176, 240, 0.2);
+    }
+
+    .shift-HC {
+      background: linear-gradient(135deg, #d9a400 0%, #b28700 100%) !important;
+      color: #000 !important;
+      font-weight: 800;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th.weekend-header,
+    .footer-stat.weekend-header {
+      background: #450a0a !important;
+      color: #ff8a8a !important;
+      opacity: 1 !important;
+    }
+
+    .footer-stat {
+      background: #0f172a;
+      font-weight: 800;
+      color: var(--text);
+      position: sticky;
+      bottom: 0;
+      z-index: 30;
+      height: 50px;
+      border-top: 2px solid var(--border);
+    }
+
+    /* Legend Table Below */
+    .legend-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-top: 0.5rem;
+    }
+
+    .legend-items {
+      display: flex;
+      gap: 25px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .color-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      background-clip: content-box;
+      border: 1px solid transparent;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+        background-clip: content-box;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container" id="mainContainer">
+    <header>
+      <div class="logo-area">
+        <h1 id="mainTitle">LỊCH TRỰC & PHÂN CA</h1>
+        <p id="subTitle">Hệ thống quản lý ngày nghỉ định mức</p>
+      </div>
+
+      <div class="header-actions">
+        <div class="form-group">
+          <label>Tháng</label>
+          <select id="selMonth" onchange="refreshGrid()"></select>
+        </div>
+        <div class="form-group">
+          <label>Năm</label>
+          <select id="selYear" onchange="refreshGrid()"></select>
+        </div>
+        
+        <button class="btn" id="btnToggleView" onclick="toggleViewMode()" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1)">
+          <i class="fas fa-user-friends" id="viewIcon"></i> <span id="viewText">TOÀN ĐỘI</span>
+        </button>
+
+        <button class="btn btn-gen" id="btnAuto" onclick="autoDistribute()" style="display:none; background: #2d3748;">
+          <i class="fas fa-wand-magic-sparkles"></i> CHIA CA
+        </button>
+
+        <div id="mgrActions" style="display:none;">
+          <button class="btn btn-save" onclick="saveToSupabase()">
+            <i class="fas fa-cloud-upload-alt"></i> LƯU DỮ LIỆU
+          </button>
+        </div>
+
+        <div class="quota-badge" id="quotaDisplay">-- ngày nghỉ</div>
+      </div>
+    </header>
+
+    <div class="matrix-wrapper">
+      <table id="matrixTable">
+        <thead id="tblHead"></thead>
+        <tbody id="tblBody">
+          <tr>
+            <td colspan="40" style="text-align:center;padding:120px;color:#94a3b8">Bắt đầu bằng cách chọn tháng hoặc
+              nhấn Chia ca tự động...</td>
+          </tr>
+        </tbody>
+        <tfoot id="tblFoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="legend-container">
+      <div class="legend-items">
+        <div class="legend-item">
+          <div class="color-box" style="background:var(--color-cn)">CN</div>Nghỉ CN / OFF
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background:#d9a400">HC</div>Trực hành chính
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background:var(--color-p)">P</div>Nghỉ phép có lương
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2)">1,2,3,4</div>Các ca làm việc
+        </div>
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-dim); font-style:italic;">
+        <i class="fas fa-mouse-pointer"></i> Mẹo: Click vào ô bất kỳ để đổi trạng thái nhanh.
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let USER_ROLE = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+    let drivers = [];
+    let assignments = {};
+    let sundayQuota = 0;
+    let isPersonalMode = null; // Will be determined on first init
+
+    async function init() {
+      if (isPersonalMode === null) {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('personal')) {
+          isPersonalMode = params.get('personal') === 'true';
+        } else {
+          isPersonalMode = (USER_ROLE !== 'manager' && USER_ROLE !== 'admin');
+        }
+      }
+
+      setupSelects();
+      
+      // Update UI title based on mode
+      document.getElementById('mainTitle').innerText = isPersonalMode ? 'LỊCH TRỰC CÁ NHÂN' : 'LỊCH TRỰC TOÀN ĐỘI';
+      document.getElementById('subTitle').innerText = isPersonalMode ? 'Theo dõi lịch trình và ca trực của riêng bạn' : 'Quản lý và điều phối quân số toàn đội xe';
+
+      if (USER_ROLE === 'manager') {
+        document.getElementById('mgrActions').style.display = 'block';
+        document.getElementById('btnAuto').style.display = 'flex';
+      }
+      
+      const { data: drs } = await _supabase.from('taixe').select('ma_nv, ho_ten, ca_lam_viec').neq('trang_thai', 'Đã nghỉ');
+      
+      const shiftOrder = { '1': 1, '2': 2, '3': 3, '4': 4, 'HC': 5 };
+      const allDrivers = (drs || []).sort((a, b) => {
+        const orderA = shiftOrder[a.ca_lam_viec] || 99;
+        const orderB = shiftOrder[b.ca_lam_viec] || 99;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.ho_ten.localeCompare(b.ho_ten);
+      });
+
+      if (isPersonalMode) {
+        const myMNV = sessionStorage.getItem('mnv');
+        drivers = allDrivers.filter(d => d.ma_nv === myMNV);
+        if (drivers.length === 0) drivers = allDrivers; // Fallback if not found
+        updateBtnToggle();
+      } else {
+        drivers = allDrivers;
+      }
+
+      await refreshGrid();
+    }
+
+    function toggleViewMode() {
+      isPersonalMode = !isPersonalMode;
+      init(); // Re-initialize with new mode
+    }
+
+    function updateBtnToggle() {
+      const btn = document.getElementById('btnToggleView');
+      const icon = document.getElementById('viewIcon');
+      const text = document.getElementById('viewText');
+      if (isPersonalMode) {
+        btn.style.background = 'var(--success)'; btn.style.color = '#fff';
+        btn.style.border = 'none';
+        icon.className = 'fas fa-user'; text.innerText = 'CÁ NHÂN';
+      } else {
+        btn.style.background = 'rgba(255,255,255,0.05)'; btn.style.color = '#fff';
+        btn.style.border = '1px solid rgba(255,255,255,0.1)';
+        icon.className = 'fas fa-user-friends'; text.innerText = 'TOÀN ĐỘI';
+      }
+    }
+
+    function setupSelects() {
+      const d = new Date();
+      const curYear = d.getFullYear();
+      const curMonth = d.getMonth() + 1;
+      let yOpt = '', mOpt = '';
+      for (let i = curYear - 1; i <= curYear + 1; i++) yOpt += `<option value="${i}" ${i === curYear ? 'selected' : ''}>${i}</option>`;
+      for (let i = 1; i <= 12; i++) mOpt += `<option value="${i}" ${i === curMonth ? 'selected' : ''}>Tháng ${i}</option>`;
+      document.getElementById('selYear').innerHTML = yOpt;
+      document.getElementById('selMonth').innerHTML = mOpt;
+    }
+
+    async function refreshGrid() {
+      const month = parseInt(document.getElementById('selMonth').value);
+      const year = parseInt(document.getElementById('selYear').value);
+      sundayQuota = countSundays(month, year);
+      document.getElementById('quotaDisplay').innerText = `Định mức: ${sundayQuota} ngày nghỉ`;
+
+      const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const endDate = `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
+
+      const { data: existing } = await _supabase
+        .from('lich_lam_viec')
+        .select('ma_nv, ngay, ca')
+        .gte('ngay', startDate)
+        .lte('ngay', endDate);
+
+      assignments = {};
+      drivers.forEach(d => assignments[d.ma_nv] = {});
+
+      if (existing) {
+        existing.forEach(row => {
+          const day = parseInt(row.ngay.split('-')[2]);
+          if (assignments[row.ma_nv]) assignments[row.ma_nv][day] = row.ca;
+        });
+      }
+      renderTable(month, year);
+    }
+
+    function countSundays(m, y) {
+      let count = 0;
+      const days = new Date(y, m, 0).getDate();
+      for (let i = 1; i <= days; i++) if (new Date(y, m - 1, i).getDay() === 0) count++;
+      return count;
+    }
+
+    function renderTable(m, y) {
+      const days = new Date(y, m, 0).getDate();
+      const head = document.getElementById('tblHead');
+      const body = document.getElementById('tblBody');
+      const foot = document.getElementById('tblFoot');
+
+      // Headers
+      let hRows = `<tr><th class="col-fixed-1">HỌ TÊN NHÂN VIÊN</th><th class="col-fixed-2">MNV</th>`;
+      for (let i = 1; i <= days; i++) {
+        const isSun = new Date(y, m - 1, i).getDay() === 0;
+        hRows += `<th class="${isSun ? 'weekend-header' : ''}">${i < 10 ? '0' + i : i}</th>`;
+      }
+      hRows += `<th class="col-last">NGÀY NGHỈ</th></tr>`;
+      head.innerHTML = hRows;
+
+      // Body
+      let bRows = '';
+      drivers.forEach(dr => {
+        let cells = '';
+        let used = 0;
+        for (let i = 1; i <= days; i++) {
+          const val = assignments[dr.ma_nv][i] || '1';
+          if (val === 'OFF' || val === 'P') used++;
+          const displayVal = val === 'OFF' ? 'CN' : (val === '1' ? '1' : val);
+          cells += `<td class="day-cell shift-${val}" onclick="cycleShift('${dr.ma_nv}', ${i})"><div class="shift-unit">${displayVal}</div></td>`;
+        }
+        const quotaExceed = used > sundayQuota;
+        bRows += `<tr>
+            <td class="col-fixed-1">${dr.ho_ten}</td>
+            <td class="col-fixed-2">${dr.ma_nv}</td>
+            ${cells}
+            <td class="col-last" style="color:${quotaExceed ? 'var(--danger)' : 'var(--primary)'}; text-align:center;">${used}/${sundayQuota}</td>
+        </tr>`;
+      });
+      body.innerHTML = bRows;
+
+      // Footer
+      let fRow = `<tr><td colspan="2" class="footer-stat col-fixed-1" style="text-align:right;padding-right:15px; width:300px;">TỶ LỆ PHỦ CA (Drivers On Duty)</td>`;
+      for (let i = 1; i <= days; i++) {
+        let count = 0;
+        drivers.forEach(dr => { if (assignments[dr.ma_nv][i] !== 'OFF' && assignments[dr.ma_nv][i] !== 'P') count++; });
+        const isSun = new Date(y, m - 1, i).getDay() === 0;
+        fRow += `<td class="footer-stat ${isSun ? 'weekend-header' : ''}">${count}</td>`;
+      }
+      fRow += `<td class="footer-stat"></td></tr>`;
+      foot.innerHTML = fRow;
+    }
+
+    function cycleShift(ma_nv, day) {
+      if (USER_ROLE !== 'manager') return;
+      const current = assignments[ma_nv][day] || '1';
+      const sequence = ['1', '2', '3', '4', 'HC', 'P', 'OFF'];
+      assignments[ma_nv][day] = sequence[(sequence.indexOf(String(current)) + 1) % sequence.length];
+      renderTable(parseInt(document.getElementById('selMonth').value), parseInt(document.getElementById('selYear').value));
+    }
+
+    function autoDistribute() {
+      if (!confirm("Hệ thống sẽ tạo lịch mẫu với ngày nghỉ ĐƯỜNG CHÉO (Staircase) đẹp mắt cho đội xe. Tiếp tục?")) return;
+      const year = parseInt(document.getElementById('selYear').value);
+      const month = parseInt(document.getElementById('selMonth').value);
+      const days = new Date(year, month, 0).getDate();
+
+      if (drivers.length === 0) return;
+
+      // Reset to driver's default shift (ca_lam_viec)
+      drivers.forEach(dr => {
+        assignments[dr.ma_nv] = {};
+        const defaultShift = dr.ca_lam_viec || '1';
+        for (let i = 1; i <= days; i++) assignments[dr.ma_nv][i] = defaultShift;
+      });
+
+      // Elegant Staircase Diagonal Algorithm
+      // sundayQuota is the number of CN marks EACH driver gets.
+      // We space them out about every 7 days (D/Q).
+      const spacing = Math.floor(days / sundayQuota);
+
+      drivers.forEach((dr, index) => {
+        const startDay = (index % days) + 1; // Diagonal start
+        for (let q = 0; q < sundayQuota; q++) {
+          let targetDay = ((startDay - 1) + (q * spacing)) % days + 1;
+          assignments[dr.ma_nv][targetDay] = 'OFF';
+        }
+      });
+
+      renderTable(month, year);
+      showToast("Đã tạo lịch đường chéo mẫu thành công!", "info");
+    }
+
+    async function saveToSupabase() {
+      const btn = document.querySelector('.btn-save');
+      const month = document.getElementById('selMonth').value;
+      const year = document.getElementById('selYear').value;
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG ĐỒNG BỘ...';
+
+      const flat = [];
+      for (const mnv in assignments) {
+        for (const d in assignments[mnv]) {
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          flat.push({ ma_nv: mnv, ngay: dateStr, ca: assignments[mnv][d] || '1', nguoi_lap: sessionStorage.getItem('mnv') });
+        }
+      }
+
+      try {
+        const { error } = await _supabase.from('lich_lam_viec').upsert(flat, { onConflict: 'ma_nv, ngay' });
+        if (error) throw error;
+        showToast("Dữ liệu lịch trực đã được cập nhật thành công!");
+      } catch (e) {
+        alert("Lỗi: " + e.message);
+      } finally {
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> CẬP NHẬT LÊN HỆ THỐNG';
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({ type: 'toast', message: msg, theme: type }, '*');
+      } else {
+        alert(msg);
+      }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+
+</html>

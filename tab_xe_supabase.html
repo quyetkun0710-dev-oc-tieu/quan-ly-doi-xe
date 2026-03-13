@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Đội Xe | Supabase Next-Gen</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #00ffcc;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-area h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .logo-area p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .search-box i {
+            color: var(--text-dim);
+            margin-right: 10px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            width: 250px;
+            font-size: 1rem;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-add:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+        .stat-card h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Vehicle Grid */
+        .vehicle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            padding-bottom: 5rem;
+        }
+
+        /* Expire badges */
+        .expire-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .expire-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        .expire-ok { background: rgba(16,185,129,0.15); color: var(--success); }
+        .expire-warn { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .expire-danger { background: rgba(239,68,68,0.2); color: var(--danger); }
+        
+        /* Card left border indicator */
+        .vehicle-card.border-ok { border-left: 3px solid var(--success); }
+        .vehicle-card.border-warn { border-left: 3px solid var(--warning); }
+        .vehicle-card.border-danger { border-left: 3px solid var(--danger); }
+
+        .vehicle-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-10px) rotate(1deg);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .plate-number {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary);
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .status-active { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-maintenance { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .card-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .card-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1e293b;
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-cancel { background: #334155; color: white; }
+        .btn-save { background: var(--primary); color: white; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-area">
+            <h1>FLEET CORE</h1>
+            <p>Hệ thống Quản lý Phương tiện Thế hệ mới (Supabase Edition)</p>
+        </div>
+        <div class="controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm biển số, loại xe..." oninput="filterVehicles()">
+            </div>
+            <button class="btn-add" onclick="openModal()">
+                <i class="fas fa-plus"></i> THÊM XE MỚI
+            </button>
+        </div>
+    </header>
+
+    <div class="stats-row">
+        <div class="stat-card" onclick="filterByStatus('all')">
+            <h3>Tổng số xe</h3>
+            <div class="value" id="totalVehicles">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByStatus('active')">
+            <h3>Đang hoạt động</h3>
+            <div class="value" id="activeVehicles" style="color: var(--success)">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByStatus('maintenance')">
+            <h3>Bảo trì/Dừng</h3>
+            <div class="value" id="maintenanceVehicles" style="color: var(--warning)">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByStatus('warn')">
+            <h3>⚠️ Sắp hết hạn</h3>
+            <div class="value" id="warnVehicles" style="color: var(--warning)">0</div>
+        </div>
+        <div class="stat-card" onclick="filterByStatus('expired')">
+            <h3>🔴 Đã hết hạn</h3>
+            <div class="value" id="expiredVehicles" style="color: var(--danger)">0</div>
+        </div>
+    </div>
+
+    <div class="vehicle-grid" id="vehicleGrid">
+        <!-- Cards will be injected here -->
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<div class="modal" id="vehicleModal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h2 id="modalTitle" style="font-weight: 800; font-size: 1.8rem; background: linear-gradient(to right, #fff, var(--text-dim)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Thêm Xe Mới</h2>
+                <p style="color: var(--text-dim); font-size: 0.9rem">Nhập đầy đủ thông tin kỹ thuật và pháp lý của phương tiện.</p>
+            </div>
+            <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <form id="vehicleForm">
+            <input type="hidden" id="editId">
+            
+            <!-- Tab Navigation inside Modal -->
+            <div style="display: flex; gap: 10px; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 10px;" id="modalTabs">
+                <button type="button" class="tab-btn active" onclick="switchModalTab(0)">Cơ bản</button>
+                <button type="button" class="tab-btn" onclick="switchModalTab(1)">Kỹ thuật</button>
+                <button type="button" class="tab-btn" onclick="switchModalTab(2)">Lốp xe</button>
+                <button type="button" class="tab-btn" onclick="switchModalTab(3)">Kích thước</button>
+                <button type="button" class="tab-btn" onclick="switchModalTab(4)">Pháp lý</button>
+            </div>
+
+            <!-- Tab 1: Cơ bản -->
+            <div class="modal-tab-content active">
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2">
+                        <label>Biển Số Xe</label>
+                        <input type="text" id="bien_so_xe" placeholder="Ví dụ: 51C-123.45" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Loại Xe</label>
+                        <input type="text" id="loai_xe" placeholder="Tải, Ben, Cẩu...">
+                    </div>
+                    <div class="form-group">
+                        <label>Tải Trọng (Tấn)</label>
+                        <input type="number" step="0.01" id="tai_trong" placeholder="2.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Công thức bánh xe</label>
+                        <input type="text" id="ma_loai" placeholder="4x2, 6x4, 8x4...">
+                    </div>
+                    <div class="form-group">
+                        <label>Loại biển số</label>
+                        <select id="loai_bien_so">
+                            <option value="Biển vàng">Biển vàng</option>
+                            <option value="Biển trắng">Biển trắng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng Thái</label>
+                        <select id="tinh_trang_hoat_dong">
+                            <option value="dang_hoat_dong">Đang hoạt động</option>
+                            <option value="bao_tri">Đang bảo trì</option>
+                            <option value="tam_dung">Tạm dừng</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Kỹ thuật -->
+            <div class="modal-tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Năm Sản Xuất</label>
+                        <input type="number" id="nam_sx" placeholder="202X">
+                    </div>
+                    <div class="form-group">
+                        <label>Số khung</label>
+                        <input type="text" id="so_khung">
+                    </div>
+                    <div class="form-group">
+                        <label>Số máy</label>
+                        <input type="text" id="so_may">
+                    </div>
+                    <div class="form-group">
+                        <label>Khối lượng bản thân</label>
+                        <input type="number" step="0.01" id="khoi_luong_ban_than">
+                    </div>
+                    <div class="form-group">
+                        <label>Khối lượng chuyên chở</label>
+                        <input type="number" step="0.01" id="khoi_luong_cho_phep">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Lốp xe (MỚI) -->
+            <div class="modal-tab-content">
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2">
+                        <label>Thông số lốp chung (Size)</label>
+                        <input type="text" id="thong_so_lop" placeholder="Ví dụ: 12.00R20">
+                    </div>
+                    <div class="form-group">
+                        <label>Lốp trước (Size)</label>
+                        <input type="text" id="thong_so_lop_truoc" placeholder="11.00R20">
+                    </div>
+                    <div class="form-group">
+                        <label>Lốp sau (Size)</label>
+                        <input type="text" id="thong_so_lop_sau" placeholder="11.00R20">
+                    </div>
+                    <div class="form-group">
+                        <label>Số lượng lốp</label>
+                        <input type="text" id="so_luong_lop" placeholder="6 + 1 dự phòng">
+                    </div>
+                    <div class="form-group">
+                        <label>Áp suất tiêu chuẩn</label>
+                        <input type="text" id="ap_suat_lop" placeholder="9.0 kg/cm2">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Kích thước -->
+            <div class="modal-tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Dài (m)</label>
+                        <input type="number" step="0.01" id="thung_dai" oninput="calcVol()">
+                    </div>
+                    <div class="form-group">
+                        <label>Rộng (m)</label>
+                        <input type="number" step="0.01" id="thung_rong" oninput="calcVol()">
+                    </div>
+                    <div class="form-group">
+                        <label>Cao (m)</label>
+                        <input type="number" step="0.01" id="thung_cao" oninput="calcVol()">
+                    </div>
+                    <div class="form-group">
+                        <label>Thể tích (m³)</label>
+                        <input type="text" id="the_tich_thung" readonly style="background: rgba(99, 102, 241, 0.1); color: var(--accent); font-weight: 800;">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2">
+                        <label>Quy cách thùng</label>
+                        <input type="text" id="kich_thuoc_thung" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Pháp lý -->
+            <div class="modal-tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Số đăng ký</label>
+                        <input type="text" id="so_dang_ky">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày đăng ký</label>
+                        <input type="date" id="ngay_dang_ky">
+                    </div>
+                    <div class="form-group">
+                        <label>Số đăng kiểm</label>
+                        <input type="text" id="so_dang_kiem">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày đăng kiểm</label>
+                        <input type="date" id="ngay_dang_kiem">
+                    </div>
+                    <div class="form-group">
+                        <label>Số phù hiệu</label>
+                        <input type="text" id="so_phu_hieu">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày phù hiệu</label>
+                        <input type="date" id="ngay_phu_hieu">
+                    </div>
+                    <div class="form-group">
+                        <label>Số bảo hiểm</label>
+                        <input type="text" id="so_bao_hiem">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày bảo hiểm</label>
+                        <input type="date" id="ngay_bao_hiem">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">Đóng</button>
+                <button type="submit" class="btn btn-save" id="saveBtn">Cập Nhật Hệ Thống</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .modal-tab-content { display: none; }
+    .modal-tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    
+    .tab-btn {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--text-dim);
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+    
+    .tab-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+</style>
+
+<script>
+    // Cấu hình Supabase (Thông tin từ file setup_supabase.js của bạn)
+    const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+    
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allVehicles = [];
+    const USER_ROLE = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+
+    function checkAccess() {
+        const isStaff = ['manager', 'admin'].includes(USER_ROLE);
+        if (!isStaff) {
+            const btnAdd = document.querySelector('.btn-add');
+            if (btnAdd) btnAdd.style.display = 'none';
+        }
+    }
+
+    // Tải dữ liệu
+    async function loadVehicles() {
+        const grid = document.getElementById('vehicleGrid');
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        
+        try {
+            // 1. Fetch vehicle basic info
+            const { data: xeData, error: xeErr } = await _supabase.from('xe').select('*').order('updated_at', { ascending: false });
+            if (xeErr) throw xeErr;
+
+            // 2. Fetch latest ODO from nhatky
+            const { data: logData } = await _supabase.from('nhatky').select('bien_so_xe, km_ve').order('km_ve', { ascending: false });
+            const odoMap = {};
+            if (logData) {
+                logData.forEach(l => {
+                    if (!odoMap[l.bien_so_xe] || (l.km_ve && l.km_ve > odoMap[l.bien_so_xe])) {
+                        odoMap[l.bien_so_xe] = l.km_ve;
+                    }
+                });
+            }
+
+            // 3. Merge data
+            allVehicles = (xeData || []).map(v => ({
+                ...v,
+                odo_hien_tai: odoMap[v.bien_so_xe] || 0
+            }));
+
+            renderVehicles(allVehicles);
+            updateStats(allVehicles);
+        } catch (error) {
+            console.error(error);
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--danger)">
+                <p>Lỗi kết nối Supabase: ${error.message}</p>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: var(--text-dim)">Vui lòng kiểm tra RLS hoặc xem Console (F12)</p>
+            </div>`;
+        }
+    }
+
+    // Tính số ngày còn lại tới ngày hết hạn
+    function daysUntil(dateStr) {
+        if (!dateStr) return null;
+        const today = new Date(); today.setHours(0,0,0,0);
+        const target = new Date(dateStr); target.setHours(0,0,0,0);
+        return Math.ceil((target - today) / 86400000);
+    }
+
+    // Tạo badge hạn giấy tờ
+    function buildExpireBadges(v) {
+        const docs = [
+            { label: 'ĐK', date: v.ngay_dang_ky },
+            { label: 'ĐKiểm', date: v.ngay_dang_kiem },
+            { label: 'Phù hiệu', date: v.ngay_phu_hieu },
+            { label: 'BH', date: v.ngay_bao_hiem }
+        ];
+        return docs.map(d => {
+            const days = daysUntil(d.date);
+            if (days === null) return '';
+            let cls = 'expire-ok', icon = '✓';
+            if (days < 0) { cls = 'expire-danger'; icon = '✗'; }
+            else if (days <= 30) { cls = 'expire-warn'; icon = '⚠'; }
+            else return `<span class="expire-tag expire-ok">${d.label} ✓</span>`;
+            const txt = days < 0 ? `${Math.abs(days)}n quá` : `${days}n`;
+            return `<span class="expire-tag ${cls}">${icon} ${d.label}: ${txt}</span>`;
+        }).join('');
+    }
+
+    function getCardBorderClass(v) {
+        const dates = [v.ngay_dang_ky, v.ngay_dang_kiem, v.ngay_phu_hieu, v.ngay_bao_hiem];
+        let minDays = Infinity;
+        dates.forEach(d => { const n = daysUntil(d); if (n !== null) minDays = Math.min(minDays, n); });
+        if (minDays === Infinity) return '';
+        if (minDays < 0) return 'border-danger';
+        if (minDays <= 30) return 'border-warn';
+        return 'border-ok';
+    }
+
+    function renderVehicles(data) {
+        const grid = document.getElementById('vehicleGrid');
+        grid.innerHTML = '';
+
+        if (data.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-dim)">Chưa có dữ liệu xe nào trong hệ thống.</div>';
+            return;
+        }
+
+        data.forEach((v, index) => {
+            const card = document.createElement('div');
+            const borderCls = getCardBorderClass(v);
+            card.className = `vehicle-card ${borderCls}`;
+            card.style.animationDelay = `${index * 0.05}s`;
+            
+            const statusClass = v.tinh_trang_hoat_dong === 'dang_hoat_dong' ? 'status-active' : 'status-maintenance';
+            const statusText = v.tinh_trang_hoat_dong === 'dang_hoat_dong' ? 'Hoạt động' : (v.tinh_trang_hoat_dong === 'bao_tri' ? 'Bảo trì' : 'Tạm dừng');
+            const expireBadges = buildExpireBadges(v);
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="plate-number">${v.bien_so_xe}</div>
+                    <div class="status-badge ${statusClass}">${statusText}</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">Loại xe</span>
+                        <span class="info-value">${v.loai_xe || '-'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Tải trọng</span>
+                        <span class="info-value">${v.tai_trong ? v.tai_trong + ' tấn' : '-'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Năm SX</span>
+                        <span class="info-value">${v.nam_sx || '-'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Cấu hình bánh</span>
+                        <span class="info-value">${v.ma_loai || '-'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Lốp (trước/sau)</span>
+                        <span class="info-value">${v.thong_so_lop_truoc || '-'} / ${v.thong_so_lop_sau || '-'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Thể tích thùng</span>
+                        <span class="info-value">${v.the_tich_thung ? v.the_tich_thung + ' m³' : '-'}</span>
+                    </div>
+                    <div class="info-item" style="grid-column: span 2; background: rgba(34, 211, 238, 0.1); padding: 5px; border-radius: 6px; margin-top: 5px;">
+                        <span class="info-label" style="color: var(--accent)">KM Hiện tại (ODO)</span>
+                        <span class="info-value" style="color: #fff; font-weight: 800;">${(v.odo_hien_tai || 0).toLocaleString('vi-VN')} km</span>
+                    </div>
+                </div>
+                ${expireBadges ? `<div class="expire-badges">${expireBadges}</div>` : ''}
+                
+                ${['manager', 'admin'].includes(USER_ROLE) ? `
+                <div class="card-footer">
+                    <button class="btn-icon" onclick="editVehicle('${v.bien_so_xe}')" title="Sửa">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon btn-delete" onclick="deleteVehicle('${v.bien_so_xe}')" title="Xóa">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                ` : '<div class="card-footer"><span style="font-size:0.7rem; color:var(--text-dim)">Chế độ xem</span></div>'}
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function updateStats(data) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        let warn = 0, expired = 0;
+        data.forEach(v => {
+            const dates = [v.ngay_dang_ky, v.ngay_dang_kiem, v.ngay_phu_hieu, v.ngay_bao_hiem];
+            let hasWarn = false, hasExp = false;
+            dates.forEach(d => {
+                const days = daysUntil(d);
+                if (days !== null) {
+                    if (days < 0) hasExp = true;
+                    else if (days <= 30) hasWarn = true;
+                }
+            });
+            if (hasExp) expired++;
+            else if (hasWarn) warn++;
+        });
+        document.getElementById('totalVehicles').innerText = data.length;
+        document.getElementById('activeVehicles').innerText = data.filter(v => v.tinh_trang_hoat_dong === 'dang_hoat_dong').length;
+        document.getElementById('maintenanceVehicles').innerText = data.filter(v => v.tinh_trang_hoat_dong !== 'dang_hoat_dong').length;
+        document.getElementById('warnVehicles').innerText = warn;
+        document.getElementById('expiredVehicles').innerText = expired;
+    }
+
+    function filterVehicles() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        let filtered = allVehicles;
+        if (query) {
+            filtered = filtered.filter(v => 
+                v.bien_so_xe.toLowerCase().includes(query) || 
+                (v.loai_xe && v.loai_xe.toLowerCase().includes(query))
+            );
+        }
+        renderVehicles(filtered);
+    }
+
+    function filterByStatus(status) {
+        let filtered = allVehicles;
+        const now = new Date();
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+        if (status === 'active') {
+            filtered = allVehicles.filter(v => v.tinh_trang_hoat_dong === 'dang_hoat_dong');
+        } else if (status === 'maintenance') {
+            filtered = allVehicles.filter(v => v.tinh_trang_hoat_dong !== 'dang_hoat_dong');
+        } else if (status === 'warn') {
+            filtered = allVehicles.filter(v => {
+                const dates = [v.ngay_dang_kiem, v.ngay_phu_hieu, v.ngay_bao_hiem];
+                return dates.some(d => {
+                    const dt = new Date(d);
+                    const diff = dt - now;
+                    return diff > 0 && diff < thirtyDays;
+                });
+            });
+        } else if (status === 'expired') {
+            filtered = allVehicles.filter(v => {
+                const dates = [v.ngay_dang_kiem, v.ngay_phu_hieu, v.ngay_bao_hiem];
+                return dates.some(d => d && new Date(d) < now);
+            });
+        }
+        
+        renderVehicles(filtered);
+    }
+
+    // Tính toán thể tích và kích thước thùng
+    function calcVol() {
+        const d = parseFloat(document.getElementById('thung_dai').value) || 0;
+        const r = parseFloat(document.getElementById('thung_rong').value) || 0;
+        const c = parseFloat(document.getElementById('thung_cao').value) || 0;
+        
+        const vol = d * r * c;
+        document.getElementById('the_tich_thung').value = vol > 0 ? vol.toFixed(2) : '';
+        document.getElementById('kich_thuoc_thung').value = (d > 0 || r > 0 || c > 0) ? `${d} x ${r} x ${c}` : '';
+    }
+
+    // Chuyển tab trong modal
+    function switchModalTab(index) {
+        const tabs = document.querySelectorAll('.modal-tab-content');
+        const btns = document.querySelectorAll('.tab-btn');
+        
+        tabs.forEach(t => t.classList.remove('active'));
+        btns.forEach(b => b.classList.remove('active'));
+        
+        tabs[index].classList.add('active');
+        btns[index].classList.add('active');
+    }
+
+    // Modal logic
+    function openModal(editData = null) {
+        const modal = document.getElementById('vehicleModal');
+        const form = document.getElementById('vehicleForm');
+        form.reset();
+        switchModalTab(0); // Luôn về tab đầu tiên
+        
+        const fields = [
+            'bien_so_xe', 'loai_xe', 'tai_trong', 'nam_sx', 'ma_loai', 
+            'so_khung', 'so_may', 'khoi_luong_ban_than', 'khoi_luong_cho_phep',
+            'thung_dai', 'thung_rong', 'thung_cao', 'the_tich_thung', 'kich_thuoc_thung',
+            'so_dang_ky', 'ngay_dang_ky', 'so_dang_kiem', 'ngay_dang_kiem',
+            'so_phu_hieu', 'ngay_phu_hieu', 'so_bao_hiem', 'ngay_bao_hiem',
+            'tinh_trang_hoat_dong', 'loai_bien_so',
+            'thong_so_lop', 'thong_so_lop_truoc', 'thong_so_lop_sau', 'so_luong_lop', 'ap_suat_lop'
+        ];
+
+        if (editData) {
+            document.getElementById('modalTitle').innerText = "Cập nhật " + editData.bien_so_xe;
+            document.getElementById('editId').value = editData.bien_so_xe;
+            
+            fields.forEach(f => {
+                const el = document.getElementById(f);
+                if (el) {
+                    el.value = editData[f] || '';
+                    if (f === 'bien_so_xe') el.disabled = true;
+                }
+            });
+        } else {
+            document.getElementById('modalTitle').innerText = "Thêm Xe Mới";
+            document.getElementById('editId').value = '';
+            document.getElementById('bien_so_xe').disabled = false;
+        }
+        
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('vehicleModal').classList.remove('active');
+    }
+
+    // CRUD
+    document.getElementById('vehicleForm').onsubmit = async (e) => {
+        e.preventDefault();
+        if (!['manager', 'admin'].includes(USER_ROLE)) {
+            alert("Bạn không có quyền thực hiện thao tác này.");
+            return;
+        }
+        const btn = document.getElementById('saveBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        btn.disabled = true;
+
+        const editId = document.getElementById('editId').value;
+        const fields = [
+            'bien_so_xe', 'loai_xe', 'tai_trong', 'nam_sx', 'ma_loai', 
+            'so_khung', 'so_may', 'khoi_luong_ban_than', 'khoi_luong_cho_phep',
+            'thung_dai', 'thung_rong', 'thung_cao', 'the_tich_thung', 'kich_thuoc_thung',
+            'so_dang_ky', 'ngay_dang_ky', 'so_dang_kiem', 'ngay_dang_kiem',
+            'so_phu_hieu', 'ngay_phu_hieu', 'so_bao_hiem', 'ngay_bao_hiem',
+            'tinh_trang_hoat_dong', 'loai_bien_so',
+            'thong_so_lop', 'thong_so_lop_truoc', 'thong_so_lop_sau', 'so_luong_lop', 'ap_suat_lop'
+        ];
+
+        const payload = { updated_at: new Date().toISOString() };
+        fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) payload[f] = el.value;
+        });
+
+        try {
+            let result;
+            if (editId) {
+                result = await _supabase.from('xe').update(payload).eq('bien_so_xe', editId);
+            } else {
+                result = await _supabase.from('xe').insert([payload]);
+            }
+
+            if (result.error) throw result.error;
+
+            closeModal();
+            loadVehicles();
+        } catch (error) {
+            alert("Lỗi hệ thống: " + error.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+
+    function editVehicle(bsx) {
+        const v = allVehicles.find(item => item.bien_so_xe === bsx);
+        if (v) openModal(v);
+    }
+
+    async function deleteVehicle(bsx) {
+        if (!['manager', 'admin'].includes(USER_ROLE)) {
+            alert("Bạn không có quyền thực hiện thao tác này.");
+            return;
+        }
+        if (!confirm(`Bạn có chắc muốn xóa xe ${bsx} khỏi hệ thống?`)) return;
+        
+        try {
+            const { error } = await _supabase.from('xe').delete().eq('bien_so_xe', bsx);
+            if (error) throw error;
+            loadVehicles();
+        } catch (error) {
+            alert("Lỗi khi xóa: " + error.message);
+        }
+    }
+
+    // Realtime subscription
+    function setupRealtime() {
+        _supabase.channel('xe-nhatky-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'xe' }, () => loadVehicles())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'nhatky' }, () => loadVehicles())
+            .subscribe();
+    }
+
+    // Sticky header
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 50) {
+            header.style.background = 'rgba(15, 23, 42, 0.9)';
+            header.style.padding = '0.8rem 2rem';
+            header.style.backdropFilter = 'blur(10px)';
+            header.style.position = 'sticky';
+            header.style.top = '0';
+            header.style.zIndex = '100';
+            header.style.borderRadius = '0 0 20px 20px';
+            header.style.borderBottom = '1px solid rgba(99,102,241,0.3)';
+        } else {
+            header.style.background = 'transparent';
+            header.style.borderBottom = 'none';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        checkAccess();
+        loadVehicles();
+        setupRealtime();
+    });
+
+</script>
+
+</body>
+</html>
