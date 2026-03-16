@@ -384,13 +384,17 @@
         }
 
         /* Responsive */
-        @media (max-width: 600px) {
-            .points-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .header-section { flex-direction: column; align-items: stretch; gap: 1rem; text-align: center; }
+            .title-group { justify-content: center; }
+            .btn-add { width: 100%; justify-content: center; }
+            .search-container { padding: 5px; margin: 0 0 15px 0; }
+            .points-grid { grid-template-columns: 1fr; gap: 15px; }
+            .point-card { padding: 15px; }
+            .modal-container { border-radius: 20px; }
+            .modal-body { padding: 15px; }
+            .form-grid { grid-template-columns: 1fr; gap: 10px; }
         }
 
         /* Loading Overlay */

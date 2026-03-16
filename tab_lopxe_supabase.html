@@ -100,6 +100,25 @@
     @keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body { padding: 15px; }
+      header { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 1.5rem; text-align: center; }
+      .logo-area h1 { font-size: 1.8rem; }
+      .controls { flex-direction: column; width: 100%; gap: 10px; }
+      .search-box { width: 100%; }
+      .search-box input { width: 100%; }
+      .btn-add { width: 100%; justify-content: center; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .stat-card { padding: 10px; }
+      .stat-card .value { font-size: 1.4rem; }
+      .filter-bar { gap: 5px; }
+      .filter-btn { font-size: 0.75rem; padding: 5px 10px; }
+      .tire-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .modal-content { padding: 1.5rem; border-radius: 20px; }
+      .form-grid { grid-template-columns: 1fr; gap: 10px; }
+    }
   </style>
 </head>
 <body>

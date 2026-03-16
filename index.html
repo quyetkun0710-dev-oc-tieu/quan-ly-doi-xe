@@ -464,11 +464,11 @@
       backdrop-filter: blur(10px);
       color: white;
       font-weight: 700;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       z-index: 10000;
       transform: translateX(120%);
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       gap: 12px;
@@ -480,55 +480,129 @@
       pointer-events: auto;
     }
 
-    #toast.success { border-left: 5px solid #10b981; }
-    #toast.success::before {
-        content: '✓';
-        width: 22px; height: 22px; background: #10b981;
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 0.7rem; flex-shrink: 0;
+    #toast.success {
+      border-left: 5px solid #10b981;
     }
 
-    #toast.error { border-left: 5px solid #ef4444; }
+    #toast.success::before {
+      content: '✓';
+      width: 22px;
+      height: 22px;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    #toast.error {
+      border-left: 5px solid #ef4444;
+    }
+
     #toast.error::before {
-        content: '!';
-        width: 22px; height: 22px; background: #ef4444;
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 0.7rem; flex-shrink: 0;
+      content: '!';
+      width: 22px;
+      height: 22px;
+      background: #ef4444;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      flex-shrink: 0;
     }
 
     /* ---- PREMIUM CONFIRM ---- */
     .confirm-overlay {
-        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8);
-        backdrop-filter: blur(8px); z-index: 20000; display: none;
-        align-items: center; justify-content: center; animation: fadeIn 0.3s;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 20000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s;
     }
 
-    .confirm-overlay.active { display: flex; }
+    .confirm-overlay.active {
+      display: flex;
+    }
 
     .confirm-card {
-        background: #1e293b; width: 100%; max-width: 400px;
-        border-radius: 20px; padding: 24px; border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-        animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        text-align: center;
+      background: #1e293b;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+      animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
     }
 
-    .confirm-card h3 { margin-bottom: 12px; font-weight: 800; font-size: 1.4rem; color: #fff; }
-    .confirm-card p { margin-bottom: 24px; color: var(--text-dim); line-height: 1.5; font-size: 0.95rem; }
-    
-    .confirm-btns { display: flex; gap: 12px; justify-content: center; }
+    .confirm-card h3 {
+      margin-bottom: 12px;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #fff;
+    }
+
+    .confirm-card p {
+      margin-bottom: 24px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .confirm-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
     .btn-confirm-yes {
-        background: var(--primary); color: white; border: none; padding: 10px 24px;
-        border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
     }
-    .btn-confirm-no {
-        background: #334155; color: white; border: none; padding: 10px 24px;
-        border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;
-    }
-    .btn-confirm-yes:hover { transform: scale(1.05); filter: brightness(1.2); }
-    .btn-confirm-no:hover { background: #475569; }
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .btn-confirm-no {
+      background: #334155;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-confirm-yes:hover {
+      transform: scale(1.05);
+      filter: brightness(1.2);
+    }
+
+    .btn-confirm-no:hover {
+      background: #475569;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
 
     .user-avatar::after {
       content: '';
@@ -577,6 +651,20 @@
       flex: 1;
       max-width: 500px;
       margin: 0 20px;
+      transition: all 0.3s;
+    }
+
+    .mobile-search-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-dim);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
     }
 
     .global-search-input {
@@ -717,86 +805,102 @@
 
     /* ---- WEATHER WIDGET ---- */
     .weather-widget {
-        margin-left: auto;
-        background: #1e293b !important; /* Solid solid solid */
-        border: 1px solid #334155 !important; /* No rgba */
-        backdrop-filter: none !important; /* Force remove any blur */
-        -webkit-backdrop-filter: none !important;
-        padding: 1rem 1.5rem;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 2;
-        max-width: 400px;
-        transition: all 0.3s;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-left: auto;
+      background: #1e293b !important;
+      /* Solid solid solid */
+      border: 1px solid #334155 !important;
+      /* No rgba */
+      backdrop-filter: none !important;
+      /* Force remove any blur */
+      -webkit-backdrop-filter: none !important;
+      padding: 1rem 1.5rem;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 2;
+      max-width: 400px;
+      transition: all 0.3s;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .weather-widget:hover {
-        background: #2d3748; /* Solid hover color */
-        transform: translateY(-2px);
+      background: #2d3748;
+      /* Solid hover color */
+      transform: translateY(-2px);
     }
 
     .weather-icon {
-        font-size: 2.5rem;
-        filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+      font-size: 2.5rem;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
     }
 
     .weather-info {
-        display: flex;
-        flex-direction: column;
+      display: flex;
+      flex-direction: column;
     }
 
     .weather-temp {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #fff;
-        line-height: 1;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
     }
 
     .weather-city {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 2px;
-        display: flex; 
-        align-items: center;
-        gap: 5px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .weather-desc {
-        font-size: 0.8rem;
-        color: var(--text-dim);
-        font-weight: 600;
-        text-transform: capitalize;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: capitalize;
     }
 
     .weather-details {
-        margin-top: 8px;
-        display: flex;
-        gap: 12px;
-        font-size: 0.7rem;
-        color: var(--text-dim);
+      margin-top: 8px;
+      display: flex;
+      gap: 12px;
+      font-size: 0.7rem;
+      color: var(--text-dim);
     }
 
     .weather-details span {
-        display: flex;
-        align-items: center;
-        gap: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     @keyframes pulseLive {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.2); opacity: 0.5; }
-        100% { transform: scale(1); opacity: 1; }
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.2);
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .live-dot {
-        width: 6px; height: 6px; 
-        background: #ef4444; 
-        border-radius: 50%;
-        animation: pulseLive 2s infinite;
+      width: 6px;
+      height: 6px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulseLive 2s infinite;
     }
 
     /* ---- PROFILE TABLE & ANIMATIONS ---- */
@@ -1097,6 +1201,7 @@
     .profile-dropdown .glass-row td {
       padding: 8px 12px;
     }
+
     .profile-dropdown .glass-row.clickable {
       cursor: pointer;
       transition: all 0.3s;
@@ -1393,165 +1498,216 @@
     /* Removed old .profile-info, .info-item, .info-label, .info-value styles */
     /* Removed old .profile-actions and .btn-sub styles as they are replaced */
 
-
     /* Mobile Optimization */
     @media (max-width: 768px) {
       :root {
         --sidebar-w: 0px;
       }
 
+      body {
+        font-size: 14px;
+      }
+
       .sidebar {
         bottom: 0;
         top: auto;
         width: 100% !important;
-        height: 60px; /* Thấp hơn chút cho thoáng */
+        height: 70px;
         flex-direction: row;
-        padding: 0;
+        padding: 0 10px;
         border-right: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         justify-content: space-around;
         gap: 0;
-        background: #0f172a; /* Solid mobile nav */
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        z-index: 1000;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.3);
       }
 
       .sidebar:hover {
         width: 100% !important;
       }
 
-      .sidebar-logo, .nav-divider {
+      .sidebar-logo,
+      .nav-divider {
         display: none;
       }
 
       .nav-bottom {
         margin-top: 0;
         display: flex;
-        flex: 1; /* Space across mobile bar */
+        flex: 1;
+        justify-content: space-around;
       }
 
       .nav-item {
         flex: 1;
         flex-direction: column;
-        gap: 2px;
-        padding: 8px 0;
+        gap: 4px;
+        padding: 10px 0;
         border-right: none !important;
         align-items: center;
         justify-content: center;
+        border-radius: 12px;
+      }
+
+      .nav-item.active {
+        background: transparent;
+        color: var(--primary);
+        border-right: none;
       }
 
       .nav-icon {
         width: 32px;
         height: 32px;
-        font-size: 1rem;
+        font-size: 1.2rem;
         background: transparent;
       }
 
       .nav-label {
-        display: none !important; /* Bỏ hẳn tên tab trên mobile */
+        display: block !important;
+        opacity: 1;
+        transform: none;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
       }
 
       .main-area {
         margin-left: 0;
-        margin-bottom: 75px; /* More space for nav */
+        margin-bottom: 80px;
       }
 
       .topbar {
-        padding: 0.5rem 1rem;
-        gap: 10px;
+        padding: 0.6rem 1rem;
+        height: 60px;
       }
 
       .topbar-title {
         font-size: 1rem;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .mobile-search-toggle {
+        display: flex;
+        margin-left: auto;
       }
 
       .global-search-container {
-        display: none; /* Hide top search on mobile or adjust */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        padding: 10px;
+        background: var(--bg);
+        z-index: 200;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+        max-width: 100%;
+      }
+
+      .global-search-container.active {
+        transform: translateY(0);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      .user-chip {
+        padding: 4px;
+        border-radius: 50%;
+      }
+
+      .user-name, .user-role {
+        display: none;
       }
 
       #homeScreen {
-        padding: 1.2rem;
+        padding: 1rem;
       }
 
       .home-welcome {
         flex-direction: column;
-        padding: 1.8rem 1.2rem;
+        padding: 1.5rem 1rem;
         text-align: center;
-        gap: 15px;
+        gap: 12px;
         border-radius: 20px;
       }
 
       .welcome-avatar {
-        width: 65px;
-        height: 65px;
-        font-size: 1.8rem;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
       }
 
       .welcome-text h2 {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
       }
 
       .welcome-text p {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
       }
 
       .weather-widget {
         margin-left: 0;
         width: 100%;
-        max-width: none;
-        padding: 0.8rem 1rem;
-        border-radius: 16px;
-        gap: 12px;
+        padding: 10px;
         justify-content: center;
       }
 
-      .weather-icon {
-        font-size: 2rem;
-      }
-
-      .weather-temp {
-        font-size: 1.4rem;
-      }
-
-      .weather-desc {
-        font-size: 0.75rem;
-      }
-
       .dashboard-stats {
-        grid-template-columns: 1fr; /* Single column stats on narrow */
-        gap: 0.8rem;
+        grid-template-columns: 1fr;
+        gap: 10px;
       }
 
-      @media (min-width: 480px) {
-        .dashboard-stats {
-          grid-template-columns: repeat(2, 1fr);
-        }
+      .dash-card {
+        padding: 1rem;
+      }
+
+      .dash-value {
+        font-size: 1.1rem;
       }
 
       .app-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns cards on mobile */
-        gap: 0.8rem;
-      }
-
-      @media (min-width: 480px) {
-        .app-grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
 
       .app-card {
         padding: 1.2rem 0.5rem;
+        border-radius: 20px;
       }
 
       .app-card .icon {
-        font-size: 2.2rem;
+        font-size: 2.22rem;
       }
-      
-      /* Toast positioning for mobile */
+
+      .app-card .label {
+        font-size: 0.8rem;
+      }
+
       #toast {
         top: 10px;
         right: 10px;
         left: 10px;
-        padding: 12px 18px;
-        font-size: 0.85rem;
+        padding: 12px 15px;
+        font-size: 0.9rem;
+      }
+
+      .confirm-card {
+        width: 90%;
+        max-width: 350px;
+        padding: 20px;
+      }
+
+      .modal-box {
+        width: 95%;
+        padding: 1.5rem;
+        border-radius: 24px;
       }
     }
   </style>
@@ -1669,8 +1825,7 @@
         <span class="nav-label">Báo cáo</span>
       </button>
 
-      <button class="nav-item"
-        onclick="openTab('lichlamviec','tab_lichlamviec_supabase.html')">
+      <button class="nav-item" onclick="openTab('lichlamviec','tab_lichlamviec_supabase.html')">
         <div class="nav-icon" style="color:#fbbf24"><i class="fas fa-calendar-alt"></i></div>
         <span class="nav-label">Lịch ca trực</span>
       </button>
@@ -1700,8 +1855,10 @@
           <span id="topbarTitle">Trang chủ</span>
         </div>
 
+        <button class="mobile-search-toggle admin-and-above" onclick="toggleMobileSearch()"><i class="fas fa-search"></i></button>
+
         <!-- GLOBAL SEARCH BAR (MANAGER/ADMIN ONLY) -->
-        <div class="global-search-container admin-and-above">
+        <div class="global-search-container admin-and-above" id="mobileSearchContainer">
           <i class="fas fa-search search-icon"></i>
           <input type="text" class="global-search-input" id="globalSearchInput"
             placeholder="Tìm lái xe, mã NV, biển số..." oninput="debounceGlobalSearch()">
@@ -1770,18 +1927,18 @@
 
           <!-- Weather Widget -->
           <div class="weather-widget" id="weatherWidget">
-              <div class="weather-icon" id="weaIcon">☀️</div>
-              <div class="weather-info">
-                  <div class="weather-city" id="weaCity">
-                      <span class="live-dot"></span> ĐANG TẢI...
-                  </div>
-                  <div class="weather-temp" id="weaTemp">--°C</div>
-                  <div class="weather-desc" id="weaDesc">Đang cập nhật thời tiết...</div>
-                  <div class="weather-details">
-                      <span><i class="fas fa-tint"></i> <span id="weaHumid">--%</span></span>
-                      <span><i class="fas fa-wind"></i> <span id="weaWind">-- km/h</span></span>
-                  </div>
+            <div class="weather-icon" id="weaIcon">☀️</div>
+            <div class="weather-info">
+              <div class="weather-city" id="weaCity">
+                <span class="live-dot"></span> ĐANG TẢI...
               </div>
+              <div class="weather-temp" id="weaTemp">--°C</div>
+              <div class="weather-desc" id="weaDesc">Đang cập nhật thời tiết...</div>
+              <div class="weather-details">
+                <span><i class="fas fa-tint"></i> <span id="weaHumid">--%</span></span>
+                <span><i class="fas fa-wind"></i> <span id="weaWind">-- km/h</span></span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1933,13 +2090,13 @@
   <!-- Global Premium Confirm -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-card">
-        <div style="font-size: 2.5rem; margin-bottom: 12px;">🤔</div>
-        <h3 id="confirmTitle">Xác nhận?</h3>
-        <p id="confirmMessage">Bạn có chắc chắn muốn thực hiện hành động này không?</p>
-        <div class="confirm-btns">
-            <button class="btn-confirm-no" id="btnConfirmCancel">Bỏ qua</button>
-            <button class="btn-confirm-yes" id="btnConfirmOk">Chấp nhận</button>
-        </div>
+      <div style="font-size: 2.5rem; margin-bottom: 12px;">🤔</div>
+      <h3 id="confirmTitle">Xác nhận?</h3>
+      <p id="confirmMessage">Bạn có chắc chắn muốn thực hiện hành động này không?</p>
+      <div class="confirm-btns">
+        <button class="btn-confirm-no" id="btnConfirmCancel">Bỏ qua</button>
+        <button class="btn-confirm-yes" id="btnConfirmOk">Chấp nhận</button>
+      </div>
     </div>
   </div>
 
@@ -2089,112 +2246,112 @@
 
     // ============ WEATHER LOGIC (Navigator Geolocation & Open-Meteo) ============
     async function initWeather() {
-        const widget = document.getElementById('weatherWidget');
-        const cityEl = document.getElementById('weaCity');
-        
-        // Default: Ha Noi
-        let lat = 21.0285, lon = 105.8542;
-        let locationName = 'Hà Nội';
+      const widget = document.getElementById('weatherWidget');
+      const cityEl = document.getElementById('weaCity');
 
-        const getWeatherData = async (plat, plon, pname) => {
-            try {
-                const weaRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${plat}&longitude=${plon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
-                if (!weaRes.ok) throw new Error("Weather API Error");
-                const wea = await weaRes.json();
-                
-                cityEl.innerHTML = `<span class="live-dot"></span> ${pname}`;
-                updateWeatherUI(wea.current);
-            } catch (e) {
-                console.warn("Weather API error:", e);
-                document.getElementById('weaDesc').innerText = 'Lỗi cập nhật dữ liệu';
-            }
-        };
+      // Default: Ha Noi
+      let lat = 21.0285, lon = 105.8542;
+      let locationName = 'Hà Nội';
 
-        const getAddressFromCoords = async (plat, plon) => {
-            try {
-                // zoom 18 to get deep details (suburb, road, etc)
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${plat}&lon=${plon}&zoom=18&addressdetails=1`, {
-                    headers: { 'Accept-Language': 'vi' }
-                });
-                const data = await res.json();
-                const a = data.address;
-                
-                // Construct detailed address: [Ward/Suburb] - [District/Town] - [Province/City]
-                const parts = [];
-                const ward = a.suburb || a.village || a.neighbourhood || a.quarter;
-                const district = a.district || a.city_district || a.town || a.county;
-                const city = a.city || a.state;
+      const getWeatherData = async (plat, plon, pname) => {
+        try {
+          const weaRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${plat}&longitude=${plon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`);
+          if (!weaRes.ok) throw new Error("Weather API Error");
+          const wea = await weaRes.json();
 
-                if (ward) parts.push(ward);
-                if (district) parts.push(district);
-                if (city) parts.push(city);
-
-                return parts.join(', ') || 'Vị trí hiện tại';
-            } catch (e) {
-                return 'Vị trí hiện tại';
-            }
-        };
-
-        // Try Precise Geolocation first
-        if ("geolocation" in navigator) {
-            cityEl.innerHTML = `<span class="live-dot"></span> ĐANG DÒ VỊ TRÍ...`;
-            
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    lat = position.coords.latitude;
-                    lon = position.coords.longitude;
-                    locationName = await getAddressFromCoords(lat, lon);
-                    await getWeatherData(lat, lon, locationName);
-                },
-                async (err) => {
-                    console.warn("GPS Denied, using IP:", err.message);
-                    try {
-                        const locRes = await fetch('https://ipapi.co/json/').catch(() => null);
-                        if (locRes && locRes.ok) {
-                            const loc = await locRes.json();
-                            lat = loc.latitude || lat;
-                            lon = loc.longitude || lon;
-                            locationName = loc.city || 'Hà Nội';
-                        }
-                    } catch(e) {}
-                    await getWeatherData(lat, lon, locationName);
-                },
-                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-            );
-        } else {
-            await getWeatherData(lat, lon, locationName);
+          cityEl.innerHTML = `<span class="live-dot"></span> ${pname}`;
+          updateWeatherUI(wea.current);
+        } catch (e) {
+          console.warn("Weather API error:", e);
+          document.getElementById('weaDesc').innerText = 'Lỗi cập nhật dữ liệu';
         }
+      };
+
+      const getAddressFromCoords = async (plat, plon) => {
+        try {
+          // zoom 18 to get deep details (suburb, road, etc)
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${plat}&lon=${plon}&zoom=18&addressdetails=1`, {
+            headers: { 'Accept-Language': 'vi' }
+          });
+          const data = await res.json();
+          const a = data.address;
+
+          // Construct detailed address: [Ward/Suburb] - [District/Town] - [Province/City]
+          const parts = [];
+          const ward = a.suburb || a.village || a.neighbourhood || a.quarter;
+          const district = a.district || a.city_district || a.town || a.county;
+          const city = a.city || a.state;
+
+          if (ward) parts.push(ward);
+          if (district) parts.push(district);
+          if (city) parts.push(city);
+
+          return parts.join(', ') || 'Vị trí hiện tại';
+        } catch (e) {
+          return 'Vị trí hiện tại';
+        }
+      };
+
+      // Try Precise Geolocation first
+      if ("geolocation" in navigator) {
+        cityEl.innerHTML = `<span class="live-dot"></span> ĐANG DÒ VỊ TRÍ...`;
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            lat = position.coords.latitude;
+            lon = position.coords.longitude;
+            locationName = await getAddressFromCoords(lat, lon);
+            await getWeatherData(lat, lon, locationName);
+          },
+          async (err) => {
+            console.warn("GPS Denied, using IP:", err.message);
+            try {
+              const locRes = await fetch('https://ipapi.co/json/').catch(() => null);
+              if (locRes && locRes.ok) {
+                const loc = await locRes.json();
+                lat = loc.latitude || lat;
+                lon = loc.longitude || lon;
+                locationName = loc.city || 'Hà Nội';
+              }
+            } catch (e) { }
+            await getWeatherData(lat, lon, locationName);
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+      } else {
+        await getWeatherData(lat, lon, locationName);
+      }
     }
 
     function updateWeatherUI(data) {
-        const temp = Math.round(data.temperature_2m);
-        const code = data.weather_code;
-        const humid = data.relative_humidity_2m;
-        const wind = data.wind_speed_10m;
+      const temp = Math.round(data.temperature_2m);
+      const code = data.weather_code;
+      const humid = data.relative_humidity_2m;
+      const wind = data.wind_speed_10m;
 
-        document.getElementById('weaTemp').innerText = `${temp}°C`;
-        document.getElementById('weaHumid').innerText = `${humid}%`;
-        document.getElementById('weaWind').innerText = `${wind} km/h`;
+      document.getElementById('weaTemp').innerText = `${temp}°C`;
+      document.getElementById('weaHumid').innerText = `${humid}%`;
+      document.getElementById('weaWind').innerText = `${wind} km/h`;
 
-        // Weather Code Mapping
-        const mapping = {
-            0: { desc: 'Trời quang', icon: '☀️' },
-            1: { desc: 'Hầu như quang', icon: '🌤️' },
-            2: { desc: 'Bán quang', icon: '⛅' },
-            3: { desc: 'Nhiều mây', icon: '☁️' },
-            45: { desc: 'Sương mù', icon: '🌫️' },
-            48: { desc: 'Sương giá', icon: '🌫️' },
-            51: { desc: 'Mưa phùn nhẹ', icon: '🌦️' },
-            61: { desc: 'Mưa nhẹ', icon: '🌧️' },
-            63: { desc: 'Mưa vừa', icon: '🌧️' },
-            71: { desc: 'Tuyết rơi nhẹ', icon: '🌨️' },
-            80: { desc: 'Mưa rào nhẹ', icon: '🌦️' },
-            95: { desc: 'Dông mạnh', icon: '⛈️' }
-        };
+      // Weather Code Mapping
+      const mapping = {
+        0: { desc: 'Trời quang', icon: '☀️' },
+        1: { desc: 'Hầu như quang', icon: '🌤️' },
+        2: { desc: 'Bán quang', icon: '⛅' },
+        3: { desc: 'Nhiều mây', icon: '☁️' },
+        45: { desc: 'Sương mù', icon: '🌫️' },
+        48: { desc: 'Sương giá', icon: '🌫️' },
+        51: { desc: 'Mưa phùn nhẹ', icon: '🌦️' },
+        61: { desc: 'Mưa nhẹ', icon: '🌧️' },
+        63: { desc: 'Mưa vừa', icon: '🌧️' },
+        71: { desc: 'Tuyết rơi nhẹ', icon: '🌨️' },
+        80: { desc: 'Mưa rào nhẹ', icon: '🌦️' },
+        95: { desc: 'Dông mạnh', icon: '⛈️' }
+      };
 
-        const current = mapping[code] || { desc: 'Thời tiết thay đổi', icon: '⛅' };
-        document.getElementById('weaDesc').innerText = current.desc;
-        document.getElementById('weaIcon').innerText = current.icon;
+      const current = mapping[code] || { desc: 'Thời tiết thay đổi', icon: '⛅' };
+      document.getElementById('weaDesc').innerText = current.desc;
+      document.getElementById('weaIcon').innerText = current.icon;
     }
 
     // ============ GLOBAL SEARCH LOGIC ============
@@ -2493,12 +2650,30 @@
       document.getElementById('searchDetailModal').classList.remove('active');
     }
 
+    function toggleMobileSearch() {
+      const search = document.getElementById('mobileSearchContainer');
+      search.classList.toggle('active');
+      if (search.classList.contains('active')) {
+        document.getElementById('globalSearchInput').focus();
+      }
+    }
+
     // Close on blur/outside
     document.addEventListener('mousedown', e => {
       const results = document.getElementById('globalSearchResults');
       const input = document.getElementById('globalSearchInput');
+      const searchContainer = document.getElementById('mobileSearchContainer');
+      const searchToggle = document.querySelector('.mobile-search-toggle');
+
       if (results && !results.contains(e.target) && e.target !== input) {
         results.style.display = 'none';
+      }
+
+      // Close mobile search if click outside
+      if (searchContainer.classList.contains('active') && 
+          !searchContainer.contains(e.target) && 
+          !searchToggle.contains(e.target)) {
+        searchContainer.classList.remove('active');
       }
 
       const sdModal = document.getElementById('searchDetailModal');
@@ -2771,29 +2946,29 @@
         showToast(data.message, data.theme || 'success');
       } else if (data && data.type === 'confirmRequest') {
         showPremiumConfirm(data.title, data.message, (res) => {
-            const frame = document.getElementById('tabFrame');
-            if (frame && frame.contentWindow) {
-                frame.contentWindow.postMessage({ type: 'confirmResponse', result: res, requestId: data.requestId }, '*');
-            }
+          const frame = document.getElementById('tabFrame');
+          if (frame && frame.contentWindow) {
+            frame.contentWindow.postMessage({ type: 'confirmResponse', result: res, requestId: data.requestId }, '*');
+          }
         });
       }
     });
 
     let activeConfirmCallback = null;
     function showPremiumConfirm(title, message, callback) {
-        document.getElementById('confirmTitle').innerText = title || "Xác nhận?";
-        document.getElementById('confirmMessage').innerText = message || "Bạn có chắc muốn thực hiện không?";
-        document.getElementById('confirmOverlay').classList.add('active');
-        activeConfirmCallback = callback;
+      document.getElementById('confirmTitle').innerText = title || "Xác nhận?";
+      document.getElementById('confirmMessage').innerText = message || "Bạn có chắc muốn thực hiện không?";
+      document.getElementById('confirmOverlay').classList.add('active');
+      activeConfirmCallback = callback;
     }
 
     document.getElementById('btnConfirmOk').onclick = () => {
-        document.getElementById('confirmOverlay').classList.remove('active');
-        if (activeConfirmCallback) activeConfirmCallback(true);
+      document.getElementById('confirmOverlay').classList.remove('active');
+      if (activeConfirmCallback) activeConfirmCallback(true);
     };
     document.getElementById('btnConfirmCancel').onclick = () => {
-        document.getElementById('confirmOverlay').classList.remove('active');
-        if (activeConfirmCallback) activeConfirmCallback(false);
+      document.getElementById('confirmOverlay').classList.remove('active');
+      if (activeConfirmCallback) activeConfirmCallback(false);
     };
 
     // ============ TOAST ============
@@ -2801,10 +2976,10 @@
     function showToast(msg, type = 'success') {
       const t = document.getElementById('toast');
       t.innerText = msg;
-      
+
       // Clear previous classes
       t.className = 'show ' + type;
-      
+
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => {
         t.classList.remove('show');

@@ -113,6 +113,24 @@
 
     @keyframes fadeInDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
     @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body { padding: 15px; }
+      header { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 2rem; text-align: center; }
+      .logo-area h1 { font-size: 1.8rem; }
+      .controls { flex-direction: column; width: 100%; gap: 10px; }
+      .search-box { width: 100%; }
+      .search-box input { width: 100%; }
+      .btn-add { width: 100%; justify-content: center; }
+      .filter-bar { justify-content: center; gap: 6px; }
+      .notice-card { flex-direction: column; gap: 10px; padding: 1.2rem; }
+      .notice-icon-wrap { width: 40px; height: 40px; font-size: 1.2rem; }
+      .notice-header { flex-direction: column; gap: 5px; }
+      .notice-title { font-size: 1.1rem; }
+      .notice-actions { position: absolute; top: 10px; right: 10px; }
+      .modal-content { padding: 1.5rem; border-radius: 20px; }
+    }
   </style>
 </head>
 <body>
