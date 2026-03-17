@@ -597,16 +597,26 @@
     }
     .profile-avatar-w.loading .avatar-loading { display: flex; }
 
-    .avatar-input-overlay {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
+    .avatar-input-hidden {
+        position: fixed;
+        top: -100px;
+        left: -100px;
+        width: 1px;
+        height: 1px;
         opacity: 0;
+        z-index: -1;
+    }
+
+    .profile-avatar-w {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 15px;
+        position: relative;
         cursor: pointer;
-        z-index: 5;
-        /* Force display on mobile */
-        -webkit-appearance: none;
+        transition: all 0.3s;
+        display: block;
+        z-index: 10;
+        -webkit-tap-highlight-color: transparent;
     }
 
     /* ---- PREMIUM TOAST ---- */
@@ -2138,15 +2148,17 @@
           <!-- PROFILE DROPDOWN (PINNED TO TOPBAR) -->
           <div id="profileDropdown" class="profile-dropdown">
             <div class="dropdown-header">
-              <div class="profile-avatar-w">
+              <!-- Sử dụng label để kích hoạt input phía dưới -->
+              <label class="profile-avatar-w" for="avatarInput" onclick="console.log('Avatar clicked')">
                 <div class="profile-avatar-big" id="profAvatarBig">?</div>
                 <div class="avatar-edit-icon"><i class="fas fa-camera"></i></div>
                 <div class="avatar-loading"><i class="fas fa-spinner fa-spin"></i></div>
-                <input type="file" id="avatarInput" class="avatar-input-overlay" accept="image/*" onchange="handleAvatarUpload(event)">
-              </div>
+              </label>
               <h2 id="profName">-</h2>
               <p id="profRole">-</p>
-              <p style="font-size: 0.65rem; color: var(--text-dim); margin-top: 5px;">Nhấn vào ảnh để thay đổi</p>
+              <p style="font-size: 0.65rem; color: var(--primary); margin-top: 5px; font-weight: 700;">
+                <i class="fas fa-touch-app"></i> CHẠM VÀO ẢNH ĐỂ THAY ĐỔI
+              </p>
             </div>
             <div class="dropdown-body">
               <table class="profile-table">
@@ -2376,6 +2388,9 @@
   </div>
 
   <div id="toast"></div>
+  
+  <!-- Trình chọn ảnh đặt ngoài dropdown để tránh bị chặn -->
+  <input type="file" id="avatarInput" class="avatar-input-hidden" accept="image/*" onchange="handleAvatarUpload(event)">
 
   <script>
     // ============ SUPABASE ============
