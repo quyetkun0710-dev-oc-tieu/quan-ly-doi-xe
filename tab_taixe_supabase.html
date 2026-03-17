@@ -218,13 +218,19 @@
             width: 70px;
             height: 70px;
             border-radius: 20px;
-            background: linear-gradient(135deg, #334155, #1e293b);
+            background: #1e293b;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            color: var(--text-dim);
-            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.5rem;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.2);
+            background-size: 92% !important;
+            background-repeat: no-repeat;
+            background-position: center;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
 
         .driver-info-basic {
@@ -992,7 +998,9 @@
                 <div class="driver-badge" style="${badgeStyle}">${badgeText}</div>
                 ${statusBadge}
                 <div class="driver-header">
-                    <div class="driver-avatar" style="background: ${getAvatarColor(d)}; color: white; font-size:1.5rem; font-weight:900; letter-spacing:-1px">${initials}</div>
+                    <div class="driver-avatar" style="${d.avatar_url ? `background-image: url('${d.avatar_url}'); background-color: #1e293b;` : `background: ${getAvatarColor(d)};`} color: white; font-weight:900; letter-spacing:-1px">
+                        ${d.avatar_url ? '' : initials}
+                    </div>
                     <div class="driver-info-basic">
                         <div class="driver-name">${d.ho_ten || '-'}</div>
                         <div class="driver-id">${d.ma_nv}</div>
