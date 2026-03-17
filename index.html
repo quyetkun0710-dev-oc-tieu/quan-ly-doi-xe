@@ -607,9 +607,10 @@
         cursor: pointer;
         z-index: 999;
         display: block !important;
-        /* iOS Safari specific fixes */
         -webkit-appearance: none;
         background: transparent;
+        border: none;
+        outline: none;
     }
 
     .profile-avatar-w {
@@ -619,7 +620,11 @@
         position: relative;
         transition: all 0.3s;
         display: block;
-        pointer-events: none; /* Let the input behind or above catch the click */
+        pointer-events: none;
+        background-size: cover;
+        background-position: center;
+        border-radius: 24px;
+        overflow: hidden;
     }
 
     /* ---- PREMIUM TOAST ---- */
@@ -3344,14 +3349,9 @@
     }
 
     async function handleAvatarUpload(e) {
+      console.log("Avatar upload triggered");
       const file = e.target.files[0];
       if (!file) return;
-
-      // Limit size to 1MB for base64 storage
-      if (file.size > 1024 * 1024) {
-        showToast("Vui lòng chọn ảnh nhỏ hơn 1MB", "error");
-        return;
-      }
 
       const container = document.querySelector('.profile-avatar-w');
       container.classList.add('loading');
@@ -3359,37 +3359,56 @@
       try {
         const reader = new FileReader();
         reader.onload = async (event) => {
-          const base64 = event.target.result;
-          
-          // Update DB - We create/use 'avatar_url' column
-          const { error } = await _supabase
-            .from('taixe')
-            .update({ avatar_url: base64 })
-            .eq('ma_nv', USER_MNV);
+          const img = new Image();
+          img.onload = async () => {
+            // Rezise to 200x200 for optimization
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const size = 200;
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Draw square crop
+            const s = Math.min(img.width, img.height);
+            ctx.drawImage(img, (img.width-s)/2, (img.height-s)/2, s, s, 0, 0, size, size);
+            
+            const base64 = canvas.toDataURL('image/jpeg', 0.8);
+            console.log("Image compressed, updating Supabase...");
 
-          if (error) {
-             // If column doesn't exist, we might need to handle it or notify
-             console.error("Avatar upload error:", error);
-             showToast("Lỗi cập nhật ảnh: " + error.message, "error");
-          } else {
-             showToast("Cập nhật ảnh đại diện thành công!");
-             // Refresh UI
-             const uData = JSON.parse(sessionStorage.getItem('user_full'));
-             uData.avatar_url = base64;
-             sessionStorage.setItem('user_full', JSON.stringify(uData));
-             updateUserAvatars(uData);
+            const { error } = await _supabase
+              .from('taixe')
+              .update({ avatar_url: base64 })
+              .eq('ma_nv', USER_MNV);
+
+            if (error) {
+              console.error("Supabase error:", error);
+              showToast("Lỗi cập nhật: " + error.message, "error");
+              // SUGGESTION: Run 'ALTER TABLE taixe ADD COLUMN IF NOT EXISTS avatar_url TEXT;' in Supabase SQL editor
+            } else {
+              showToast("Cập nhật ảnh thành công!");
+              const uData = JSON.parse(sessionStorage.getItem('user_full') || '{}');
+              uData.avatar_url = base64;
+              sessionStorage.setItem('user_full', JSON.stringify(uData));
+              updateUserAvatars(uData);
+            }
+            container.classList.remove('loading');
+          };
+          img.onerror = () => {
+              showToast("Lỗi định dạng ảnh", "error");
+              container.classList.remove('loading');
           }
-          container.classList.remove('loading');
+          img.src = event.target.result;
         };
         reader.readAsDataURL(file);
       } catch (err) {
-        console.error(err);
-        showToast("Lỗi xử lý ảnh", "error");
+        console.error("Client error:", err);
+        showToast("Lỗi ứng dụng: " + err.message, "error");
         container.classList.remove('loading');
       }
     }
 
     function updateUserAvatars(data) {
+      if (!data) return;
       const initials = data.ho_ten ? data.ho_ten.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase() : '?';
       const avatarUrl = data.avatar_url;
 
@@ -3400,7 +3419,7 @@
       if (avatarUrl) {
         [topAvatar, dropAvatar, welcomeAvatar].forEach(el => {
             if (el) {
-                el.style.backgroundImage = `url(${avatarUrl})`;
+                el.style.backgroundImage = "url('" + avatarUrl + "')";
                 el.textContent = '';
             }
         });
