@@ -597,14 +597,15 @@
     }
     .profile-avatar-w.loading .avatar-loading { display: flex; }
 
-    .avatar-input-hidden {
-        position: fixed;
-        top: -100px;
-        left: -100px;
-        width: 1px;
-        height: 1px;
-        opacity: 0;
-        z-index: -1;
+    .avatar-input-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.01; /* Minimal opacity to ensure hit-testing on mobile */
+        cursor: pointer;
+        z-index: 100;
+        -webkit-appearance: none;
     }
 
     .profile-avatar-w {
@@ -612,11 +613,8 @@
         height: 80px;
         margin: 0 auto 15px;
         position: relative;
-        cursor: pointer;
         transition: all 0.3s;
         display: block;
-        z-index: 10;
-        -webkit-tap-highlight-color: transparent;
     }
 
     /* ---- PREMIUM TOAST ---- */
@@ -2148,17 +2146,22 @@
           <!-- PROFILE DROPDOWN (PINNED TO TOPBAR) -->
           <div id="profileDropdown" class="profile-dropdown">
             <div class="dropdown-header">
-              <!-- Sử dụng label để kích hoạt input phía dưới -->
-              <label class="profile-avatar-w" for="avatarInput" onclick="console.log('Avatar clicked')">
+              <div class="profile-avatar-w">
                 <div class="profile-avatar-big" id="profAvatarBig">?</div>
                 <div class="avatar-edit-icon"><i class="fas fa-camera"></i></div>
                 <div class="avatar-loading"><i class="fas fa-spinner fa-spin"></i></div>
-              </label>
+                <!-- Input đè lên trên cùng với z-index cao -->
+                <input type="file" id="avatarInput" class="avatar-input-overlay" accept="image/*" onchange="handleAvatarUpload(event)">
+              </div>
               <h2 id="profName">-</h2>
               <p id="profRole">-</p>
-              <p style="font-size: 0.65rem; color: var(--primary); margin-top: 5px; font-weight: 700;">
-                <i class="fas fa-touch-app"></i> CHẠM VÀO ẢNH ĐỂ THAY ĐỔI
-              </p>
+              <div style="margin-top: 10px; position: relative;">
+                 <button class="btn-change-photo" style="pointer-events: none;">
+                    <i class="fas fa-image"></i> Đổi ảnh đại diện
+                 </button>
+                 <!-- Input song song cho nút bấm -->
+                 <input type="file" class="avatar-input-overlay" accept="image/*" onchange="handleAvatarUpload(event)">
+              </div>
             </div>
             <div class="dropdown-body">
               <table class="profile-table">
@@ -2388,9 +2391,6 @@
   </div>
 
   <div id="toast"></div>
-  
-  <!-- Trình chọn ảnh đặt ngoài dropdown để tránh bị chặn -->
-  <input type="file" id="avatarInput" class="avatar-input-hidden" accept="image/*" onchange="handleAvatarUpload(event)">
 
   <script>
     // ============ SUPABASE ============
