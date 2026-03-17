@@ -530,6 +530,59 @@
       color: white;
     }
 
+    .profile-avatar-w {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: block;
+    }
+
+    .profile-avatar-w:hover {
+      transform: scale(1.05);
+    }
+
+    .profile-avatar-big {
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+      border: 3px solid white;
+      position: relative;
+      z-index: 1;
+    }
+
+    .avatar-edit-icon {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      width: 30px;
+      height: 30px;
+      background: white;
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      border: 2px solid var(--primary);
+      z-index: 3;
+      pointer-events: none;
+    }
+
     .avatar-loading {
         position: absolute;
         inset: 0;
@@ -537,32 +590,23 @@
         display: none;
         align-items: center;
         justify-content: center;
-        border-radius: inherit;
+        border-radius: 24px;
         color: white;
-        z-index: 10;
+        z-index: 4;
         pointer-events: none;
     }
     .profile-avatar-w.loading .avatar-loading { display: flex; }
 
-    .btn-change-photo {
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      padding: 4px 12px;
-      border-radius: 10px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .btn-change-photo:hover {
-      background: var(--primary);
-      color: white;
+    .avatar-input-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 5;
+        /* Force display on mobile */
+        -webkit-appearance: none;
     }
 
     /* ---- PREMIUM TOAST ---- */
@@ -2094,16 +2138,15 @@
           <!-- PROFILE DROPDOWN (PINNED TO TOPBAR) -->
           <div id="profileDropdown" class="profile-dropdown">
             <div class="dropdown-header">
-              <div class="profile-avatar-w" onclick="triggerAvatar()">
+              <div class="profile-avatar-w">
                 <div class="profile-avatar-big" id="profAvatarBig">?</div>
                 <div class="avatar-edit-icon"><i class="fas fa-camera"></i></div>
                 <div class="avatar-loading"><i class="fas fa-spinner fa-spin"></i></div>
+                <input type="file" id="avatarInput" class="avatar-input-overlay" accept="image/*" onchange="handleAvatarUpload(event)">
               </div>
               <h2 id="profName">-</h2>
-              <p id="profRole" style="margin-bottom: 5px;">-</p>
-              <button class="btn-change-photo" onclick="triggerAvatar()">
-                <i class="fas fa-sync-alt"></i> Thay đổi ảnh
-              </button>
+              <p id="profRole">-</p>
+              <p style="font-size: 0.65rem; color: var(--text-dim); margin-top: 5px;">Nhấn vào ảnh để thay đổi</p>
             </div>
             <div class="dropdown-body">
               <table class="profile-table">
@@ -2333,9 +2376,6 @@
   </div>
 
   <div id="toast"></div>
-
-  <!-- Hidden Avatar Input -->
-  <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="handleAvatarUpload(event)">
 
   <script>
     // ============ SUPABASE ============
@@ -3282,10 +3322,6 @@
     function closeProfile() {
       document.getElementById('profileDropdown')?.classList.remove('active');
       document.getElementById('profileOverlay')?.classList.remove('active');
-    }
-
-    function triggerAvatar() {
-        document.getElementById('avatarInput').click();
     }
 
     async function handleAvatarUpload(e) {
