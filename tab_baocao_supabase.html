@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Báo Cáo Tổng Hợp - Fleet Management System</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -70,7 +70,18 @@
       font-weight: 700; cursor: pointer; transition: all 0.3s; font-family: 'Outfit', sans-serif;
       margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
     }
-    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4); }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+
+    .btn-refresh {
+        background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
+        padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+        font-size: 0.85rem; display: flex; align-items: center; gap: 8px; font-family:'Outfit',sans-serif;
+    }
+    .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+    .btn-refresh i { transition: transform 0.4s; }
+    .btn-refresh:hover i { transform: rotate(180deg); }
+
+    .control-btns { display: flex; gap: 10px; }
     
     .btn-outline {
       background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
@@ -121,13 +132,20 @@
     .chart-container:hover { border-color: rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
     .chart-title { font-size: 0.82rem; font-weight: 700; color: var(--text-dim); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .chart-title i { color: var(--primary); }
-    canvas { max-height: 100% !important; }
+    canvas { max-height: 100% !important; max-width: 100% !important; }
     
     /* Rankings & Panels */
+    .table-card {
+      background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px;
+      overflow-x: auto; backdrop-filter: blur(12px); margin-bottom: 2.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
     .panel-card {
         background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px;
         padding: 1rem; backdrop-filter: blur(12px); height: 100%;
         box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        overflow: hidden;
     }
     
     .rank-item {
@@ -149,16 +167,11 @@
     .rank-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; text-align: right; }
 
     /* Table Sections */
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 2rem; }
     .section-title { font-size: 1.25rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; }
-    
-    .table-card {
-      background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 24px;
-      overflow: hidden; backdrop-filter: blur(12px); margin-bottom: 2.5rem;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: rgba(99, 102, 241, 0.1); padding: 1.1rem 1.5rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
-    td { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.92rem; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th { background: rgba(99, 102, 241, 0.1); padding: 1rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; }
     tr:hover td { background: rgba(255,255,255,0.02); }
     
     .badge { padding: 4px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
@@ -174,8 +187,8 @@
     }
     .alert-item:hover { background: rgba(239, 68, 68, 0.1); transform: scale(1.02); }
     .alert-icon { font-size: 1.2rem; color: var(--danger); }
-    .alert-info h5 { font-size: 0.85rem; font-weight: 700; }
-    .alert-info p { font-size: 0.75rem; color: var(--text-dim); }
+    .alert-info h5 { font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .alert-info p { font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; }
 
     @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -185,9 +198,23 @@
       .visuals-grid { grid-template-columns: 1fr !important; }
     }
     @media (max-width: 768px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .date-bar { flex-direction: column; align-items: stretch; }
-      .btn-main, .btn-outline { width: 100%; }
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+      .kpi-card { padding: 0.8rem 0.6rem; border-radius: 12px; }
+      .kpi-card .icon { font-size: 1.1rem; margin-bottom: 2px; }
+      .kpi-card .label { font-size: 0.55rem; letter-spacing: 0; }
+      .kpi-card .value { font-size: 1rem; }
+      .kpi-card .trend { font-size: 0.55rem; }
+
+      header { display: none; }
+      .date-bar { flex-direction: column; width: 100%; gap: 10px; padding: 10px; }
+      .date-group { width: 100%; }
+      .control-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+      .btn-refresh, .btn-outline { width: 100% !important; justify-content: center; margin: 0; height: 40px; font-size: 0.75rem; }
+      .visuals-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+      .chart-container { height: 280px !important; }
+      #docAlerts { grid-template-columns: repeat(2, 1fr) !important; }
+      .rank-name { font-size: 0.75rem; }
+      .rank-val { font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -195,7 +222,7 @@
 <div class="container">
   <header>
     <div class="logo-area">
-      <h1>📊 PHÂN TÍCH & BÁO CÁO</h1>
+      <h1><i class="fas fa-chart-pie"></i> BÁO CÁO</h1>
       <p>Hệ thống phân tích thông minh dành cho quản lý đội xe</p>
     </div>
   </header>
@@ -221,12 +248,14 @@
         <option value="all">Tất cả các tháng</option>
       </select>
     </div>
-    <button class="btn-main" onclick="loadReport()">
-      <i class="fas fa-sync-alt"></i> Tải dữ liệu
-    </button>
-    <button class="btn-outline" onclick="exportExcel()">
-      <i class="fas fa-file-excel"></i> Xuất Excel (CSV)
-    </button>
+    <div class="control-btns">
+      <button class="btn-refresh" onclick="loadReport()">
+        <i class="fas fa-sync-alt"></i> Làm mới
+      </button>
+      <button class="btn-outline" onclick="exportExcel()">
+        <i class="fas fa-file-excel"></i> Xuất Excel (CSV)
+      </button>
+    </div>
   </div>
 
   <!-- Summary KPIs -->
@@ -283,8 +312,8 @@
     </div>
     <div class="panel-card" style="border-color: rgba(239, 68, 68, 0.2);">
         <div class="chart-title" style="color: var(--danger);"><i class="fas fa-bell"></i> Cảnh báo giấy tờ xe</div>
-        <div id="docAlerts" style="display: flex; flex-direction: column; gap: 8px;">
-           <div style="text-align:center;padding:2rem;color:var(--success)">✅ Dữ liệu an toàn</div>
+        <div id="docAlerts" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+           <div style="text-align:center;padding:1.5rem;color:var(--success); grid-column: span 2;">✅ Dữ liệu an toàn</div>
         </div>
     </div>
   </div>
@@ -364,8 +393,7 @@
     document.getElementById('fromDate').value = from.toISOString().split('T')[0];
     document.getElementById('toDate').value = today.toISOString().split('T')[0];
     
-    // Auto load if not initial
-    if (masterData.xe.length > 0) loadReport();
+    loadReport(); // Luôn tải mới khi thay đổi thời điểm
   }
 
   function scrollTo(id) {
@@ -373,9 +401,17 @@
     if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  async function loadReport() {
+  async function loadReport(isSilent = false) {
     const fromDate = document.getElementById('fromDate').value;
     const toDate = document.getElementById('toDate').value;
+    const btn = document.querySelector('.btn-main');
+    let originalHtml = "";
+
+    if (btn && !isSilent) {
+        originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+        btn.disabled = true;
+    }
     
     // Batch Fetch
     try {
@@ -391,7 +427,12 @@
         renderDashboard();
     } catch (e) {
         console.error(e);
-        alert("Có lỗi khi tải dữ liệu. Vui lòng thử lại.");
+        if (!isSilent) alert("Có lỗi khi tải dữ liệu. Vui lòng thử lại.");
+    } finally {
+        if (btn && !isSilent) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     }
   }
 
@@ -420,8 +461,8 @@
     // 3. Fuel Chart (by Vehicle)
     renderFuelChart(fuel);
 
-    // 4. Cost Chart (by Vehicle)
-    renderCostChart(baoduong);
+    // 4. Cost Chart (by Vehicle & Fuel)
+    renderCostChart(baoduong, fuel);
 
     // 5. Driver Ranking
     renderDriverRanking(nhatky);
@@ -555,20 +596,24 @@
     });
   }
 
-  function renderCostChart(data) {
+  function renderCostChart(baoduongData, fuelData) {
     const ctx = document.getElementById('costChart').getContext('2d');
     if (charts.cost) charts.cost.destroy();
 
     let maintenance = 0;
     let repair = 0;
+    let fuelTotal = 0;
     
-    data.forEach(item => {
+    baoduongData.forEach(item => {
         const val = parseFloat(item.tong_tien) || 0;
         if(item.loai_hinh === 'Bảo dưỡng') maintenance += val;
         else repair += val;
     });
 
-    const fuelTotal = window.lastReportData ? window.lastReportData.fuel_cost : 0;
+    fuelData.forEach(item => {
+        const val = parseFloat(item.thanh_tien) || 0;
+        fuelTotal += val;
+    });
 
     charts.cost = new Chart(ctx, {
         type: 'doughnut',
@@ -636,7 +681,7 @@
   function renderDocAlerts(vehicles) {
     const alerts = [];
     const today = new Date();
-    const threshold = 30; // 30 days
+    const threshold = 3650; // Grab up to 10 years in advance to populate the list if empty
 
     vehicles.forEach(v => {
         const docs = [
@@ -651,8 +696,9 @@
                 const docDate = new Date(d.date);
                 const diffTime = docDate - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                if(diffDays <= threshold) {
+                // We push all documents that are either upcoming (diffDays > 0) or recently expired (diffDays >= -60)
+                // This ensures the list is not empty and shows the closest upcoming expirations.
+                if(diffDays >= -60) {
                     alerts.push({
                         plate: v.bien_so_xe,
                         doc: d.name,
@@ -665,20 +711,46 @@
 
     const container = document.getElementById('docAlerts');
     if(alerts.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--success)">✅ Tất cả giấy tờ còn hạn</div>';
+        container.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--success); grid-column: span 2;">✅ Tất cả giấy tờ còn hạn</div>';
         return;
     }
 
-    alerts.sort((a,b) => a.days - b.days);
-    container.innerHTML = alerts.slice(0, 5).map(a => `
-        <div class="alert-item">
-            <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-            <div class="alert-info">
-                <h5>${a.plate} - ${a.doc}</h5>
-                <p>${a.days < 0 ? `Hết hạn ${Math.abs(a.days)} ngày` : `Còn lại ${a.days} ngày`}</p>
+    // Sort by most urgent:
+    // First, things that are already expired (negative days) or expiring very soon, sorted by diffDays ascending.
+    // Actually, closest to 0 is the most urgent.
+    alerts.sort((a,b) => {
+        // if both are negative or both are positive, sort by ascending
+        // if one is negative, it's expired, so it's more urgent
+        return a.days - b.days;
+    });
+    container.innerHTML = alerts.slice(0, 6).map(a => {
+        const isUrgent = a.days <= 30;
+        const iconColor = isUrgent ? 'var(--danger)' : 'var(--warning)';
+        const bgColor = isUrgent ? 'rgba(239, 68, 68, 0.05)' : 'rgba(245, 158, 11, 0.05)';
+        const borderColor = isUrgent ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)';
+        
+        let statusText;
+        if (a.days < 0) {
+            statusText = `<strong style="color:var(--danger)">Đã quá hạn ${Math.abs(a.days)} ngày</strong>`;
+        } else if (a.days <= 30) {
+            statusText = `Sắp hết hạn: <strong style="color:var(--danger)">${a.days} ngày</strong>`;
+        } else {
+            statusText = `Còn lại: <strong>${a.days} ngày</strong>`;
+        }
+
+        return `
+        <div class="alert-item" style="align-items: flex-start; background: ${bgColor}; border: 1px solid ${borderColor}; padding: 10px; margin-bottom: 0;">
+            <div class="alert-icon" style="color: ${iconColor}; font-size: 1rem;"><i class="fas fa-${isUrgent ? 'exclamation-circle' : 'info-circle'}"></i></div>
+            <div class="alert-info" style="flex: 1; min-width: 0;">
+                <h5 style="line-height: 1.2; margin-bottom: 2px; font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis;">
+                    <span style="color: var(--text); font-weight: 800;">${a.plate}</span><br>
+                    <span style="color: var(--text-dim); font-size: 0.75rem;">${a.doc}</span>
+                </h5>
+                <p style="font-size: 0.65rem;">${statusText}</p>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
   }
 
   function renderTables() {
@@ -762,11 +834,22 @@
     document.body.removeChild(link);
   }
 
-  // INIT
-  window.addEventListener('DOMContentLoaded', () => {
+  function initRealtime() {
+    // applyQuickRange đã bao gồm việc gọi loadReport()
     applyQuickRange();
-    loadReport();
-  });
+    
+    // Đón sự kiện realtime từ index.html
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'dataChanged') {
+            loadReport(true); // Load ngầm (Silent Data Loading)
+        }
+    });
+
+    // Bỏ khai báo _supabase.channel thừa để tránh trùng lặp
+  }
+
+  // INIT
+  window.addEventListener('DOMContentLoaded', initRealtime);
 </script>
 </body>
 </html>

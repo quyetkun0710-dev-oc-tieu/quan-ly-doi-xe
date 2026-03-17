@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản lý Tài xế - Fleet Core Supabase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -60,6 +60,7 @@
             letter-spacing: -1px;
             background: linear-gradient(to right, #fff, var(--primary));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -127,40 +128,38 @@
             box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3);
         }
 
+        .btn-add:hover { transform: scale(1.05) translateY(-2px); }
+
+        .btn-refresh {
+            background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+        .btn-refresh i { transition: transform 0.4s; }
+        .btn-refresh:hover i { transform: rotate(180deg); }
+
+        .control-btns { display: flex; gap: 10px; }
+
         /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 1.2rem;
-            margin-bottom: 2rem;
-            animation: fadeIn 1s ease-out;
+        /* Filter Buttons */
+        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+        .filter-btn {
+            padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
+            transition: all 0.2s; font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; white-space: nowrap;
         }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 1.2rem 1.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
+        .filter-btn .btn-badge {
+            background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 6px;
+            font-size: 0.8rem; font-weight: 800; min-width: 18px; text-align: center;
+            color: var(--accent); box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
         }
-        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-
-        .stat-card h3 {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 3px;
-            letter-spacing: 1px;
-        }
-
-        .stat-card .value {
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: var(--accent);
-        }
+        .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+        .filter-btn.active .btn-badge { background: white; color: #6366f1; }
+        .filter-btn:hover { background: rgba(255,255,255,0.12); }
+        
+        .stats-row { display: none; }
 
         /* Driver Grid */
         .driver-grid {
@@ -171,30 +170,6 @@
         }
 
         /* Filter bar */
-        .filter-bar {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .filter-btn {
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.04);
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .filter-btn.active, .filter-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
 
         /* GPLX badge */
         .gplx-badge {
@@ -532,8 +507,7 @@
                 text-align: center;
             }
 
-            .logo-area h1 { font-size: 1.8rem; }
-            .logo-area p { font-size: 0.8rem; }
+            .logo-area { display: none; }
 
             .controls {
                 flex-direction: column;
@@ -546,12 +520,19 @@
 
             .stats-row {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.8rem;
-                margin-bottom: 2rem;
+                gap: 0.6rem;
+                margin-bottom: 1.2rem;
             }
 
-            .stat-card { padding: 1.2rem; }
-            .stat-card .value { font-size: 1.6rem; }
+            .stat-card { 
+                padding: 0.8rem 0.5rem; 
+                border-radius: 12px;
+            }
+            .stat-card h3 { 
+                font-size: 0.65rem; 
+                margin-bottom: 2px;
+            }
+            .stat-card .value { font-size: 1.3rem; }
 
             .filter-bar {
                 justify-content: center;
@@ -559,20 +540,75 @@
                 margin-bottom: 1.5rem;
             }
 
+            /* 3 items per row for mobile */
             .driver-grid {
-                grid-template-columns: 1fr;
-                gap: 1.2rem;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
             }
 
             .driver-card {
-                padding: 1.2rem;
+                padding: 10px !important;
+                gap: 8px !important;
+                border-radius: 15px !important;
+                text-align: center;
+                opacity: 1 !important;
+            }
+
+            .driver-header {
+                flex-direction: column !important;
+                gap: 5px !important;
             }
 
             .driver-avatar {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
+                width: 45px !important;
+                height: 45px !important;
+                font-size: 1.1rem !important;
+                margin: 0 auto !important;
             }
+
+            .driver-info-basic {
+                text-align: center !important;
+            }
+
+            .driver-name {
+                font-size: 0.75rem !important;
+                line-height: 1.2 !important;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .driver-id, .gplx-badge, .driver-badge, .driver-details, .card-actions, .badge-active, .badge-probation {
+                display: none !important;
+            }
+
+            .driver-contact {
+                display: flex !important;
+                gap: 5px !important;
+                margin-top: 5px !important;
+                justify-content: center !important;
+            }
+
+            .modal-content { padding: 1.5rem !important; width: 95% !important; max-width: 100% !important; border-radius: 20px !important; }
+            .modal-content h2 { font-size: 1.5rem !important; }
+            .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+            .form-group { grid-column: span 1 !important; }
+            .tab-btn { padding: 8px 15px !important; font-size: 0.8rem !important; }
+
+            .contact-pill {
+                padding: 4px 10px !important;
+                font-size: 0.75rem !important;
+                min-width: 70px !important; /* Wider for text */
+                height: 32px !important;
+                border-radius: 20px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 5px !important;
+            }
+            .contact-pill i { font-size: 0.8rem; }
 
             .modal-content {
                 padding: 1.5rem;
@@ -593,6 +629,19 @@
                 grid-template-columns: 1fr !important;
                 gap: 1rem;
             }
+            .controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; }
+            .control-btns { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                width: 100%; 
+            }
+            .btn-refresh, .btn-add { width: 100%; justify-content: center; margin:0; }
         }
     </style>
 </head>
@@ -601,7 +650,7 @@
 <div class="container">
     <header>
         <div class="logo-area">
-            <h1>DRIVER HUB</h1>
+            <h1><i class="fas fa-id-card"></i> TÀI XẾ</h1>
             <p>Quản lý đội ngũ tài xế chuyên nghiệp</p>
         </div>
         <div class="controls">
@@ -609,47 +658,33 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Tìm tên, mã NV hoặc SĐT..." oninput="filterDrivers()">
             </div>
-            <button class="btn-add" onclick="openModal()">
-                <i class="fas fa-user-plus"></i> THÊM TÀI XẾ
-            </button>
+            <div class="control-btns">
+                <button class="btn-refresh" onclick="loadDrivers()">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+                <button class="btn-add" onclick="openModal()">
+                    <i class="fas fa-user-plus"></i> THÊM TÀI XẾ
+                </button>
+            </div>
         </div>
     </header>
 
-    <div class="stats-row">
-        <div class="stat-card" onclick="setFilter('all', document.querySelector('.filter-btn[onclick*=\'all\']'))">
-            <h3>Tổng tài xế</h3>
-            <div class="value" id="totalDrivers">0</div>
-        </div>
-        <div class="stat-card" onclick="setFilter('active', document.querySelector('.filter-btn[onclick*=\'active\']'))">
-            <h3>Chính thức</h3>
-            <div class="value" id="activeDrivers" style="color: var(--success)">0</div>
-        </div>
-        <div class="stat-card" onclick="setFilter('probation', document.querySelector('.filter-btn[onclick*=\'probation\']'))">
-            <h3>Thử việc</h3>
-            <div class="value" id="probationDrivers" style="color: var(--warning)">0</div>
-        </div>
-        <div class="stat-card" onclick="setFilter('manager', document.querySelector('.filter-btn[onclick*=\'manager\']'))">
-            <h3>Quản lý</h3>
-            <div class="value" id="managerCount" style="color: var(--primary)">0</div>
-        </div>
-        <div class="stat-card" onclick="setFilter('gplx_warn', document.querySelector('.filter-btn[onclick*=\'gplx_warn\']'))">
-            <h3>⚠️ GPLX sắp hết</h3>
-            <div class="value" id="gplxWarn" style="color: var(--warning)">0</div>
-        </div>
-        <div class="stat-card" onclick="setFilter('gplx_warn', document.querySelector('.filter-btn[onclick*=\'gplx_warn\']'))">
-            <h3>🔴 GPLX hết hạn</h3>
-            <div class="value" id="gplxExpired" style="color: var(--danger)">0</div>
-        </div>
-    </div>
-
-    <!-- Filter bar -->
     <div class="filter-bar">
-        <button class="filter-btn active" onclick="setFilter('all', this)">👥 Tất cả</button>
-        <button class="filter-btn" onclick="setFilter('active', this)">✅ Chính thức</button>
-        <button class="filter-btn" onclick="setFilter('probation', this)">⏳ Thử việc</button>
-        <button class="filter-btn" onclick="setFilter('manager', this)">👑 Quản lý</button>
-        <button class="filter-btn" onclick="setFilter('gplx_warn', this)">⚠️ GPLX sắp hết</button>
-        <button class="filter-btn" onclick="setFilter('nghi', this)">❌ Đã nghỉ</button>
+        <button class="filter-btn active" onclick="setFilter('all', this)">
+            📋 TẤT CẢ <span class="btn-badge" id="btnCountAll">0</span>
+        </button>
+        <button class="filter-btn" onclick="setFilter('active', this)">
+            ✅ CHÍNH THỨC <span class="btn-badge" id="btnCountActive">0</span>
+        </button>
+        <button class="filter-btn" onclick="setFilter('probation', this)">
+            ⏳ THỬ VIỆC <span class="btn-badge" id="btnCountProbation">0</span>
+        </button>
+        <button class="filter-btn" onclick="setFilter('manager', this)">
+            👑 QUẢN LÝ <span class="btn-badge" id="btnCountManager">0</span>
+        </button>
+        <button class="filter-btn" onclick="setFilter('gplx_warn', this)">
+            ⚠️ GPLX SẮP HẾT <span class="btn-badge" id="btnCountGplxWarn">0</span>
+        </button>
     </div>
 
     <div class="driver-grid" id="driverGrid">
@@ -866,9 +901,11 @@
         return isStaff;
     }
 
-    async function loadDrivers() {
+    async function loadDrivers(isSilent = false) {
         const grid = document.getElementById('driverGrid');
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary)"></i></div>';
+        if (!isSilent) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary)"></i></div>';
+        }
         
         try {
             const { data, error } = await _supabase
@@ -882,7 +919,9 @@
             renderDrivers(allDrivers);
             updateStats(allDrivers);
         } catch (error) {
-            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--danger)">Lỗi tải dữ liệu: ${error.message}</div>`;
+            if (!isSilent) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--danger)">Lỗi tải dữ liệu: ${error.message}</div>`;
+            }
         }
     }
 
@@ -913,15 +952,11 @@
     function renderDrivers(data) {
         const grid = document.getElementById('driverGrid');
         grid.innerHTML = '';
-
-        if (data.length === 0) {
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem; color: var(--text-dim)">Không có tài xế nào phù hợp.</div>';
-            return;
-        }
-
+        // Same as desktop, responsive grid handled by CSS
         data.forEach((d, index) => {
             const card = document.createElement('div');
             card.className = 'driver-card';
+            card.onclick = () => { if (window.innerWidth <= 768) editDriver(d.ma_nv); };
             card.style.animationDelay = `${index * 0.07}s`;
 
             const isQuit = d.trang_thai === 'Đã nghỉ việc';
@@ -989,8 +1024,8 @@
                 </div>
 
                 <div class="driver-contact">
-                    <a href="tel:${d.sdt}" class="contact-pill"><i class="fas fa-phone"></i> Gọi ngay</a>
-                    <a href="https://zalo.me/${d.sdt}" target="_blank" class="contact-pill"><i class="fas fa-comment"></i> Zalo</a>
+                    <a href="tel:${d.sdt}" class="contact-pill" onclick="event.stopPropagation()"><i class="fas fa-phone"></i> Gọi ngay</a>
+                    <a href="https://zalo.me/${d.sdt}" target="_blank" class="contact-pill" onclick="event.stopPropagation()"><i class="fas fa-comment"></i> Zalo</a>
                 </div>
 
                 ${['manager', 'admin'].includes(USER_ROLE.toLowerCase()) ? `
@@ -1005,20 +1040,16 @@
     }
 
     function updateStats(data) {
-        let gplxWarn = 0, gplxExp = 0;
+        let gplxWarn = 0;
         data.forEach(d => {
             const days = daysUntil(d.han_gplx);
-            if (days !== null) {
-                if (days < 0) gplxExp++;
-                else if (days <= 60) gplxWarn++;
-            }
+            if (days !== null && days <= 60) gplxWarn++;
         });
-        document.getElementById('totalDrivers').innerText = data.length;
-        document.getElementById('activeDrivers').innerText = data.filter(d => d.chinh_thuc && d.trang_thai !== 'Đã nghỉ việc').length;
-        document.getElementById('probationDrivers').innerText = data.filter(d => !d.chinh_thuc && d.trang_thai !== 'Đã nghỉ việc').length;
-        document.getElementById('managerCount').innerText = data.filter(d => ['manager','admin'].includes((d.role||'').toLowerCase())).length;
-        document.getElementById('gplxWarn').innerText = gplxWarn;
-        document.getElementById('gplxExpired').innerText = gplxExp;
+        document.getElementById('btnCountAll').innerText = data.length;
+        document.getElementById('btnCountActive').innerText = data.filter(d => d.chinh_thuc && d.trang_thai !== 'Đã nghỉ việc').length;
+        document.getElementById('btnCountProbation').innerText = data.filter(d => !d.chinh_thuc && d.trang_thai !== 'Đã nghỉ việc').length;
+        document.getElementById('btnCountManager').innerText = data.filter(d => ['manager','admin'].includes((d.role||'').toLowerCase())).length;
+        document.getElementById('btnCountGplxWarn').innerText = gplxWarn;
     }
 
     function setFilter(type, btn) {
@@ -1098,10 +1129,36 @@
         document.getElementById('driverModal').classList.remove('active');
     }
 
+    function showToast(msg, theme = 'success') {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+        } else {
+            console.log("Toast:", msg);
+        }
+    }
+
+    let activeConfirmId = null;
+    let activeConfirmCallback = null;
+    function showConfirm(title, message, callback) {
+        if (window.parent && window.parent.postMessage) {
+            activeConfirmId = Date.now();
+            activeConfirmCallback = callback;
+            window.parent.postMessage({ 
+                type: 'confirmRequest', 
+                title: title, 
+                message: message, 
+                requestId: activeConfirmId 
+            }, '*');
+        } else {
+            if (confirm(message)) callback(true);
+            else callback(false);
+        }
+    }
+
     document.getElementById('driverForm').onsubmit = async (e) => {
         e.preventDefault();
         if (!['manager', 'admin'].includes(USER_ROLE.toLowerCase())) {
-            alert("Bạn không có quyền thực hiện thao tác này.");
+            showToast("Bạn không có quyền thực hiện thao tác này.", "error");
             return;
         }
         const btn = document.getElementById('saveBtn');
@@ -1140,10 +1197,11 @@
             }
 
             if (result.error) throw result.error;
+            showToast("Lưu thông tin tài xế thành công!", "success");
             closeModal();
             loadDrivers();
         } catch (error) {
-            alert("Lỗi: " + error.message);
+            showToast("Lỗi: " + error.message, "error");
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
@@ -1157,17 +1215,21 @@
 
     async function deleteDriver(ma) {
         if (!['manager', 'admin'].includes(USER_ROLE.toLowerCase())) {
-            alert("Bạn không có quyền thực hiện thao tác này.");
+            showToast("Bạn không có quyền thực hiện thao tác này.", "error");
             return;
         }
-        if (!confirm(`Bạn có chắc muốn xóa tài xế ${ma}?`)) return;
-        try {
-            const { error } = await _supabase.from('taixe').delete().eq('ma_nv', ma);
-            if (error) throw error;
-            loadDrivers();
-        } catch (error) {
-            alert("Lỗi khi xóa: " + error.message);
-        }
+        showConfirm("Xóa tài xế", `Bạn có chắc muốn xóa tài xế ${ma} khỏi danh sách không?`, async (res) => {
+            if (res) {
+                try {
+                    const { error } = await _supabase.from('taixe').delete().eq('ma_nv', ma);
+                    if (error) throw error;
+                    showToast("Xóa tài xế thành công!", "success");
+                    loadDrivers();
+                } catch (error) {
+                    showToast("Lỗi khi xóa: " + error.message, "error");
+                }
+            }
+        });
     }
 
     function toggleNgayNghi() {
@@ -1202,6 +1264,24 @@
         }
     });
 
+    window.addEventListener('message', (e) => {
+        const data = e.data;
+        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+            if (activeConfirmCallback) activeConfirmCallback(data.result);
+            activeConfirmId = null;
+            activeConfirmCallback = null;
+        } else if (data && data.type === 'dataChanged' && (data.table === 'taixe' || !data.table)) {
+            loadDrivers(true);
+        }
+    });
+
+    async function initRealtime() {
+        await loadDrivers();
+        _supabase.channel('driver-sync')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'taixe' }, () => loadDrivers(true))
+            .subscribe();
+    }
+
     async function loadVehicleOptions() {
         try {
             const { data } = await _supabase.from('xe').select('bien_so_xe');
@@ -1212,13 +1292,15 @@
         } catch (e) { console.error("Error loading vehicles:", e); }
     }
 
+
     document.addEventListener('DOMContentLoaded', () => {
         checkAccess();
         loadDrivers();
         loadVehicleOptions();
-        // Realtime
+        
+        // Realtime Subscription
         _supabase.channel('taixe-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'taixe' }, () => loadDrivers())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'taixe' }, () => loadDrivers(true))
             .subscribe();
     });
 </script>

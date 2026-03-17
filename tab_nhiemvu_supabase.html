@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Nhiệm Vụ - Fleet Core V2</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -58,33 +58,52 @@
     }
     .btn-add:hover { transform:scale(1.05) translateY(-2px); }
 
-    /* Stats */
-    .stats-row {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-      gap:1.2rem; margin-bottom:2rem; animation:fadeIn 1s ease-out;
+    .btn-refresh {
+      background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
+      padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+      font-size: 0.85rem; display: flex; align-items: center; gap: 8px; font-family:'Outfit',sans-serif;
     }
-    .stat-card {
-      background:var(--card-bg); padding:1.2rem 1.3rem; border-radius:20px;
-      border:1px solid rgba(255,255,255,0.05); backdrop-filter:blur(12px);
-      text-align:center; transition:all 0.3s;
-      cursor: pointer;
-    }
-    .stat-card:hover { transform:translateY(-5px); border-color:var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-    .stat-card h3 { font-size:0.7rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; letter-spacing:0.5px; }
-    .stat-card .value { font-size:1.9rem; font-weight:800; color:var(--accent); }
+    .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+    .btn-refresh i { transition: transform 0.4s; }
+    .btn-refresh:hover i { transform: rotate(180deg); }
 
-    /* Filter */
-    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .control-btns { display: flex; gap: 10px; }
+
+    /* Filter Buttons */
+    .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
     .filter-btn {
-      padding:6px 14px; border-radius:20px;
-      border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
-      color:var(--text-dim); cursor:pointer; font-size:0.82rem; font-weight:600;
-      transition:all 0.2s; font-family:'Outfit',sans-serif;
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
-    .filter-btn.active, .filter-btn:hover { background:var(--primary); border-color:var(--primary); color:white; }
+    .filter-btn .btn-badge {
+      background: rgba(255,255,255,0.15);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      min-width: 18px;
+      text-align: center;
+      color: var(--accent);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    }
+    .filter-btn.active, .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .filter-btn.active .btn-badge { background: white; color: var(--primary); }
 
     /* Task Grid */
     .task-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:1.5rem; padding-bottom:5rem; }
+
+    .stats-chips { display: none; }
 
     .task-card {
       background:var(--card-bg); border-radius:20px; padding:1.4rem;
@@ -226,26 +245,31 @@
         text-align: center;
       }
 
-      .logo-area h1 { font-size: 1.8rem; }
+      .logo-area { display: none; }
 
-      .controls {
-        flex-direction: column;
-        width: 100%;
-        gap: 12px;
-      }
-
-      .search-box { width: 100%; }
-      .search-box input { width: 100%; }
-      .btn-add { width: 100%; justify-content: center; }
+      .controls { flex-direction:column; width:100% !important; margin:0; gap:10px; }
+      .search-box { width:100% !important; margin:0; }
+      .search-box input { width:100%; }
+      .control-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+      .btn-refresh, .btn-add { width:100% !important; justify-content:center; margin:0; }
 
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
-        margin-bottom: 1.5rem;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
       }
 
-      .stat-card { padding: 1rem; }
-      .stat-card .value { font-size: 1.5rem; }
+      .stat-card { 
+          padding: 0.8rem 0.5rem; 
+          border-radius: 12px;
+      }
+      .stat-card h3 { 
+          font-size: 0.65rem; 
+          margin-bottom: 2px;
+      }
+      .stat-card .value { font-size: 1.3rem; }
+
+
 
       .filter-bar {
         justify-content: center;
@@ -264,16 +288,58 @@
       .form-grid {
         grid-template-columns: 1fr !important;
       }
+      .form-group { grid-column: span 1 !important; }
       
-      .modal-content {
-        padding: 1.5rem;
-        border-radius: 20px;
-      }
+      .modal-content { padding: 1.5rem; width: 95% !important; max-width: 100% !important; border-radius: 20px; }
+      .modal-content h2 { font-size: 1.5rem !important; }
+      .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+      .form-group[style*="grid-column:span 2"] { grid-column: span 1 !important; }
 
       .task-meta {
           grid-template-columns: 1fr;
           gap: 0.8rem;
       }
+
+      /* Mobile Table View Styles */
+      .mobile-table-container {
+        width: 100%;
+        overflow-x: auto;
+        background: var(--card-bg);
+        border-radius: 15px;
+        border: 1px solid rgba(255,255,255,0.05);
+        margin-top: 10px;
+      }
+      .mobile-data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+        min-width: 450px;
+      }
+      .mobile-data-table th {
+        text-align: left;
+        padding: 12px 10px;
+        background: rgba(255,255,255,0.03);
+        color: var(--text-dim);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.6rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      .mobile-data-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        vertical-align: middle;
+      }
+      .mobile-data-table tr:last-child td { border-bottom: none; }
+      .td-title { font-weight: 800; color: white; display: block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85rem; }
+      .td-sub { font-size: 0.6rem; color: var(--text-dim); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+      .dot.status-xong { background: var(--success); box-shadow: 0 0 5px var(--success); }
+      .dot.status-dang { background: var(--warning); box-shadow: 0 0 5px var(--warning); }
+      .dot.status-cho { background: var(--primary); box-shadow: 0 0 5px var(--primary); }
+      .dot.status-cxl { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
+      .btn-row-action { background: transparent; border: none; color: var(--text-dim); padding: 5px; cursor: pointer; }
     }
   </style>
 </head>
@@ -281,7 +347,7 @@
 <div class="container">
   <header>
     <div class="logo-area">
-      <h1>📋 NHIỆM VỤ</h1>
+      <h1><i class="fas fa-clipboard-list"></i> NHIỆM VỤ</h1>
       <p>Quản lý công việc và nhiệm vụ đội xe</p>
     </div>
     <div class="controls">
@@ -289,29 +355,30 @@
         <i class="fas fa-search" style="color:var(--text-dim)"></i>
         <input type="text" id="searchInput" placeholder="Tìm nhiệm vụ..." oninput="applyFilter()">
       </div>
-      <button class="btn-add manager-only" onclick="openModal()" style="display:none;">
-        <i class="fas fa-plus"></i> THÊM NHIỆM VỤ
-      </button>
+      <div class="control-btns">
+        <button class="btn-refresh" onclick="loadTasks()">
+          <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+        <button class="btn-add manager-only" onclick="openModal()" style="display:none;">
+          <i class="fas fa-plus"></i> THÊM NHIỆM VỤ
+        </button>
+      </div>
       <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem; color:var(--text-dim); margin-left:1rem; user-select:none;">
           <input type="checkbox" id="chkOnlyMe" onchange="applyFilter()" style="width:18px;height:18px;cursor:pointer;"> <b>Nhiệm vụ của tôi</b>
       </label>
     </div>
   </header>
 
-  <div class="stats-row">
-    <div class="stat-card" onclick="setFilter('all', document.querySelector('.filter-btn[onclick*=\'all\']'))"><h3>Tổng nhiệm vụ</h3><div class="value" id="statTotal">0</div></div>
-    <div class="stat-card" onclick="setFilter('dang', document.querySelector('.filter-btn[onclick*=\'dang\']'))"><h3>Đang thực hiện</h3><div class="value" id="statDang" style="color:var(--warning)">0</div></div>
-    <div class="stat-card" onclick="setFilter('xong', document.querySelector('.filter-btn[onclick*=\'xong\']'))"><h3>Hoàn thành</h3><div class="value" id="statXong" style="color:var(--success)">0</div></div>
-    <div class="stat-card" onclick="setFilter('cho', document.querySelector('.filter-btn[onclick*=\'cho\']'))"><h3>Chờ xử lý</h3><div class="value" id="statCho" style="color:var(--primary)">0</div></div>
-    <div class="stat-card" onclick="setFilter('high', document.querySelector('.filter-btn[onclick*=\'high\']'))"><h3>🔴 Khẩn cấp</h3><div class="value" id="statHigh" style="color:var(--danger)">0</div></div>
-  </div>
+
+
+
 
   <div class="filter-bar">
-    <button class="filter-btn active" onclick="setFilter('all',this)">📋 Tất cả</button>
-    <button class="filter-btn" onclick="setFilter('cho',this)">🔵 Chờ xử lý</button>
-    <button class="filter-btn" onclick="setFilter('dang',this)">🟡 Đang thực hiện</button>
-    <button class="filter-btn" onclick="setFilter('xong',this)">✅ Hoàn thành</button>
-    <button class="filter-btn" onclick="setFilter('high',this)">🔴 Khẩn cấp</button>
+    <button class="filter-btn active" onclick="setFilter('all',this)">📋 Tất cả <span class="btn-badge" id="btnCountTotal">0</span></button>
+    <button class="filter-btn" onclick="setFilter('cho',this)">🔵 Chờ <span class="btn-badge" id="btnCountCho">0</span></button>
+    <button class="filter-btn" onclick="setFilter('dang',this)">🟡 Đang làm <span class="btn-badge" id="btnCountDang">0</span></button>
+    <button class="filter-btn" onclick="setFilter('xong',this)">✅ Xong <span class="btn-badge" id="btnCountXong">0</span></button>
+    <button class="filter-btn" onclick="setFilter('high',this)">🔴 Khẩn <span class="btn-badge" id="btnCountHigh">0</span></button>
   </div>
 
   <div class="task-grid" id="taskGrid"></div>
@@ -403,14 +470,20 @@
     </div>
     <form id="driverConfirmForm">
       <input type="hidden" id="confirmTaskId">
-      <input type="hidden" id="confirmStatus">
+      <div class="form-group" id="driverStatusGroup" style="margin-bottom: 1rem;">
+        <label>Trạng thái nhiệm vụ</label>
+        <select id="confirmStatus" style="width: 100%;" onchange="toggleConfirmButtonText()">
+          <option value="Đang thực hiện">🟡 Đang thực hiện</option>
+          <option value="Hoàn thành">✅ Hoàn thành</option>
+        </select>
+      </div>
       <div class="form-group">
-        <label id="noteLabel">Ghi chú (không bắt buộc)</label>
+        <label id="noteLabel">Ghi chú & Báo cáo</label>
         <textarea id="confirmNote" rows="3" placeholder="Nhập ghi chú hoặc báo cáo tiến độ..."></textarea>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="closeDriverModal()">Để sau</button>
-        <button type="submit" class="btn-save" id="confirmSaveBtn">Xác Nhận Xong</button>
+        <button type="submit" class="btn-save" id="confirmSaveBtn">Cập Nhật Ngay</button>
       </div>
     </form>
   </div>
@@ -429,9 +502,9 @@
   let allTasks = [];
   let currentFilter = 'all';
 
-  async function loadTasks() {
+  async function loadTasks(isSilent = false) {
     const grid = document.getElementById('taskGrid');
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:5rem"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+    if (!isSilent) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:5rem"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
     try {
       const { data, error } = await _supabase.from('nhiemvu').select('*').order('created_at', { ascending: false });
       if (error) throw error;
@@ -451,11 +524,18 @@
   }
 
   function updateStats(data) {
-    document.getElementById('statTotal').innerText = data.length;
-    document.getElementById('statDang').innerText = data.filter(t=>t.trang_thai === 'Đang thực hiện').length;
-    document.getElementById('statXong').innerText = data.filter(t=>t.trang_thai === 'Hoàn thành').length;
-    document.getElementById('statCho').innerText = data.filter(t=>t.trang_thai === 'Chờ xử lý').length;
-    document.getElementById('statHigh').innerText = data.filter(t=>t.uu_tien === 'Cao').length;
+    const total = data.length;
+    const dang  = data.filter(t=>t.trang_thai === 'Đang thực hiện').length;
+    const xong  = data.filter(t=>t.trang_thai === 'Hoàn thành').length;
+    const cho   = data.filter(t=>t.trang_thai === 'Chờ xử lý').length;
+    const high  = data.filter(t=>t.uu_tien === 'Cao').length;
+    // Button Badges
+    const setBtnBadge = (id, v) => { const el = document.getElementById(id); if(el) el.innerText = v; };
+    setBtnBadge('btnCountTotal', total);
+    setBtnBadge('btnCountDang',  dang);
+    setBtnBadge('btnCountXong',  xong);
+    setBtnBadge('btnCountCho',   cho);
+    setBtnBadge('btnCountHigh',  high);
   }
 
   function setFilter(type, btn) {
@@ -487,11 +567,49 @@
 
   function renderTasks(data) {
     const grid = document.getElementById('taskGrid');
+    const isMobile = window.innerWidth <= 768;
     grid.innerHTML = '';
+    
     if (data.length === 0) {
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:5rem;color:var(--text-dim)">Không có nhiệm vụ nào.</div>';
       return;
     }
+
+    if (isMobile) {
+        let html = `
+            <div class="mobile-table-container">
+                <table class="mobile-data-table">
+                    <thead>
+                        <tr>
+                            <th>Nhiệm vụ</th>
+                            <th>Mã NV</th>
+                            <th>Hạn</th>
+                            <th>TT</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        data.forEach(t => {
+            const statusClass = t.trang_thai === 'Hoàn thành' ? 'status-xong' : t.trang_thai === 'Đang thực hiện' ? 'status-dang' : t.trang_thai === 'Chờ xử lý' ? 'status-cho' : 'status-cxl';
+            const deadline = t.han_hoan_thanh ? t.han_hoan_thanh.split('-').slice(1).reverse().join('/') : '-';
+            html += `
+                <tr onclick="${isManager ? `editTask(${t.id})` : `openDriverConfirm(${t.id}, '${t.trang_thai === 'Chờ xử lý' ? 'Tiếp nhận' : 'Cập nhật'}')`}">
+                    <td><div class="td-title">${t.tieu_de}</div><div class="td-sub">${t.loai_nhiem_vu}</div></td>
+                    <td><span style="font-weight:600">${t.nguoi_thuc_hien || '-'}</span></td>
+                    <td>${deadline}</td>
+                    <td><span class="dot ${statusClass}"></span></td>
+                    <td style="text-align:center">
+                        <i class="fas fa-chevron-right" style="font-size:0.7rem; color:rgba(255,255,255,0.2)"></i>
+                    </td>
+                </tr>
+            `;
+        });
+        html += `</tbody></table></div>`;
+        grid.innerHTML = html;
+        return;
+    }
+
     const myMnv = sessionStorage.getItem('mnv');
 
     data.forEach((t, idx) => {
@@ -535,9 +653,8 @@
               <button class="btn-icon" style="color:var(--danger)" onclick="deleteTask(${t.id})" title="Xóa"><i class="fas fa-trash"></i></button>
             ` : `
               <div style="display:flex; gap:8px;">
-                ${isMyTask && t.trang_thai === 'Chờ xử lý' ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Đang thực hiện')"><i class="fas fa-play"></i> Bắt đầu</button>` : ''}
-                ${isMyTask && t.trang_thai === 'Đang thực hiện' ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Đang thực hiện')"><i class="fas fa-sync"></i> Cập nhật</button>` : ''}
-                ${isMyTask && !isDone ? `<button class="btn-complete" onclick="openDriverConfirm(${t.id}, 'Hoàn thành')"><i class="fas fa-check-circle"></i> Xong</button>` : ''}
+                ${isMyTask && t.trang_thai === 'Chờ xử lý' ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Tiếp nhận')"><i class="fas fa-hand-point-right"></i> Tiếp nhận</button>` : ''}
+                ${isMyTask && (t.trang_thai === 'Đang thực hiện' || t.trang_thai === 'Đã tiếp nhận') ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Cập nhật')"><i class="fas fa-edit"></i> Cập nhật tiến độ</button>` : ''}
               </div>
             `}
           </div>
@@ -571,52 +688,90 @@
   async function deleteTask(id) {
     if (!confirm('Xóa nhiệm vụ này?')) return;
     const { error } = await _supabase.from('nhiemvu').delete().eq('id', id);
-    if (!error) loadTasks();
-    else alert('Lỗi: ' + error.message);
+    if (!error) {
+       showToast("Đã xóa nhiệm vụ!");
+       loadTasks();
+    }
+    else showToast('Lỗi: ' + error.message, 'error');
   }
 
-  function safeShowToast(msg, type = 'success') {
-    try {
-        if (window.parent && typeof window.parent.showToast === 'function') {
-            window.parent.showToast(msg, type);
-            return;
-        }
-    } catch (e) {
-        console.warn("Cannot access parent showToast due to CORS/Origin restriction.");
+  function showToast(msg, theme = 'success') {
+    if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+    } else {
+        console.log("Toast:", msg);
     }
-    // Fallback to alert if parent is inaccessible
-    alert(msg);
+  }
+
+  let activeConfirmId = null;
+  let activeConfirmCallback = null;
+  function showConfirm(title, message, callback) {
+    if (window.parent && window.parent.postMessage) {
+        activeConfirmId = Date.now();
+        activeConfirmCallback = callback;
+        window.parent.postMessage({ 
+            type: 'confirmRequest', 
+            title: title, 
+            message: message, 
+            requestId: activeConfirmId 
+        }, '*');
+    } else {
+        if (confirm(message)) callback(true);
+        else callback(false);
+    }
   }
 
   async function sendReminder(taskId) {
     const t = allTasks.find(x => x.id === taskId);
     if (!t) return;
-    if (!confirm(`Gửi nhắc nhở công khai cho [${t.nguoi_thuc_hien}]?`)) return;
-    try {
-        const payload = {
-            tieu_de: `[NHẮC NHỞ] Nhiệm vụ - ${t.nguoi_thuc_hien}`,
-            noi_dung: `Nhắc nhở lái xe ${t.nguoi_thuc_hien} thực hiện: "${t.tieu_de}".\nVui lòng cập nhật ngay.`,
-            muc_do: 'Quan trọng', nguoi_dang: USER_NAME, trang_thai: 'Hiển thị'
-        };
-        const { error } = await _supabase.from('thongbao').insert([payload]);
-        if (error) throw error;
-        safeShowToast('Gửi nhắc nhở thành công!');
-    } catch (err) { alert('Lỗi: ' + err.message); }
+    showConfirm("Gửi nhắc nhở", `Gửi nhắc nhở công khai cho [${t.nguoi_thuc_hien}]?`, async (res) => {
+        if (res) {
+            try {
+                const payload = {
+                    tieu_de: `[NHẮC NHỞ] Nhiệm vụ - ${t.nguoi_thuc_hien}`,
+                    noi_dung: `Nhắc nhở lái xe ${t.nguoi_thuc_hien} thực hiện: "${t.tieu_de}".\nVui lòng cập nhật ngay.`,
+                    muc_do: 'Quan trọng', nguoi_dang: USER_NAME, trang_thai: 'Hiển thị'
+                };
+                const { error } = await _supabase.from('thongbao').insert([payload]);
+                if (error) throw error;
+                showToast('Gửi nhắc nhở thành công!');
+            } catch (err) { showToast('Lỗi: ' + err.message, 'error'); }
+        }
+    });
   }
 
-  function openDriverConfirm(id, status) {
-    document.getElementById('confirmTaskId').value = id;
-    document.getElementById('confirmStatus').value = status;
-    document.getElementById('confirmNote').value = '';
-    
+  function toggleConfirmButtonText() {
+    const status = document.getElementById('confirmStatus').value;
+    const btn = document.getElementById('confirmSaveBtn');
     if (status === 'Hoàn thành') {
-        document.getElementById('confirmTitle').innerText = 'Hoàn Thành Nhiệm Vụ';
-        document.getElementById('confirmSubtitle').innerText = 'Xác nhận bạn đã hoàn tất công việc này.';
-        document.getElementById('confirmSaveBtn').innerText = 'Xác Nhận Xong';
+        btn.innerText = 'Xác Nhận Xong';
+        btn.style.background = 'var(--success)';
     } else {
+        btn.innerText = 'Cập Nhật Ngay';
+        btn.style.background = 'linear-gradient(135deg,var(--primary),var(--secondary))';
+    }
+  }
+
+  function openDriverConfirm(id, actionType) {
+    document.getElementById('confirmTaskId').value = id;
+    document.getElementById('confirmNote').value = '';
+    const statusGroup = document.getElementById('driverStatusGroup');
+    const statusSelect = document.getElementById('confirmStatus');
+    const btn = document.getElementById('confirmSaveBtn');
+    
+    if (actionType === 'Tiếp nhận') {
+        document.getElementById('confirmTitle').innerText = 'Tiếp Nhận Nhiệm Vụ';
+        document.getElementById('confirmSubtitle').innerText = 'Xác nhận bạn đã nhận được yêu cầu này.';
+        statusGroup.style.display = 'none'; // Hide dropdown for first step
+        statusSelect.value = 'Đang thực hiện'; // Auto set to In Progress
+        btn.innerText = 'Xác Nhận Nhận';
+    } else {
+        const task = allTasks.find(x => x.id === id);
         document.getElementById('confirmTitle').innerText = 'Cập Nhật Tiến Độ';
-        document.getElementById('confirmSubtitle').innerText = 'Báo cáo quá trình thực hiện nhiệm vụ.';
-        document.getElementById('confirmSaveBtn').innerText = 'Cập Nhật Ngay';
+        document.getElementById('confirmSubtitle').innerText = 'Chọn trạng thái và báo cáo tiến độ.';
+        statusGroup.style.display = 'block';
+        if (task) statusSelect.value = task.trang_thai;
+        toggleConfirmButtonText();
     }
     
     document.getElementById('driverConfirmModal').classList.add('active');
@@ -630,31 +785,37 @@
     const id = document.getElementById('confirmTaskId').value;
     const status = document.getElementById('confirmStatus').value;
     const note = document.getElementById('confirmNote').value;
+    const isFirstAccept = document.getElementById('confirmTitle').innerText === 'Tiếp Nhận Nhiệm Vụ';
+
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
     try {
-        const { error } = await _supabase.from('nhiemvu').update({ 
+        const payload = { 
           trang_thai: status, 
-          ghi_chu: note ? (status === 'Hoàn thành' ? `[Xong]: ${note}` : `[Cập nhật]: ${note}`) : (status === 'Hoàn thành' ? '[Xong]' : '[Đang làm]'),
           updated_at: new Date().toISOString()
-        }).eq('id', id);
+        };
+
+        if (isFirstAccept) {
+            payload.ghi_chu = note ? `[Đã tiếp nhận]: ${note}` : `[Đã tiếp nhận]`;
+        } else {
+            payload.ghi_chu = note ? (status === 'Hoàn thành' ? `[Xong]: ${note}` : `[Cập nhật]: ${note}`) : (status === 'Hoàn thành' ? '[Xong]' : '[Đang làm]');
+        }
+
+        const { error } = await _supabase.from('nhiemvu').update(payload).eq('id', id);
         if (error) throw error;
         
-        const successMsg = status === 'Hoàn thành' ? 'Chúc mừng! Bạn đã hoàn thành nhiệm vụ 🎉' : 'Đã cập nhật tiến độ.';
-        safeShowToast(successMsg);
+        const successMsg = status === 'Hoàn thành' ? 'Chúc mừng! Bạn đã hoàn thành nhiệm vụ 🎉' : (isFirstAccept ? 'Đã tiếp nhận nhiệm vụ. Chúc bạn vạn dặm bình an!' : 'Đã cập nhật tiến độ.');
+        showToast(successMsg);
         
         // Trigger màn hình chính cập nhật badge
         try {
           if (window.parent && window.parent.postMessage) {
             window.parent.postMessage('refreshStats', '*');
           }
-          if (window.parent && typeof window.parent.updateHomeStats === 'function') {
-            window.parent.updateHomeStats();
-          }
         } catch(ex) {}
 
         closeDriverModal(); loadTasks();
-    } catch (err) { alert('Lỗi: ' + err.message); }
-    finally { btn.disabled = false; btn.innerHTML = status === 'Hoàn thành' ? 'Xác Nhận Xong' : 'Cập Nhật Ngay'; }
+    } catch (err) { showToast('Lỗi: ' + err.message, 'error'); }
+    finally { btn.disabled = false; toggleConfirmButtonText(); }
   };
 
   document.getElementById('taskForm').onsubmit = async (e) => {
@@ -670,20 +831,32 @@
       if (id) await _supabase.from('nhiemvu').update(payload).eq('id', id);
       else await _supabase.from('nhiemvu').insert([payload]);
       
+      showToast("Đã lưu nhiệm vụ!", "success");
+
       try {
         if (window.parent && window.parent.postMessage) window.parent.postMessage('refreshStats', '*');
-        if (window.parent && typeof window.parent.updateHomeStats === 'function') window.parent.updateHomeStats();
       } catch(ex) {}
 
       closeModal(); loadTasks();
-    } catch(err) { alert('Lỗi: ' + err.message); }
+    } catch(err) { showToast('Lỗi: ' + err.message, 'error'); }
     finally { btn.disabled = false; btn.innerHTML = 'Lưu Nhiệm Vụ'; }
   };
+
+  window.addEventListener('message', (e) => {
+    const data = e.data;
+    if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+        if (activeConfirmCallback) activeConfirmCallback(data.result);
+        activeConfirmId = null;
+        activeConfirmCallback = null;
+    } else if (data && data.type === 'dataChanged' && (data.table === 'nhiemvu' || !data.table)) {
+        loadTasks(true);
+    }
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     if (isManager) document.querySelectorAll('.manager-only').forEach(el => el.style.display = 'flex');
     loadTasks(); loadDropdowns();
-    _supabase.channel('nhiemvu-changes').on('postgres_changes', { event:'*', schema:'public', table:'nhiemvu' }, () => loadTasks()).subscribe();
+    _supabase.channel('nhiemvu-changes').on('postgres_changes', { event:'*', schema:'public', table:'nhiemvu' }, () => loadTasks(true)).subscribe();
   });
 </script>
 </body>

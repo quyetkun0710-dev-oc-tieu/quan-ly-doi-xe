@@ -1,5 +1,5 @@
 // Service Worker - Quản Lý Đội Xe PWA
-const CACHE_NAME = 'doi-xe-v1';
+const CACHE_NAME = 'doi-xe-v5';
 
 // Các file cần cache khi cài đặt
 const STATIC_ASSETS = [

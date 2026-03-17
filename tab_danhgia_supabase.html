@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Đánh giá Nhân sự - Fleet Core Supabase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -109,59 +109,46 @@
         }
 
         .btn-add:hover { transform: scale(1.05) translateY(-2px); }
-
-        /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            animation: fadeIn 1s ease-out;
+        /* Filter Buttons */
+        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+        .filter-btn {
+            padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
+            transition: all 0.2s; font-size: 0.8rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; white-space: nowrap;
         }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-
-        .stat-card h3 {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-bottom: 3px;
-            text-transform: uppercase;
-        }
-
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: 800;
+        .filter-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .filter-btn .btn-badge {
+            background: rgba(0, 0, 0, 0.2); padding: 1px 8px; border-radius: 6px;
+            font-size: 0.85rem; font-weight: 800; min-width: 20px; text-align: center;
             color: var(--accent);
         }
+        .filter-btn.active .btn-badge { background: rgba(255,255,255,0.2); color: white; }
+
+        .btn-refresh i { transition: transform 0.4s; }
+        .btn-refresh:hover i { transform: rotate(180deg); }
+
+        .control-btns { display: flex; gap: 10px; }
 
         /* Evaluation Grid */
         .evaluation-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
             padding-bottom: 5rem;
         }
 
         .evaluation-card {
             background: var(--card-bg);
-            border-radius: 24px;
-            padding: 1.8rem;
+            border-radius: 20px;
+            padding: 1.2rem;
             border: 1px solid rgba(255,255,255,0.05);
             backdrop-filter: blur(15px);
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
-            gap: 1.2rem;
+            gap: 0.8rem;
             position: relative;
         }
 
@@ -347,10 +334,50 @@
             display: flex; align-items: center; gap: 8px;
         }
 
-        /* Helpers */
-        .hidden { display: none; }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            header { flex-direction: column; gap: 1rem; text-align: center; }
+            .logo-area { display: none; }
+            .controls { flex-direction: column; width: 100%; }
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; }
+
+            .control-btns { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                width: 100%; 
+            }
+            .btn-refresh, .btn-add { width: 100% !important; justify-content: center; margin: 0; }
+            .date-bar { gap: 10px; }
+            .filter-bar { gap: 8px; margin-bottom: 1.5rem; }
+            .filter-btn { flex: 1; padding: 10px 8px; font-size: 0.7rem; justify-content: center; }
+            .filter-btn { flex: 1; padding: 10px 8px; font-size: 0.7rem; justify-content: center; }
+            .evaluation-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+            
+            .evaluation-card { 
+                padding: 10px !important; 
+                gap: 5px !important; 
+                border-radius: 12px !important;
+                text-align: center;
+                align-items: center;
+            }
+            .avatar-circle { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; margin: 0 auto; }
+            .evaluation-header { flex-direction: column !important; align-items: center !important; gap: 5px !important; }
+            .name-mnv h4 { font-size: 0.75rem !important; line-height: 1.2; }
+            .name-mnv span { font-size: 0.6rem !important; }
+            .severity-tag { font-size: 0.55rem !important; padding: 2px 6px !important; margin-top: 4px; }
+            
+            /* Ẩn các chi tiết rườm rà trên bản mini 3 cột mobile */
+            .violation-box, .card-details, .card-footer { display: none !important; }
+            
+            .modal-content { padding: 1.5rem; width: 95%; max-width: 100%; border-radius: 20px; }
+            .modal-content h2 { font-size: 1.5rem !important; }
+            .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .form-group { grid-column: span 1 !important; }
+        }
     </style>
 </head>
 <body>
@@ -358,7 +385,7 @@
 <div class="container">
     <header>
         <div class="logo-area">
-            <h1>ASSESSMENT</h1>
+            <h1><i class="fas fa-star"></i> ĐÁNH GIÁ</h1>
             <p>Hệ thống đánh giá và quản trị hiệu suất nhân sự</p>
         </div>
         <div class="controls">
@@ -366,9 +393,14 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Tìm theo tên, mã NV..." oninput="filterEvaluation()">
             </div>
-            <button class="btn-add manager-only" onclick="openModal()">
-                <i class="fas fa-user-check"></i> ĐÁNH GIÁ MỚI
-            </button>
+            <div class="control-btns">
+                <button class="btn-refresh" onclick="loadEvaluations()">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+                <button class="btn-add manager-only" onclick="openModal()">
+                    <i class="fas fa-user-check"></i> ĐÁNH GIÁ MỚI
+                </button>
+            </div>
         </div>
     </header>
 
@@ -390,24 +422,22 @@
                 <option value="all">Tất cả các tháng</option>
             </select>
         </div>
-        <button class="btn-refresh" onclick="loadEvaluations()">
-            <i class="fas fa-sync-alt"></i> Tải lại
-        </button>
     </div>
 
-    <div class="stats-row">
-        <div class="stat-card" onclick="filterByStatus('all')">
-            <h3>Tổng lượt đánh giá</h3>
-            <div class="value" id="statTotal">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByStatus('Nặng')">
-            <h3>Lỗi nghiêm trọng</h3>
-            <div class="value" id="statCritical" style="color: var(--danger)">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByStatus('Trung bình')">
-            <h3>Cần lưu ý</h3>
-            <div class="value" id="statWarning" style="color: var(--warning)">0</div>
-        </div>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterByStatus('all', this)">
+            📋 TẤT CẢ <span class="btn-badge" id="statTotal">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('Nặng', this)">
+            🔴 LỖI NẶNG <span class="btn-badge" id="statCritical">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('Trung bình', this)">
+            ⚠️ CẦN LƯU Ý <span class="btn-badge" id="statWarning">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('Nhẹ', this)">
+            ✅ LỖI NHẸ <span class="btn-badge" id="statNhe">0</span>
+        </button>
     </div>
 
     <div class="evaluation-grid" id="evalGrid">
@@ -528,13 +558,15 @@
         if (allEvals.length > 0) loadEvaluations();
     }
 
-    async function loadEvaluations() {
+    async function loadEvaluations(isSilent = false) {
         const grid = document.getElementById('evalGrid');
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
 
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+        if (!isSilent) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
         
+        if (!fromDate || !toDate) return;
+
         try {
             let query = _supabase.from('danhgia').select('*')
                 .gte('ngay', fromDate)
@@ -630,6 +662,8 @@
         document.getElementById('statTotal').innerText = data.length;
         document.getElementById('statCritical').innerText = data.filter(i => i.muc_do === 'Nặng').length;
         document.getElementById('statWarning').innerText = data.filter(i => i.muc_do === 'Trung bình').length;
+        document.getElementById('statNhe').innerText = data.filter(i => i.muc_do === 'Nhẹ').length;
+
     }
 
     function autoFillDriver(mnv) {
@@ -647,7 +681,11 @@
         renderGrid(filtered);
     }
 
-    function filterByStatus(status) {
+    function filterByStatus(status, btn) {
+        if (btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
         if (status === 'all') {
             renderGrid(allEvals);
         } else {
@@ -668,13 +706,43 @@
             const fields = ['ma_nv', 'ho_ten', 'ngay', 'muc_do', 'loi', 'so_lan', 'ket_luan', 'ghi_chu'];
             fields.forEach(f => {
                 const el = document.getElementById(f);
-                if (el) el.value = editData[f] || '';
+                if (el) {
+                    let val = editData[f] || '';
+                    if (f === 'ngay' && val) val = val.split('T')[0];
+                    el.value = val;
+                }
             });
         } else {
             document.getElementById('modalTitle').innerText = "Phiếu Đánh Giá Nhân Sự";
             document.getElementById('editId').value = '';
         }
         document.getElementById('evalModal').classList.add('active');
+    }
+
+    function showToast(msg, theme = 'success') {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+        } else {
+            console.log("Toast:", msg);
+        }
+    }
+
+    let activeConfirmId = null;
+    let activeConfirmCallback = null;
+    function showConfirm(title, message, callback) {
+        if (window.parent && window.parent.postMessage) {
+            activeConfirmId = Date.now();
+            activeConfirmCallback = callback;
+            window.parent.postMessage({ 
+                type: 'confirmRequest', 
+                title: title, 
+                message: message, 
+                requestId: activeConfirmId 
+            }, '*');
+        } else {
+            if (confirm(message)) callback(true);
+            else callback(false);
+        }
     }
 
     function closeModal() { document.getElementById('evalModal').classList.remove('active'); }
@@ -710,13 +778,11 @@
             }
 
             console.log("Save Success:", res.data);
-            alert("✅ Đã lưu dữ liệu thành công!");
-            
+            showToast("Đã lưu dữ liệu thành công!");
             closeModal();
             loadEvaluations();
         } catch (error) { 
-            console.error("Catch Error:", error);
-            alert("❌ Lỗi lưu dữ liệu: " + error.message); 
+            showToast("Lỗi lưu dữ liệu: " + error.message, "error"); 
         }
         finally { btn.disabled = false; }
     };
@@ -727,9 +793,17 @@
     }
 
     async function deleteItem(id) {
-        if (!confirm("Xóa đánh giá này?")) return;
-        await _supabase.from('danhgia').delete().eq('id', id);
-        loadEvaluations();
+        showConfirm("Xóa đánh giá", "Bạn có chắc chắn muốn xóa đánh giá này không?", async (res) => {
+            if (res) {
+                const { error } = await _supabase.from('danhgia').delete().eq('id', id);
+                if (error) {
+                    showToast("Lỗi khi xóa: " + error.message, "error");
+                } else {
+                    showToast("Đã xóa đánh giá thành công");
+                    loadEvaluations();
+                }
+            }
+        });
     }
 
     function formatDate(d) {
@@ -741,7 +815,22 @@
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
     }
 
-    document.addEventListener('DOMContentLoaded', initialize);
+    window.addEventListener('message', (e) => {
+        const data = e.data;
+        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+            if (activeConfirmCallback) activeConfirmCallback(data.result);
+            activeConfirmId = null;
+            activeConfirmCallback = null;
+        } else if (data && data.type === 'dataChanged' && (data.table === 'danhgia' || !data.table)) {
+            loadEvaluations(true);
+        }
+    });
+
+    async function initRealtime() {
+        await initialize();
+        _supabase.channel('danhgia-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'danhgia' }, () => loadEvaluations(true)).subscribe();
+    }
+    document.addEventListener('DOMContentLoaded', initRealtime);
 </script>
 
 </body>

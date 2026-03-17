@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản lý Nhiên liệu - Fleet Core Supabase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -110,6 +110,42 @@
 
         .btn-add:hover { transform: scale(1.05) translateY(-2px); }
 
+        .btn-refresh {
+            background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+        .btn-refresh i { transition: transform 0.4s; }
+        .btn-refresh:hover i { transform: rotate(180deg); }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(10px);
+        }
+        .stat-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+        .stat-info .stat-value { font-size: 1.1rem; font-weight: 800; color: white; line-height: 1.2; }
+        .stat-info .stat-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
+
+        .control-btns { display: flex; gap: 10px; }
+
         /* Controls / Date Bar */
         .date-bar {
             background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
@@ -124,47 +160,28 @@
             padding: 0.5rem 0.8rem; border-radius: 10px; color: white; outline: none;
             font-family: 'Outfit', sans-serif; font-size: 0.85rem; transition: all 0.2s;
         }
-        .btn-refresh {
-            background: var(--primary); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 12px;
-            font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 8px;
-        }
 
-        /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            animation: fadeIn 1s ease-out;
+        /* Filter Buttons */
+        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+        .filter-btn {
+            padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
+            transition: all 0.2s; font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; white-space: nowrap;
         }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+        .filter-btn .btn-badge {
+            background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 6px;
+            font-size: 0.8rem; font-weight: 800; min-width: 18px; text-align: center;
+            color: var(--accent); box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
         }
-        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+        .filter-btn.active .btn-badge { background: white; color: #6366f1; }
+        .filter-btn:hover { background: rgba(255,255,255,0.12); }
+        .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+        .filter-btn.active .btn-badge { background: white; color: #6366f1; }
+        .filter-btn:hover { background: rgba(255,255,255,0.12); }
 
-        .stat-card h3 {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin-bottom: 3px;
-            text-transform: uppercase;
-        }
-
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--accent);
-        }
-
-        /* Fuel Grid */
+        .stats-row { display: none; }
         .fuel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -323,20 +340,77 @@
         @media (max-width: 768px) {
             body { padding: 15px; }
             header { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 2rem; text-align: center; }
-            .logo-area h1 { font-size: 1.8rem; }
+            .logo-area { display: none; }
             .controls { flex-direction: column; width: 100%; gap: 10px; }
             .search-box { width: 100%; }
             .search-box input { width: 100%; }
-            .btn-add { width: 100%; justify-content: center; }
+
+            .control-btns { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                width: 100%; 
+            }
+            .btn-refresh, .btn-add { width: 100% !important; justify-content: center; margin: 0; }
             .date-bar { gap: 10px; padding: 10px; }
             .date-group { flex: 1; min-width: 120px; }
             .btn-refresh { width: 100%; justify-content: center; }
-            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card { padding: 12px; }
-            .stat-card .value { font-size: 1.4rem; }
+            .stats-row { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 0.6rem; 
+                margin-bottom: 1rem;
+            }
+            .stat-card { 
+                padding: 0.8rem 0.5rem; 
+                border-radius: 12px;
+            }
+            .stat-card h3 { 
+                font-size: 0.65rem; 
+                margin-bottom: 2px;
+            }
+            .stat-card .value { font-size: 1.3rem; }
             .fuel-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .modal-content { padding: 1.5rem; border-radius: 20px; }
+            .modal-content { padding: 1.5rem; width: 95%; max-width: 100%; border-radius: 20px; }
+            .modal-content h2 { font-size: 1.5rem !important; }
             .form-grid { grid-template-columns: 1fr; gap: 10px; }
+            .form-group { grid-column: span 1 !important; }
+
+            /* Mobile Table View Styles */
+            .mobile-table-container {
+                width: 100%;
+                overflow-x: auto;
+                background: var(--card-bg);
+                border-radius: 15px;
+                border: 1px solid rgba(255,255,255,0.05);
+                margin-top: 10px;
+            }
+            .mobile-data-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.75rem;
+                min-width: 500px;
+            }
+            .mobile-data-table th {
+                text-align: left;
+                padding: 12px 10px;
+                background: rgba(255,255,255,0.03);
+                color: var(--text-dim);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 0.6rem;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .mobile-data-table td {
+                padding: 12px 10px;
+                border-bottom: 1px solid rgba(255,255,255,0.03);
+                vertical-align: middle;
+            }
+            .mobile-data-table tr:last-child td { border-bottom: none; }
+            .td-title { font-weight: 800; color: white; display: block; font-size: 0.85rem; }
+            .td-sub { font-size: 0.6rem; color: var(--text-dim); }
+            .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+            .dot.status-active { background: var(--success); box-shadow: 0 0 5px var(--success); }
         }
     </style>
 </head>
@@ -345,7 +419,7 @@
 <div class="container">
     <header>
         <div class="logo-area">
-            <h1>FUEL MANAGEMENT</h1>
+            <h1><i class="fas fa-gas-pump"></i> NHIÊN LIỆU</h1>
             <p>Quản lý nhiên liệu và định mức tiêu hao</p>
         </div>
         <div class="controls">
@@ -353,12 +427,16 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Tìm biển số, ngày..." oninput="filterFuel()">
             </div>
-            <button class="btn-add" onclick="openModal()">
-                <i class="fas fa-gas-pump"></i> CẤP NHIÊN LIỆU
-            </button>
+            <div class="control-btns">
+                <button class="btn-refresh" onclick="loadFuelData()">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+                <button class="btn-add" onclick="openModal()">
+                    <i class="fas fa-gas-pump"></i> CẤP NHIÊN LIỆU
+                </button>
+            </div>
         </div>
     </header>
-
     <div class="date-bar">
         <div class="date-group">
             <label>Từ ngày</label>
@@ -374,32 +452,60 @@
                 <option value="month" selected>Tháng này</option>
                 <option value="7">7 ngày qua</option>
                 <option value="30">30 ngày qua</option>
-                <option value="all">Tất cả các tháng</option>
+                <option value="all">Tất cả</option>
             </select>
         </div>
-        <button class="btn-refresh" onclick="loadFuelData()">
-            <i class="fas fa-sync-alt"></i> Tải lại
-        </button>
     </div>
 
-    <div class="stats-row">
-        <div class="stat-card" onclick="filterByType('all')">
-            <h3>Tổng chi phí</h3>
-            <div class="value" id="statTotalCost">0</div>
+    <!-- Stats Row -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(0, 255, 204, 0.1); color: var(--accent)">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value" id="statTotalMoney" style="color:var(--accent)">0đ</div>
+                <div class="stat-label">Tổng chi phí</div>
+            </div>
         </div>
-        <div class="stat-card" onclick="filterByType('Dầu')">
-            <h3>Dầu (Lít)</h3>
-            <div class="value" id="statDau">0</div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning)">
+                <i class="fas fa-oil-can"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value" id="statTotalDau">0L</div>
+                <div class="stat-label">Tổng Dầu</div>
+            </div>
         </div>
-        <div class="stat-card" onclick="filterByType('Ure')">
-            <h3>Ure (Lít)</h3>
-            <div class="value" id="statUre">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByType('Xăng')">
-            <h3>Xăng (Lít)</h3>
-            <div class="value" id="statXang">0</div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary)">
+                <i class="fas fa-tint"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value" id="statTotalUre">0L</div>
+                <div class="stat-label">Tổng Ure</div>
+            </div>
         </div>
     </div>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterByType('all', this)">
+            📋 TẤT CẢ <span class="btn-badge" id="btnCountAll">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByType('Dầu', this)">
+            ⛽ DẦU <span class="btn-badge" id="btnCountDau">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByType('Ure', this)">
+            💧 URE <span class="btn-badge" id="btnCountUre">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByType('Xăng', this)">
+            🕯 XĂNG <span class="btn-badge" id="btnCountXang">0</span>
+        </button>
+        <div class="filter-btn" style="cursor:default; background:rgba(0,255,204,0.05); border-color:rgba(0,255,204,0.1)">
+            💰 TỔNG CHI PHÍ: <span id="spanTotalCost" style="color:var(--accent); font-weight:800">0đ</span>
+        </div>
+    </div>
+
 
     <div class="fuel-grid" id="fuelGrid">
         <!-- Cards injected here -->
@@ -512,11 +618,6 @@
 
     let allFuelData = [];
 
-    async function initialize() {
-        applyQuickRange();
-        await loadFuelData();
-        await loadVehicles();
-    }
 
     function applyQuickRange() {
         const val = document.getElementById('quickRange').value;
@@ -537,12 +638,12 @@
         if (allFuelData.length > 0) loadFuelData();
     }
 
-    async function loadFuelData() {
+    async function loadFuelData(isSilent = false) {
         const grid = document.getElementById('fuelGrid');
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
 
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        if (!isSilent) grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
         
         try {
             const { data, error } = await _supabase
@@ -558,7 +659,7 @@
             renderGrid(allFuelData);
             updateStats(allFuelData);
         } catch (error) {
-            grid.innerHTML = `<div style="color: var(--danger)">Lỗi: ${error.message}</div>`;
+            if (!isSilent) grid.innerHTML = `<div style="color: var(--danger)">Lỗi: ${error.message}</div>`;
         }
     }
 
@@ -570,10 +671,45 @@
 
     function renderGrid(data) {
         const grid = document.getElementById('fuelGrid');
+        const isMobile = window.innerWidth <= 768;
         grid.innerHTML = '';
 
         if (data.length === 0) {
             grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim)">Chưa có dữ liệu nhiên liệu.</div>';
+            return;
+        }
+
+        if (isMobile) {
+            let html = `
+                <div class="mobile-table-container">
+                    <table class="mobile-data-table">
+                        <thead>
+                            <tr>
+                                <th>Xe/Loại</th>
+                                <th>Ngày</th>
+                                <th>Số Lít</th>
+                                <th>Thành tiền</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            const isAdmin = ['manager', 'admin'].includes((sessionStorage.getItem('role') || '').toLowerCase());
+            data.forEach(item => {
+                html += `
+                    <tr onclick="${isAdmin ? `editItem(${item.id})` : ''}">
+                        <td><div class="td-title">${item.bien_so_xe}</div><div class="td-sub">${item.loai}</div></td>
+                        <td>${formatDate(item.ngay_thuc_hien)}</td>
+                        <td><span style="font-weight:600">${item.so_lit}L</span></td>
+                        <td>${formatCurrency(item.thanh_tien)}</td>
+                        <td style="text-align:center">
+                            <i class="fas fa-chevron-right" style="font-size:0.7rem; color:rgba(255,255,255,0.2)"></i>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table></div>`;
+            grid.innerHTML = html;
             return;
         }
 
@@ -627,18 +763,32 @@
     }
 
     function updateStats(data) {
+        const total = data.length;
         const totalCost = data.reduce((sum, i) => sum + (parseFloat(i.thanh_tien) || 0), 0);
-        const totalDau = data.filter(i=>i.loai==='Dầu').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
-        const totalUre = data.filter(i=>i.loai==='Ure').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
-        const totalXang = data.filter(i=>i.loai==='Xăng').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
+        const totalDauAmount = data.filter(i => i.loai === 'Dầu').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
+        const totalUreAmount = data.filter(i => i.loai === 'Ure').reduce((sum, i) => sum + (parseFloat(i.so_lit) || 0), 0);
         
-        document.getElementById('statTotalCost').innerText = formatCurrency(totalCost);
-        document.getElementById('statDau').innerText = totalDau.toFixed(0) + ' L';
-        document.getElementById('statUre').innerText = totalUre.toFixed(0) + ' L';
-        document.getElementById('statXang').innerText = totalXang.toFixed(0) + ' L';
+        const countDau = data.filter(i=>i.loai==='Dầu').length;
+        const countUre = data.filter(i=>i.loai==='Ure').length;
+        const countXang = data.filter(i=>i.loai==='Xăng').length;
+        
+        document.getElementById('btnCountAll').innerText = total;
+        document.getElementById('btnCountDau').innerText = countDau;
+        document.getElementById('btnCountUre').innerText = countUre;
+        document.getElementById('btnCountXang').innerText = countXang;
+        document.getElementById('spanTotalCost').innerText = formatCurrency(totalCost);
+
+        // Update Stats Grid
+        if(document.getElementById('statTotalMoney')) document.getElementById('statTotalMoney').innerText = formatCurrency(totalCost);
+        if(document.getElementById('statTotalDau')) document.getElementById('statTotalDau').innerText = totalDauAmount.toLocaleString() + 'L';
+        if(document.getElementById('statTotalUre')) document.getElementById('statTotalUre').innerText = totalUreAmount.toLocaleString() + 'L';
     }
 
-    function filterByType(type) {
+    function filterByType(type, btn) {
+        if (btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
         if (type === 'all') {
             renderGrid(allFuelData);
         } else {
@@ -741,11 +891,37 @@
 
     function closeModal() { document.getElementById('fuelModal').classList.remove('active'); }
 
+    function showToast(msg, theme = 'success') {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+        } else {
+            console.log("Toast:", msg);
+        }
+    }
+
+    let activeConfirmId = null;
+    let activeConfirmCallback = null;
+    function showConfirm(title, message, callback) {
+        if (window.parent && window.parent.postMessage) {
+            activeConfirmId = Date.now();
+            activeConfirmCallback = callback;
+            window.parent.postMessage({ 
+                type: 'confirmRequest', 
+                title: title, 
+                message: message, 
+                requestId: activeConfirmId 
+            }, '*');
+        } else {
+            if (confirm(message)) callback(true);
+            else callback(false);
+        }
+    }
+
     document.getElementById('fuelForm').onsubmit = async (e) => {
         e.preventDefault();
         const role = (sessionStorage.getItem('role') || 'driver').toLowerCase();
         if (!['manager', 'admin'].includes(role) && document.getElementById('editId').value) {
-            alert("Bạn không có quyền sửa dữ liệu của người khác.");
+            showToast("Bạn không có quyền sửa dữ liệu của người khác.", "error");
             return;
         }
         const btn = document.getElementById('saveBtn');
@@ -774,10 +950,11 @@
 
             if (res.error) throw res.error;
 
+            showToast("Đã lưu dữ liệu cấp nhiên liệu!", "success");
             closeModal();
             loadFuelData();
         } catch (error) { 
-            alert("Lỗi lưu dữ liệu: " + error.message); 
+            showToast("Lỗi lưu dữ liệu: " + error.message, "error"); 
         } finally { 
             btn.disabled = false; 
         }
@@ -791,12 +968,20 @@
     async function deleteItem(id) {
         const role = (sessionStorage.getItem('role') || 'driver').toLowerCase();
         if (!['manager', 'admin'].includes(role)) {
-            alert("Bạn không có quyền xóa dữ liệu này.");
+            showToast("Bạn không có quyền xóa dữ liệu này.", "error");
             return;
         }
-        if (!confirm("Xóa bản ghi này?")) return;
-        await _supabase.from('fuel').delete().eq('id', id);
-        loadFuelData();
+        showConfirm("Xác nhận xóa", "Bạn có chắc chắn muốn xóa bản ghi cấp nhiên liệu này không?", async (res) => {
+            if (res) {
+                const { error } = await _supabase.from('fuel').delete().eq('id', id);
+                if (error) {
+                    showToast("Lỗi khi xóa: " + error.message, "error");
+                } else {
+                    showToast("Đã xóa bản ghi thành công");
+                    loadFuelData(true);
+                }
+            }
+        });
     }
 
     function formatDate(d) {
@@ -806,6 +991,24 @@
 
     function formatCurrency(val) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
+    }
+
+    window.addEventListener('message', (e) => {
+        const data = e.data;
+        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+            if (activeConfirmCallback) activeConfirmCallback(data.result);
+            activeConfirmId = null;
+            activeConfirmCallback = null;
+        } else if (data && data.type === 'dataChanged' && (data.table === 'fuel' || !data.table)) {
+            loadFuelData(true);
+        }
+    });
+
+    async function initialize() {
+        applyQuickRange();
+        await loadFuelData();
+        await loadVehicles();
+        _supabase.channel('fuel-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'fuel' }, () => loadFuelData(true)).subscribe();
     }
 
     document.addEventListener('DOMContentLoaded', initialize);

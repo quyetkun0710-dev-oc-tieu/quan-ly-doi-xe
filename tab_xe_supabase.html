@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản Lý Đội Xe | Supabase Next-Gen</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -125,41 +125,36 @@
             box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3);
         }
 
+        .btn-refresh {
+            background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+        .btn-refresh i { transition: transform 0.4s; }
+        .btn-refresh:hover i { transform: rotate(180deg); }
+
+        .control-btns { display: flex; gap: 10px; }
+
+        /* Filter Buttons */
+        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+        .filter-btn {
+            padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
+            transition: all 0.2s; font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .filter-btn .btn-badge {
+            background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 6px;
+            font-size: 0.8rem; font-weight: 800; min-width: 18px; text-align: center;
+            color: var(--accent); box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+        .filter-btn.active .btn-badge { background: white; color: #6366f1; }
+        .filter-btn:hover { background: rgba(255,255,255,0.12); }
+        
         /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            animation: fadeIn 1s ease-out;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-
-        .stat-card h3 {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--accent);
-        }
+        .stats-row { display: none; }
 
         /* Vehicle Grid */
         .vehicle-grid {
@@ -405,7 +400,7 @@
                 text-align: center;
             }
 
-            .logo-area h1 { font-size: 1.8rem; }
+            .logo-area { display: none; }
             
             .controls {
                 flex-direction: column;
@@ -414,25 +409,86 @@
 
             .search-box { width: 100%; }
             .search-box input { width: 100%; }
-            .btn-add { width: 100%; justify-content: center; }
+            
+            .control-btns { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                width: 100%; 
+            }
+            .btn-refresh, .btn-add { width: 100%; justify-content: center; margin: 0; }
 
             .stats-row {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.8rem;
-                margin-bottom: 1.5rem;
+                gap: 0.6rem;
+                margin-bottom: 1rem;
             }
 
-            .stat-card { padding: 1rem; }
-            .stat-card .value { font-size: 1.5rem; }
+            .stat-card { 
+                padding: 0.8rem 0.5rem; 
+                border-radius: 12px;
+            }
+            .stat-card h3 { 
+                font-size: 0.65rem; 
+                margin-bottom: 2px;
+            }
+            .stat-card .value { font-size: 1.3rem; }
 
             .vehicle-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
 
+            .modal-content { padding: 1.5rem !important; width: 95% !important; max-width: 100% !important; border-radius: 20px !important; }
+            .modal-content h2 { font-size: 1.5rem !important; }
+            .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+            .form-group { grid-column: span 1 !important; }
+            .tab-btn { padding: 8px 15px; font-size: 0.8rem; }
+
             .vehicle-card {
                 padding: 1.2rem;
             }
+
+            /* Mobile Table View Styles */
+            .mobile-table-container {
+                width: 100%;
+                overflow-x: auto;
+                background: var(--card-bg);
+                border-radius: 15px;
+                border: 1px solid rgba(255,255,255,0.05);
+                margin-top: 10px;
+            }
+            .mobile-data-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.75rem;
+                min-width: 500px;
+            }
+            .mobile-data-table th {
+                text-align: left;
+                padding: 12px 10px;
+                background: rgba(255,255,255,0.03);
+                color: var(--text-dim);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 0.6rem;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .mobile-data-table td {
+                padding: 12px 10px;
+                border-bottom: 1px solid rgba(255,255,255,0.03);
+                vertical-align: middle;
+            }
+            .mobile-data-table tr:last-child td { border-bottom: none; }
+            .td-title { font-weight: 800; color: white; display: block; font-size: 0.85rem; }
+            .td-sub { font-size: 0.6rem; color: var(--text-dim); }
+            .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+            .dot.status-active { background: var(--success); box-shadow: 0 0 5px var(--success); }
+            .dot.status-maintenance { background: var(--warning); box-shadow: 0 0 5px var(--warning); }
+            .dot.status-expired { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
+            .expire-dots { display: flex; gap: 4px; }
+            .mini-expire { width: 6px; height: 6px; border-radius: 50%; }
         }
     </style>
 </head>
@@ -441,7 +497,7 @@
 <div class="container">
     <header>
         <div class="logo-area">
-            <h1>FLEET CORE</h1>
+            <h1><i class="fas fa-truck"></i> PHƯƠNG TIỆN</h1>
             <p>Hệ thống Quản lý Phương tiện Thế hệ mới (Supabase Edition)</p>
         </div>
         <div class="controls">
@@ -449,33 +505,33 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Tìm biển số, loại xe..." oninput="filterVehicles()">
             </div>
-            <button class="btn-add" onclick="openModal()">
-                <i class="fas fa-plus"></i> THÊM XE MỚI
-            </button>
+            <div class="control-btns">
+                <button class="btn-refresh" onclick="loadVehicles()">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+                <button class="btn-add" onclick="openModal()">
+                    <i class="fas fa-plus"></i> THÊM XE MỚI
+                </button>
+            </div>
         </div>
     </header>
 
-    <div class="stats-row">
-        <div class="stat-card" onclick="filterByStatus('all')">
-            <h3>Tổng số xe</h3>
-            <div class="value" id="totalVehicles">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByStatus('active')">
-            <h3>Đang hoạt động</h3>
-            <div class="value" id="activeVehicles" style="color: var(--success)">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByStatus('maintenance')">
-            <h3>Bảo trì/Dừng</h3>
-            <div class="value" id="maintenanceVehicles" style="color: var(--warning)">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByStatus('warn')">
-            <h3>⚠️ Sắp hết hạn</h3>
-            <div class="value" id="warnVehicles" style="color: var(--warning)">0</div>
-        </div>
-        <div class="stat-card" onclick="filterByStatus('expired')">
-            <h3>🔴 Đã hết hạn</h3>
-            <div class="value" id="expiredVehicles" style="color: var(--danger)">0</div>
-        </div>
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterByStatus('all', this)">
+            📋 TẤT CẢ <span class="btn-badge" id="btnCountAll">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('active', this)">
+            ✅ HOẠT ĐỘNG <span class="btn-badge" id="btnCountActive">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('maintenance', this)">
+            🛠️ BẢO TRÌ/DỪNG <span class="btn-badge" id="btnCountMainten">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('warn', this)">
+            ⚠️ SẮP HẾT HẠN <span class="btn-badge" id="btnCountWarn">0</span>
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('expired', this)">
+            🔴 ĐÃ HẾT HẠN <span class="btn-badge" id="btnCountExpired">0</span>
+        </button>
     </div>
 
     <div class="vehicle-grid" id="vehicleGrid">
@@ -786,10 +842,45 @@
 
     function renderVehicles(data) {
         const grid = document.getElementById('vehicleGrid');
+        const isMobile = window.innerWidth <= 768;
         grid.innerHTML = '';
 
         if (data.length === 0) {
             grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-dim)">Chưa có dữ liệu xe nào trong hệ thống.</div>';
+            return;
+        }
+
+        if (isMobile) {
+            let html = `
+                <div class="mobile-table-container">
+                    <table class="mobile-data-table">
+                        <thead>
+                            <tr>
+                                <th>Biển số</th>
+                                <th>Loại xe</th>
+                                <th>Tải trọng</th>
+                                <th>TT</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            data.forEach(v => {
+                const statusClass = v.tinh_trang_hoat_dong === 'dang_hoat_dong' ? 'status-active' : 'status-maintenance';
+                html += `
+                    <tr onclick="editVehicle(${v.id})">
+                        <td><div class="td-title">${v.bien_so_xe}</div><div class="td-sub">${v.ma_loai || '-'}</div></td>
+                        <td><span style="font-weight:600">${v.loai_xe || '-'}</span></td>
+                        <td>${v.tai_trong ? v.tai_trong + 'T' : '-'}</td>
+                        <td><span class="dot ${statusClass}"></span></td>
+                        <td style="text-align:center">
+                            <i class="fas fa-chevron-right" style="font-size:0.7rem; color:rgba(255,255,255,0.2)"></i>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table></div>`;
+            grid.innerHTML = html;
             return;
         }
 
@@ -856,26 +947,29 @@
     }
 
     function updateStats(data) {
-        const today = new Date(); today.setHours(0,0,0,0);
         let warn = 0, expired = 0;
+        const now = new Date();
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
         data.forEach(v => {
-            const dates = [v.ngay_dang_ky, v.ngay_dang_kiem, v.ngay_phu_hieu, v.ngay_bao_hiem];
             let hasWarn = false, hasExp = false;
-            dates.forEach(d => {
-                const days = daysUntil(d);
-                if (days !== null) {
-                    if (days < 0) hasExp = true;
-                    else if (days <= 30) hasWarn = true;
+            [v.ngay_dang_kiem, v.ngay_phu_hieu, v.ngay_bao_hiem].forEach(d => {
+                if (d) {
+                    const dt = new Date(d);
+                    const diff = dt - now;
+                    if (diff < 0) hasExp = true;
+                    else if (diff <= thirtyDays) hasWarn = true;
                 }
             });
             if (hasExp) expired++;
             else if (hasWarn) warn++;
         });
-        document.getElementById('totalVehicles').innerText = data.length;
-        document.getElementById('activeVehicles').innerText = data.filter(v => v.tinh_trang_hoat_dong === 'dang_hoat_dong').length;
-        document.getElementById('maintenanceVehicles').innerText = data.filter(v => v.tinh_trang_hoat_dong !== 'dang_hoat_dong').length;
-        document.getElementById('warnVehicles').innerText = warn;
-        document.getElementById('expiredVehicles').innerText = expired;
+
+        document.getElementById('btnCountAll').innerText = data.length;
+        document.getElementById('btnCountActive').innerText = data.filter(v => v.tinh_trang_hoat_dong === 'dang_hoat_dong').length;
+        document.getElementById('btnCountMainten').innerText = data.filter(v => v.tinh_trang_hoat_dong !== 'dang_hoat_dong').length;
+        document.getElementById('btnCountWarn').innerText = warn;
+        document.getElementById('btnCountExpired').innerText = expired;
     }
 
     function filterVehicles() {
@@ -890,7 +984,11 @@
         renderVehicles(filtered);
     }
 
-    function filterByStatus(status) {
+    function filterByStatus(status, btn) {
+        if (btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
         let filtered = allVehicles;
         const now = new Date();
         const thirtyDays = 30 * 24 * 60 * 60 * 1000;
@@ -982,11 +1080,37 @@
         document.getElementById('vehicleModal').classList.remove('active');
     }
 
+    function showToast(msg, theme = 'success') {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+        } else {
+            console.log("Toast:", msg);
+        }
+    }
+
+    let activeConfirmId = null;
+    let activeConfirmCallback = null;
+    function showConfirm(title, message, callback) {
+        if (window.parent && window.parent.postMessage) {
+            activeConfirmId = Date.now();
+            activeConfirmCallback = callback;
+            window.parent.postMessage({ 
+                type: 'confirmRequest', 
+                title: title, 
+                message: message, 
+                requestId: activeConfirmId 
+            }, '*');
+        } else {
+            if (confirm(message)) callback(true);
+            else callback(false);
+        }
+    }
+
     // CRUD
     document.getElementById('vehicleForm').onsubmit = async (e) => {
         e.preventDefault();
         if (!['manager', 'admin'].includes(USER_ROLE)) {
-            alert("Bạn không có quyền thực hiện thao tác này.");
+            showToast("Bạn không có quyền thực hiện thao tác này.", "error");
             return;
         }
         const btn = document.getElementById('saveBtn');
@@ -1021,10 +1145,11 @@
 
             if (result.error) throw result.error;
 
+            showToast("Đã lưu thông tin phương tiện!", "success");
             closeModal();
             loadVehicles();
         } catch (error) {
-            alert("Lỗi hệ thống: " + error.message);
+            showToast("Lỗi hệ thống: " + error.message, "error");
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
@@ -1038,19 +1163,33 @@
 
     async function deleteVehicle(bsx) {
         if (!['manager', 'admin'].includes(USER_ROLE)) {
-            alert("Bạn không có quyền thực hiện thao tác này.");
+            showToast("Bạn không có quyền thực hiện thao tác này.", "error");
             return;
         }
-        if (!confirm(`Bạn có chắc muốn xóa xe ${bsx} khỏi hệ thống?`)) return;
-        
-        try {
-            const { error } = await _supabase.from('xe').delete().eq('bien_so_xe', bsx);
-            if (error) throw error;
-            loadVehicles();
-        } catch (error) {
-            alert("Lỗi khi xóa: " + error.message);
-        }
+        showConfirm("Xóa phương tiện", `Bạn có chắc muốn xóa xe ${bsx} khỏi hệ thống không?`, async (res) => {
+            if (res) {
+                try {
+                    const { error } = await _supabase.from('xe').delete().eq('bien_so_xe', bsx);
+                    if (error) throw error;
+                    showToast("Xóa xe thành công!", "success");
+                    loadVehicles();
+                } catch (error) {
+                    showToast("Lỗi khi xóa: " + error.message, "error");
+                }
+            }
+        });
     }
+
+    window.addEventListener('message', (e) => {
+        const data = e.data;
+        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+            if (activeConfirmCallback) activeConfirmCallback(data.result);
+            activeConfirmId = null;
+            activeConfirmCallback = null;
+        } else if (data && data.type === 'dataChanged' && (data.table === 'xe' || data.table === 'nhatky' || !data.table)) {
+            loadVehicles();
+        }
+    });
 
     // Realtime subscription
     function setupRealtime() {
