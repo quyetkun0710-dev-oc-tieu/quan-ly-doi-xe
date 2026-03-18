@@ -531,7 +531,7 @@
                     </div>
                     <div class="form-group">
                         <label>🔗 Link Google Maps</label>
-                        <input type="text" class="form-control" id="maps_link" placeholder="Dán link tọa độ tại đây">
+                        <input type="text" class="form-control" id="maps_link" placeholder="Dán link tọa độ tại đây" oninput="handleMapsLinkPaste()">
                     </div>
                     <div class="form-grid">
                         <div class="form-group">
@@ -582,10 +582,7 @@
         });
 
         function checkAccess() {
-            if (!isStaff) {
-                const btn = document.getElementById('btnAddTop');
-                if (btn) btn.style.display = 'none';
-            }
+            // Everyone can see the Add button now
         }
 
         async function loadPoints(isSilent = false) {
@@ -615,8 +612,8 @@
                         <div class="point-icon"><i class="fas fa-location-dot"></i></div>
                         ${isStaff ? `
                             <div class="point-actions">
-                                <button class="btn-action" onclick="openModal(${item.id})"><i class="fas fa-edit"></i></button>
-                                <button class="btn-action" style="color:var(--danger)" onclick="deletePoint(${item.id})"><i class="fas fa-trash"></i></button>
+                                <button class="btn-action" onclick="openModal('${item.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-action" style="color:var(--danger)" onclick="deletePoint('${item.id}')"><i class="fas fa-trash"></i></button>
                             </div>
                         ` : ''}
                     </div>
@@ -695,6 +692,49 @@
             document.getElementById('pointModal').classList.remove('active');
         }
 
+        function handleMapsLinkPaste() {
+            const link = document.getElementById('maps_link').value.trim();
+            if (!link) return;
+
+            // Pattern 1: @lat,lng (Desktop link)
+            const regexAt = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+            const matchAt = link.match(regexAt);
+            
+            // Pattern 2: ?q=lat,lng (Mobile share or search)
+            const regexQ = /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+            const matchQ = link.match(regexQ);
+
+            // Pattern 3: /place/lat,lng (Path-based)
+            const regexPath = /\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/;
+            const matchPath = link.match(regexPath);
+            
+            // Pattern 4: lat,lng (Raw input)
+            const regexRaw = /^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/;
+            const matchRaw = link.match(regexRaw);
+
+            let lat = "", lng = "";
+            if (matchAt) { lat = matchAt[1]; lng = matchAt[2]; }
+            else if (matchQ) { lat = matchQ[1]; lng = matchQ[2]; }
+            else if (matchPath) { lat = matchPath[1]; lng = matchPath[2]; }
+            else if (matchRaw) { lat = matchRaw[1]; lng = matchRaw[2]; }
+
+            if (lat && lng) {
+                document.getElementById('lat').value = lat;
+                document.getElementById('lng').value = lng;
+            }
+
+            // Thử trích xuất tên điểm từ link (nếu field tên đang trống)
+            const regexName = /\/place\/([^/@]+)\//;
+            const matchName = link.match(regexName);
+            const nameField = document.getElementById('ten_diem');
+            if (matchName && (!nameField.value || nameField.value.trim() === "")) {
+                try {
+                    const extractedName = decodeURIComponent(matchName[1].replace(/\+/g, ' '));
+                    nameField.value = extractedName;
+                } catch(e) {}
+            }
+        }
+
         async function savePoint() {
             const btn = document.getElementById('btnSave');
             const id = document.getElementById('pointId').value;
@@ -714,24 +754,21 @@
                 return;
             }
 
-            // Extract lat/lng from maps link if missing
-            if (payload.maps_link && (!payload.lat || !payload.lng)) {
-                const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
-                const match = payload.maps_link.match(regex);
-                if (match) {
-                    payload.lat = match[1];
-                    payload.lng = match[2];
-                }
-            }
-
             btn.disabled = true;
             btn.innerText = "Đang xử lý...";
 
             let error;
             if (id) {
+                if (!isStaff) {
+                    alert("Bạn chỉ có quyền thêm mới, không có quyền chỉnh sửa điểm giao cũ.");
+                    btn.disabled = false;
+                    btn.innerText = "Lưu Dữ Liệu";
+                    return;
+                }
                 const { error: err } = await _supabase.from('diemgiaohang').update(payload).eq('id', id);
                 error = err;
             } else {
+                payload.id = 'dg_' + Date.now(); // Generate a unique TEXT ID
                 payload.created_at = new Date().toISOString();
                 payload.created_by = USER_MNV;
                 const { error: err } = await _supabase.from('diemgiaohang').insert([payload]);
@@ -749,6 +786,10 @@
         }
 
         async function deletePoint(id) {
+            if (!isStaff) {
+                alert("Bạn không có quyền xóa điểm giao này.");
+                return;
+            }
             if (!confirm("Bạn có chắc chắn muốn xóa điểm giao hàng này?")) return;
             
             const { error } = await _supabase.from('diemgiaohang').delete().eq('id', id);

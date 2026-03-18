@@ -2148,6 +2148,11 @@
         <span class="nav-label">Điểm Giao</span>
       </button>
 
+      <button class="nav-item" data-tab="lotrinh" onclick="openTab('lotrinh','tab_lotrinh_supabase.html')">
+        <div class="nav-icon" style="color: #4ade80"><i class="fas fa-route"></i></div>
+        <span class="nav-label">Lộ Trình</span>
+      </button>
+
       <div class="nav-divider"></div>
 
       <button class="nav-item admin-and-above" data-tab="danhgia"
@@ -2352,6 +2357,12 @@
               <i class="fas fa-gas-pump"></i>
             </div>
             <div class="label">Nhiên Liệu</div>
+          </div>
+          <div class="app-card" onclick="openTab('lotrinh','tab_lotrinh_supabase.html')">
+            <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #4ade80, #22c55e)">
+              <i class="fas fa-route"></i>
+            </div>
+            <div class="label">Lộ Trình</div>
           </div>
           <div class="app-card" onclick="openTab('lichlamviec','tab_lichlamviec_supabase.html')">
             <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #fbbf24, #fcd34d)">
@@ -3259,7 +3270,8 @@
       baocao: { icon: '<i class="fas fa-chart-pie"></i>', title: 'Báo Cáo' },
       lichlamviec: { icon: '<i class="fas fa-calendar-alt"></i>', title: 'Lịch Ca Trực' },
       dangkylich: { icon: '<i class="fas fa-edit"></i>', title: 'Đăng Ký Lịch' },
-      diemgiao: { icon: '<i class="fas fa-location-dot"></i>', title: 'Điểm Giao' }
+      diemgiao: { icon: '<i class="fas fa-location-dot"></i>', title: 'Điểm Giao' },
+      lotrinh: { icon: '<i class="fas fa-route"></i>', title: 'Lộ Trình' }
     };
 
     function showMyActivity() {
@@ -3294,6 +3306,7 @@
         'nhiemvu': ['manager', 'admin', 'taixe'],
         'thongbao': ['manager', 'admin', 'taixe'],
         'diemgiao': ['manager', 'admin', 'taixe'],
+        'lotrinh': ['manager', 'admin', 'taixe'],
         'lichlamviec': ['manager', 'admin', 'taixe']
       };
 

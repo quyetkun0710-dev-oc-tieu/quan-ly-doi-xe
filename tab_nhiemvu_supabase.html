@@ -594,7 +594,7 @@
             const statusClass = t.trang_thai === 'Hoàn thành' ? 'status-xong' : t.trang_thai === 'Đang thực hiện' ? 'status-dang' : t.trang_thai === 'Chờ xử lý' ? 'status-cho' : 'status-cxl';
             const deadline = t.han_hoan_thanh ? t.han_hoan_thanh.split('-').slice(1).reverse().join('/') : '-';
             html += `
-                <tr onclick="${isManager ? `editTask(${t.id})` : `openDriverConfirm(${t.id}, '${t.trang_thai === 'Chờ xử lý' ? 'Tiếp nhận' : 'Cập nhật'}')`}">
+                <tr onclick="${isManager ? `editTask('${t.id}')` : `openDriverConfirm('${t.id}', '${t.trang_thai === 'Chờ xử lý' ? 'Tiếp nhận' : 'Cập nhật'}')`}">
                     <td><div class="td-title">${t.tieu_de}</div><div class="td-sub">${t.loai_nhiem_vu}</div></td>
                     <td><span style="font-weight:600">${t.nguoi_thuc_hien || '-'}</span></td>
                     <td>${deadline}</td>
@@ -648,13 +648,13 @@
           <span class="status-tag ${statusClass}">${t.trang_thai || '—'}</span>
           <div class="task-actions">
             ${isManager ? `
-              ${!isDone ? `<button class="btn-icon" style="color:var(--warning)" onclick="sendReminder(${t.id})" title="Gửi nhắc nhở"><i class="fas fa-bell"></i></button>` : ''}
-              <button class="btn-icon" onclick="editTask(${t.id})" title="Sửa"><i class="fas fa-edit"></i></button>
-              <button class="btn-icon" style="color:var(--danger)" onclick="deleteTask(${t.id})" title="Xóa"><i class="fas fa-trash"></i></button>
+              ${!isDone ? `<button class="btn-icon" style="color:var(--warning)" onclick="sendReminder('${t.id}')" title="Gửi nhắc nhở"><i class="fas fa-bell"></i></button>` : ''}
+              <button class="btn-icon" onclick="editTask('${t.id}')" title="Sửa"><i class="fas fa-edit"></i></button>
+              <button class="btn-icon" style="color:var(--danger)" onclick="deleteTask('${t.id}')" title="Xóa"><i class="fas fa-trash"></i></button>
             ` : `
               <div style="display:flex; gap:8px;">
-                ${isMyTask && t.trang_thai === 'Chờ xử lý' ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Tiếp nhận')"><i class="fas fa-hand-point-right"></i> Tiếp nhận</button>` : ''}
-                ${isMyTask && (t.trang_thai === 'Đang thực hiện' || t.trang_thai === 'Đã tiếp nhận') ? `<button class="btn-update" onclick="openDriverConfirm(${t.id}, 'Cập nhật')"><i class="fas fa-edit"></i> Cập nhật tiến độ</button>` : ''}
+                ${isMyTask && t.trang_thai === 'Chờ xử lý' ? `<button class="btn-update" onclick="openDriverConfirm('${t.id}', 'Tiếp nhận')"><i class="fas fa-hand-point-right"></i> Tiếp nhận</button>` : ''}
+                ${isMyTask && (t.trang_thai === 'Đang thực hiện' || t.trang_thai === 'Đã tiếp nhận') ? `<button class="btn-update" onclick="openDriverConfirm('${t.id}', 'Cập nhật')"><i class="fas fa-edit"></i> Cập nhật tiến độ</button>` : ''}
               </div>
             `}
           </div>
@@ -828,8 +828,13 @@
       const el = document.getElementById(f); if(el) payload[f] = el.value;
     });
     try {
-      if (id) await _supabase.from('nhiemvu').update(payload).eq('id', id);
-      else await _supabase.from('nhiemvu').insert([payload]);
+      if (id) {
+        await _supabase.from('nhiemvu').update(payload).eq('id', id);
+      } else {
+        payload.id = 'task_' + Date.now(); // Generate unique TEXT ID
+        payload.created_at = new Date().toISOString();
+        await _supabase.from('nhiemvu').insert([payload]);
+      }
       
       showToast("Đã lưu nhiệm vụ!", "success");
 
