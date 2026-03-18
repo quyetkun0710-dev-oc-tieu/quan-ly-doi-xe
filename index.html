@@ -256,7 +256,7 @@
     }
 
     .sidebar:hover {
-      width: 220px;
+      width: 175px;
     }
 
     .sidebar-logo {
@@ -889,47 +889,58 @@
     }
 
     .home-welcome {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 24px;
-      padding: 2.5rem;
-      margin-bottom: 2rem;
-      display: flex;
-      align-items: center;
-      gap: 25px;
-      position: relative;
-      overflow: hidden;
+       background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
+       border: 1px solid rgba(99, 102, 241, 0.2);
+       border-radius: 24px;
+       padding: 2rem 2.5rem;
+       margin-bottom: 2rem;
+       display: flex;
+       align-items: center;
+       gap: 40px;
+       position: relative;
+       overflow: hidden;
     }
 
     .welcome-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 24px;
+      width: 180px;
+      height: 180px;
+      border-radius: 35px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.2rem;
+      font-size: 4rem;
       font-weight: 900;
       flex-shrink: 0;
-      box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(99, 102, 241, 0.2);
       z-index: 2;
+      border: 4px solid rgba(255, 255, 255, 0.1);
     }
 
     .welcome-text {
       z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .welcome-prefix {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      font-weight: 500;
     }
 
     .welcome-text h2 {
-      font-size: 1.8rem;
+      font-size: 2.8rem;
       font-weight: 800;
-      margin-bottom: 6px;
-      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+      letter-spacing: -1px;
+      color: #fff;
     }
 
-    .welcome-text p {
+    .welcome-date {
       color: var(--text-dim);
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 600;
     }
 
@@ -1384,18 +1395,18 @@
     .dashboard-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
 
     .dash-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 1.2rem;
+      border-radius: 16px;
+      padding: 0.8rem 1rem;
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
       cursor: pointer;
       transition: all 0.3s;
     }
@@ -1407,15 +1418,15 @@
     }
 
     .dash-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       background: rgba(99, 102, 241, 0.15);
       color: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
+      font-size: 1.2rem;
     }
 
     .dash-info h4 {
@@ -1426,13 +1437,13 @@
     }
 
     .dash-info .dash-value {
-      font-size: 1.3rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--text);
     }
 
     .dash-info .dash-sub {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: var(--success);
       font-weight: 600;
     }
@@ -1674,10 +1685,10 @@
         bottom: 0;
         top: 0;
         left: 0;
-        width: 280px !important;
+        width: 185px !important;
         height: 100vh;
         flex-direction: column;
-        padding: 2rem 1rem;
+        padding: 2rem 0.8rem;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         border-top: none;
         justify-content: flex-start;
@@ -1717,7 +1728,7 @@
       }
 
       .sidebar:hover {
-        width: 280px !important;
+        width: 185px !important;
       }
 
       .sidebar-logo {
@@ -1831,62 +1842,139 @@
       }
 
       .home-welcome {
-        flex-direction: column;
-        padding: 1.5rem 1rem;
-        text-align: center;
-        gap: 12px;
-        border-radius: 20px;
+        display: grid !important;
+        grid-template-areas: "avatar welcome weather" !important;
+        grid-template-columns: 105px 1fr 100px !important;
+        padding: 0.8rem 1rem !important;
+        text-align: left !important;
+        gap: 8px !important;
+        border-radius: 28px !important;
+        align-items: center !important;
+        min-height: 120px !important;
       }
 
       .welcome-avatar {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
+        grid-area: avatar;
+        width: 100px !important;
+        height: 100px !important;
+        margin: 0 !important;
+        border-radius: 24px !important;
+        font-size: 2.5rem !important;
+      }
+
+      .welcome-text {
+        grid-area: welcome;
+        text-align: left !important;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: auto;
+      }
+
+      .welcome-prefix {
+        font-size: 0.65rem !important;
+        margin-bottom: 0 !important;
       }
 
       .welcome-text h2 {
-        font-size: 1.3rem;
+        font-size: 0.95rem !important;
+        margin-bottom: 2px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
-      .welcome-text p {
-        font-size: 0.8rem;
+      .welcome-date {
+        font-size: 0.58rem !important;
       }
 
       .weather-widget {
-        margin-left: 0;
-        width: 100%;
-        padding: 10px;
-        justify-content: center;
+        grid-area: weather;
+        margin: 0 !important;
+        width: 100% !important;
+        padding: 4px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: flex-end !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+      }
+
+      .weather-icon {
+        font-size: 1.5rem !important;
+        margin-right: 0 !important;
+        line-height: 1;
+      }
+
+      .weather-info {
+        align-items: flex-end !important;
+      }
+
+      .weather-temp {
+        font-size: 1.1rem !important;
+        margin-bottom: 0px;
+        line-height: 1;
+      }
+
+      .weather-city {
+        font-size: 0.55rem !important;
+        white-space: nowrap;
+      }
+
+      .weather-desc {
+        display: none !important;
+      }
+
+      .weather-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1px !important;
+        font-size: 0.55rem !important;
+        border: none !important;
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+        margin-top: 4px !important;
+        align-items: flex-end !important;
+      }
+
+      .weather-details i {
+        font-size: 0.5rem !important;
       }
 
       .dashboard-stats {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+        gap: 0.4rem;
       }
 
       .dash-card {
-        padding: 0.6rem 0.5rem;
-        border-radius: 10px;
-        gap: 8px;
+        padding: 8px 10px !important;
+        border-radius: 12px !important;
+        gap: 8px !important;
       }
 
-      .dash-card h4 {
-        font-size: 0.55rem;
+      .dash-card .dash-info h4 {
+        font-size: 0.55rem !important;
+        margin-bottom: 2px !important;
       }
 
-      .dash-value {
-        font-size: 0.95rem;
+      .dash-card .dash-info .dash-value {
+        font-size: 0.9rem !important;
+        line-height: 1.1 !important;
       }
 
-      .dash-sub {
-        font-size: 0.55rem;
+      .dash-card .dash-info .dash-sub {
+        font-size: 0.55rem !important;
       }
 
-      .dash-icon {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9rem;
-        border-radius: 8px;
+      .dash-card .dash-icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px !important;
       }
 
       .app-grid {
@@ -2183,8 +2271,9 @@
         <div class="home-welcome">
           <div class="welcome-avatar" id="welcomeAvatar">👤</div>
           <div class="welcome-text">
-            <h2 id="welcomeName">Xin chào!</h2>
-            <p id="welcomeSubtitle">Chọn một mục để bắt đầu làm việc</p>
+            <div class="welcome-prefix">Xin chào,</div>
+            <h2 id="welcomeName">-</h2>
+            <div id="welcomeDate" class="welcome-date">-</div>
           </div>
 
           <!-- Weather Widget -->
@@ -2501,9 +2590,14 @@
           USER_ROLE === 'admin' ? 'Quản trị viên' : 'Tài xế';
 
       // Welcome
-      document.getElementById('welcomeName').textContent = `Xin chào, ${USER_NAME}!`;
-      document.getElementById('welcomeSubtitle').textContent =
-        `${new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`;
+      // Welcome structure: Line 1, Line 2 (Name), Line 3 (Date)
+      document.getElementById('welcomeName').textContent = USER_NAME;
+      const now = new Date();
+      const weekday = now.toLocaleDateString('vi-VN', { weekday: 'long' });
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      document.getElementById('welcomeDate').textContent = `${weekday}, ${day}/${month}/${year}`;
 
       // Chuyên cho Manager & Admin (Quản trị hệ thống)
       if (['manager', 'admin'].includes(USER_ROLE)) {
@@ -3189,7 +3283,7 @@
       // KIỂM SOÁT TRUY CẬP NGHIÊM NGẶT THEO ROLE
       const permissions = {
         'xe': ['manager', 'admin'],
-        'taixe': ['manager', 'admin'],
+        'taixe': ['manager', 'admin', 'taixe'],
         'baocao': ['manager', 'admin'],
         'danhgia': ['manager', 'admin'],
         'kehoach': ['manager', 'admin', 'taixe'],

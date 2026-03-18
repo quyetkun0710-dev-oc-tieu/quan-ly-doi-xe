@@ -500,154 +500,206 @@
             to { opacity: 1; }
         }
 
+        /* Image Preview Modal */
+        #imagePreviewModal {
+            z-index: 10002;
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        #imagePreviewModal .modal-content {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 95vw;
+        }
+
+        #previewImg {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 28px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1);
+            border: 8px solid rgba(255,255,255,0.05);
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: high-quality;
+            object-fit: contain;
+            filter: contrast(1.05) brightness(1.02);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #previewImg:hover { transform: scale(1.02); }
+
+        #previewName {
+            margin-top: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            background: rgba(15, 23, 42, 0.6);
+            padding: 8px 24px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .preview-initial-box {
+            width: 300px;
+            height: 300px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .driver-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.2);
+            background-size: cover !important;
+            background-repeat: no-repeat;
+            background-position: center;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .driver-avatar:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
         /* Comprehensive Mobile Responsive */
         @media (max-width: 768px) {
-            body { padding: 15px; }
+            body { padding: 12px; }
 
             header {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 1.5rem;
-                margin-bottom: 2.5rem;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
                 padding: 10px 0;
-                text-align: center;
             }
 
-            .logo-area { display: none; }
+            .logo-area {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 5px;
+            }
+
+            .logo-area .logo-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+            }
+
+            .logo-area h1 {
+                font-size: 1.4rem !important;
+                margin: 0;
+            }
+
+            .logo-area p { display: none; }
 
             .controls {
                 flex-direction: column;
-                width: 100%;
+                gap: 10px;
             }
 
-            .search-box { width: 100%; }
-            .search-box input { width: 100%; }
-            .btn-add { width: 100%; justify-content: center; }
-
-            .stats-row {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.6rem;
-                margin-bottom: 1.2rem;
+            .search-box { 
+                width: 100%; 
+                padding: 0.6rem 1rem;
             }
+            
+            .control-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-            .stat-card { 
-                padding: 0.8rem 0.5rem; 
-                border-radius: 12px;
-            }
-            .stat-card h3 { 
-                font-size: 0.65rem; 
-                margin-bottom: 2px;
-            }
-            .stat-card .value { font-size: 1.3rem; }
-
-            .filter-bar {
-                justify-content: center;
-                gap: 6px;
-                margin-bottom: 1.5rem;
-            }
-
-            /* 3 items per row for mobile */
+            /* 2 cards per row on mobile */
             .driver-grid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
             }
 
             .driver-card {
-                padding: 10px !important;
-                gap: 8px !important;
-                border-radius: 15px !important;
-                text-align: center;
-                opacity: 1 !important;
+                padding: 12px !important;
+                border-radius: 20px !important;
             }
 
             .driver-header {
                 flex-direction: column !important;
-                gap: 5px !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 8px !important;
             }
 
             .driver-avatar {
-                width: 45px !important;
-                height: 45px !important;
-                font-size: 1.1rem !important;
-                margin: 0 auto !important;
-            }
-
-            .driver-info-basic {
-                text-align: center !important;
+                width: 60px !important;
+                height: 60px !important;
+                border-radius: 18px !important;
             }
 
             .driver-name {
-                font-size: 0.75rem !important;
-                line-height: 1.2 !important;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
+                font-size: 0.85rem !important;
+                font-weight: 800 !important;
+            }
+            .driver-id { font-size: 0.65rem !important; }
+
+            .driver-badge, .gplx-badge {
+                font-size: 0.55rem !important;
+                padding: 2px 6px !important;
             }
 
-            .driver-id, .gplx-badge, .driver-badge, .driver-details, .card-actions, .badge-active, .badge-probation {
-                display: none !important;
+            .driver-details {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+                padding: 8px !important;
+                background: rgba(0,0,0,0.2) !important;
             }
+
+            .detail-item {
+                display: flex !important;
+                justify-content: space-between !important;
+                font-size: 0.65rem !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                padding-bottom: 2px;
+            }
+            .detail-label { opacity: 0.6; }
 
             .driver-contact {
-                display: flex !important;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
                 gap: 5px !important;
                 margin-top: 5px !important;
-                justify-content: center !important;
             }
-
-            .modal-content { padding: 1.5rem !important; width: 95% !important; max-width: 100% !important; border-radius: 20px !important; }
-            .modal-content h2 { font-size: 1.5rem !important; }
-            .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
-            .form-group { grid-column: span 1 !important; }
-            .tab-btn { padding: 8px 15px !important; font-size: 0.8rem !important; }
 
             .contact-pill {
-                padding: 4px 10px !important;
-                font-size: 0.75rem !important;
-                min-width: 70px !important; /* Wider for text */
-                height: 32px !important;
-                border-radius: 20px !important;
-                display: flex !important;
-                align-items: center !important;
+                padding: 6px !important;
+                font-size: 0.65rem !important;
                 justify-content: center !important;
-                gap: 5px !important;
             }
-            .contact-pill i { font-size: 0.8rem; }
-
-            .modal-content {
-                padding: 1.5rem;
-                border-radius: 24px;
+            
+            .card-actions {
+                top: 5px !important;
+                right: 5px !important;
             }
-
-            .modal-tabs {
-                gap: 5px;
-                padding-bottom: 5px;
-            }
-
-            .tab-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr !important;
-                gap: 1rem;
-            }
-            .controls {
-                flex-direction: column;
-                width: 100%;
-            }
-            .search-box { width: 100%; }
-            .search-box input { width: 100%; }
-            .control-btns { 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                gap: 8px; 
-                width: 100%; 
-            }
-            .btn-refresh, .btn-add { width: 100%; justify-content: center; margin:0; }
         }
     </style>
 </head>
@@ -998,7 +1050,9 @@
                 <div class="driver-badge" style="${badgeStyle}">${badgeText}</div>
                 ${statusBadge}
                 <div class="driver-header">
-                    <div class="driver-avatar" style="${d.avatar_url ? `background-image: url('${d.avatar_url}'); background-color: #1e293b;` : `background: ${getAvatarColor(d)};`} color: white; font-weight:900; letter-spacing:-1px">
+                    <div class="driver-avatar" 
+                         style="${d.avatar_url ? `background-image: url('${d.avatar_url}'); background-color: #1e293b;` : `background: ${getAvatarColor(d)};`} color: white; font-weight:900; letter-spacing:-1px"
+                         onclick="event.stopPropagation(); previewImage('${d.avatar_url || ''}', '${d.ho_ten || ''}', '${initials}')">
                         ${d.avatar_url ? '' : initials}
                     </div>
                     <div class="driver-info-basic">
@@ -1299,18 +1353,72 @@
             }
         } catch (e) { console.error("Error loading vehicles:", e); }
     }
+</script>
 
+<!-- Modal Xem Ảnh -->
+<div class="modal" id="imagePreviewModal" onclick="closePreview()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div id="previewInitial" class="preview-initial-box" style="display: none;"></div>
+        <img id="previewImg" src="" alt="Avatar" style="display: none;">
+        <div id="previewName"></div>
+        <div style="margin-top: 2rem; display: flex; gap: 10px;">
+            <button class="btn" style="background: rgba(255,255,255,0.1); color: white;" onclick="closePreview()">Đóng cửa sổ</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(url, name, initials) {
+        const modal = document.getElementById('imagePreviewModal');
+        const img = document.getElementById('previewImg');
+        const initialBox = document.getElementById('previewInitial');
+        const title = document.getElementById('previewName');
+        
+        title.innerText = name;
+        
+        if (url && url !== 'null') {
+            img.src = url;
+            img.style.display = 'block';
+            initialBox.style.display = 'none';
+        } else {
+            img.style.display = 'none';
+            initialBox.style.display = 'flex';
+            initialBox.innerText = initials;
+            initialBox.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
+        }
+        
+        modal.classList.add('active');
+    }
+
+    function closePreview() {
+        document.getElementById('imagePreviewModal').classList.remove('active');
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-        checkAccess();
+        if (typeof checkAccess === 'function') checkAccess();
+        
+        // Hide Add Button for non-admin roles (Tài xế/Hồ sơ chỉ được xem)
+        if (!['manager', 'admin'].includes((USER_ROLE || '').toLowerCase())) {
+            const btnAdd = document.querySelector('.btn-add');
+            if (btnAdd) btnAdd.style.display = 'none';
+        }
+
         loadDrivers();
         loadVehicleOptions();
         
         // Realtime Subscription
-        _supabase.channel('taixe-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'taixe' }, () => loadDrivers(true))
-            .subscribe();
+        if (typeof _supabase !== 'undefined') {
+            _supabase.channel('taixe-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'taixe' }, () => loadDrivers(true))
+                .subscribe();
+        }
     });
+
+    function checkAccess() {
+        if (typeof USER_ROLE === 'undefined' || !USER_ROLE) {
+            window.location.href = 'index.html';
+        }
+    }
 </script>
 
 </body>
