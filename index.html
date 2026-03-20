@@ -2620,7 +2620,11 @@
       // Cho Admin và Manager (Quyền văn phòng/báo cáo)
       if (['manager', 'admin'].includes(USER_ROLE)) {
         document.querySelectorAll('.admin-and-above').forEach(el => {
-          el.style.display = (el.tagName === 'BUTTON' || el.classList.contains('dash-card') || el.classList.contains('app-card')) ? 'flex' : 'block';
+          if (el.classList.contains('mobile-search-toggle')) {
+            el.style.display = (window.innerWidth <= 768) ? 'flex' : 'none';
+          } else {
+            el.style.display = (el.tagName === 'BUTTON' || el.classList.contains('dash-card') || el.classList.contains('app-card')) ? 'flex' : 'block';
+          }
         });
       } else {
         document.querySelectorAll('.admin-and-above').forEach(el => el.style.display = 'none');
@@ -2670,10 +2674,11 @@
     }
 
     function broadcastDataChange(table) {
-      const frame = document.getElementById('tabFrame');
-      if (frame && frame.contentWindow) {
-        frame.contentWindow.postMessage({ type: 'dataChanged', table: table }, '*');
-      }
+      document.querySelectorAll('.tab-frame').forEach(frame => {
+        if (frame.contentWindow) {
+          frame.contentWindow.postMessage({ type: 'dataChanged', table: table }, '*');
+        }
+      });
     }
 
     // ============ WEATHER LOGIC (Navigator Geolocation & Open-Meteo) ============
@@ -3277,15 +3282,7 @@
       viewSearchResults('taixe', USER_MNV);
       closeProfile();
     }
-    function goHome() {
-      currentTab = 'home';
-      setActiveNav('home');
-      document.getElementById('homeScreen').style.display = 'block';
-      document.getElementById('tabContainer').style.display = 'none';
-      document.getElementById('tabFrame').src = '';
-      document.getElementById('topbarIcon').innerHTML = '<i class="fas fa-home"></i>';
-      document.getElementById('topbarTitle').textContent = 'Trang chủ';
-    }
+
 
     // Cấu hình các tab quan trọng để giữ lại (Cache) nhằm tăng tốc độ chuyển tab (Silent Loading)
     const CACHED_TABS = ['home', 'nhiemvu', 'fuel', 'nhatky', 'lotrinh', 'baoduong'];
@@ -3477,13 +3474,7 @@
       document.getElementById('homeScreen').style.display = 'block';
       document.getElementById('tabContainer').style.display = 'none';
 
-      const frame = document.getElementById('tabFrame');
-      try {
-        if (frame.contentWindow) frame.contentWindow.location.replace('about:blank');
-        else frame.src = 'about:blank';
-      } catch (ex) { frame.src = 'about:blank'; }
-
-      document.getElementById('topbarIcon').textContent = '🏠';
+      document.getElementById('topbarIcon').innerHTML = '<i class="fas fa-home"></i>';
       document.getElementById('topbarTitle').textContent = 'Trang chủ';
     }
 
@@ -3494,11 +3485,12 @@
       document.getElementById('profileDropdown')?.classList.remove('active');
       document.getElementById('appShell').classList.remove('active');
 
-      const frame = document.getElementById('tabFrame');
-      try {
-        if (frame.contentWindow) frame.contentWindow.location.replace('about:blank');
-        else frame.src = 'about:blank';
-      } catch (ex) { frame.src = 'about:blank'; }
+      // Xóa tất cả các tab đã load trong tabContainer
+      const container = document.getElementById('tabContainer');
+      if (container) {
+          container.innerHTML = '';
+          container.style.display = 'none';
+      }
 
       document.getElementById('loginUser').value = '';
       document.getElementById('loginPass').value = '';
@@ -3761,10 +3753,10 @@
       } else if (data && data.type === 'toast') {
         showToast(data.message, data.theme || 'success');
       } else if (data && data.type === 'confirmRequest') {
+        const sourceWin = e.source;
         showPremiumConfirm(data.title, data.message, (res) => {
-          const frame = document.getElementById('tabFrame');
-          if (frame && frame.contentWindow) {
-            frame.contentWindow.postMessage({ type: 'confirmResponse', result: res, requestId: data.requestId }, '*');
+          if (sourceWin) {
+            sourceWin.postMessage({ type: 'confirmResponse', result: res, requestId: data.requestId }, '*');
           }
         });
       }

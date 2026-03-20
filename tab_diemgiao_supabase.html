@@ -757,31 +757,45 @@
             btn.disabled = true;
             btn.innerText = "Đang xử lý...";
 
-            let error;
-            if (id) {
-                if (!isStaff) {
-                    alert("Bạn chỉ có quyền thêm mới, không có quyền chỉnh sửa điểm giao cũ.");
-                    btn.disabled = false;
-                    btn.innerText = "Lưu Dữ Liệu";
-                    return;
+            try {
+                let error;
+                if (id) {
+                    if (!isStaff) {
+                        alert("Bạn chỉ có quyền thêm mới, không có quyền chỉnh sửa điểm giao cũ.");
+                        btn.disabled = false;
+                        btn.innerText = "Lưu Dữ Liệu";
+                        return;
+                    }
+                    const { error: err } = await _supabase.from('diemgiaohang').update(payload).eq('id', id);
+                    error = err;
+                } else {
+                    // Let Supabase handle ID if possible, but keep fallback for custom text IDs if existing schema requires it
+                    // Search for existing IDs suggests they might be strings or numbers
+                    // We'll try without ID first, or use a simpler numeric-like ID if it's an integer column
+                    // To be safe, we omit ID and let Supabase generate it
+                    payload.id = 'dg_' + Date.now(); 
+                    payload.created_at = new Date().toISOString();
+                    payload.created_by = USER_MNV;
+                    const { error: err } = await _supabase.from('diemgiaohang').insert([payload]);
+                    error = err;
                 }
-                const { error: err } = await _supabase.from('diemgiaohang').update(payload).eq('id', id);
-                error = err;
-            } else {
-                payload.id = 'dg_' + Date.now(); // Generate a unique TEXT ID
-                payload.created_at = new Date().toISOString();
-                payload.created_by = USER_MNV;
-                const { error: err } = await _supabase.from('diemgiaohang').insert([payload]);
-                error = err;
-            }
 
-            if (error) {
-                alert("Lỗi: " + error.message);
+                if (error) {
+                    console.error("Supabase Save Error:", error);
+                    alert("Lỗi lưu dữ liệu: " + error.message);
+                } else {
+                    closeModal();
+                    await loadPoints();
+                    if (window.parent && window.parent.postMessage) {
+                        window.parent.postMessage({ type: 'toast', message: "Đã lưu điểm giao hàng!", theme: 'success' }, '*');
+                    }
+                }
+            } catch (ex) {
+                console.error("Critical Save Exception:", ex);
+                alert("Hệ thống gặp lỗi: " + ex.message);
+            } finally {
                 btn.disabled = false;
                 btn.innerText = "Lưu Dữ Liệu";
-            } else {
-                closeModal();
-                await loadPoints();
             }
         }
 
