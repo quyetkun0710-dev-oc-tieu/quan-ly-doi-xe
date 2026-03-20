@@ -1142,7 +1142,6 @@
 
             const id = document.getElementById('editId').value;
         try {
-            let res;
             if (id) {
                 // Security check for update
                 const existing = allLogs.find(l => l.id == id);
@@ -1152,11 +1151,21 @@
                     showToast("Bạn không có quyền sửa nhật ký của người khác.", "error");
                     return;
                 }
-                res = await _supabase.from('nhatky').update(payload).eq('id', id);
-            }
-            else res = await _supabase.from('nhatky').insert([payload]);
+                const { error } = await _supabase.from('nhatky').update(payload).eq('id', id);
+                if (error) throw error;
 
-            if (res.error) throw res.error;
+                if (window.parent && window.parent.logAudit) {
+                    window.parent.logAudit('nhatky', id, 'UPDATE', existing, payload);
+                }
+            }
+            else {
+                const { data, error } = await _supabase.from('nhatky').insert([payload]).select();
+                if (error) throw error;
+
+                if (window.parent && window.parent.logAudit && data) {
+                    window.parent.logAudit('nhatky', data[0].id, 'INSERT', null, payload);
+                }
+            }
 
             showToast("Đã lưu nhật ký vận hành thành công!", "success");
             
@@ -1198,6 +1207,9 @@
                     if (error) {
                         showToast("Lỗi khi xóa: " + error.message, "error");
                     } else {
+                        if (window.parent && window.parent.logAudit) {
+                            window.parent.logAudit('nhatky', id, 'DELETE', existing, null);
+                        }
                         showToast("Đã xóa nhật ký thành công");
                         loadLogs(true);
                     }
@@ -1217,7 +1229,7 @@
                 if (activeConfirmCallback) activeConfirmCallback(data.result);
                 activeConfirmId = null;
                 activeConfirmCallback = null;
-            } else if (data && data.type === 'dataChanged' && (data.table === 'nhatky' || !data.table)) {
+            } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
                 loadLogs(true);
             }
         });

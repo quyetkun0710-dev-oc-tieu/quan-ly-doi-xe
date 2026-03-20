@@ -889,16 +889,16 @@
     }
 
     .home-welcome {
-       background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
-       border: 1px solid rgba(99, 102, 241, 0.2);
-       border-radius: 24px;
-       padding: 2rem 2.5rem;
-       margin-bottom: 2rem;
-       display: flex;
-       align-items: center;
-       gap: 40px;
-       position: relative;
-       overflow: hidden;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 24px;
+      padding: 2rem 2.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
     }
 
     .welcome-avatar {
@@ -2424,11 +2424,9 @@
         </div>
       </div>
 
-      <!-- TAB CONTENT -->
-      <div id="tabContainer" style="display:none; flex:1;">
-        <iframe id="tabFrame" src="about:blank"
-          style="width:100%;border:none;min-height:calc(100vh - 60px);background:transparent;"
-          onload="onFrameLoad()"></iframe>
+      <!-- TAB CONTENT (Cải tiến với hệ thống đa iframe để Silent Loading) -->
+      <div id="tabContainer" style="display:none; flex:1; position: relative;">
+        <!-- Các iframe sẽ được chèn động vào đây bởi openTab() -->
       </div>
     </div>
   </div>
@@ -3289,6 +3287,27 @@
       document.getElementById('topbarTitle').textContent = 'Trang chủ';
     }
 
+    // Cấu hình các tab quan trọng để giữ lại (Cache) nhằm tăng tốc độ chuyển tab (Silent Loading)
+    const CACHED_TABS = ['home', 'nhiemvu', 'fuel', 'nhatky', 'lotrinh', 'baoduong'];
+    const tabCache = {}; // Lưu trữ iframe của các tab đã mở
+
+    async function logAudit(tableName, recordId, action, oldData, newData) {
+      if (!USER_MNV) return; // Chỉ log khi đã đăng nhập
+      try {
+        await _supabase.from('audit_logs').insert({
+          table_name: tableName,
+          record_id: recordId ? recordId.toString() : 'new',
+          action: action,
+          old_data: oldData,
+          new_data: newData,
+          changed_by: USER_MNV
+        });
+        console.log(`[Audit] Logged ${action} on ${tableName}:${recordId}`);
+      } catch (err) {
+        console.error("[Audit] Error logging change:", err);
+      }
+    }
+
     function openTab(tabKey, fileName) {
       if (!tabKey) return;
 
@@ -3317,14 +3336,14 @@
       }
 
       setActiveNav(tabKey);
-      setActiveNav(tabKey);
 
       // Close sidebar if on mobile
       if (window.innerWidth <= 768) closeSidebar();
 
       // Ẩn home, hiện tab container
       document.getElementById('homeScreen').style.display = 'none';
-      document.getElementById('tabContainer').style.display = 'flex';
+      const container = document.getElementById('tabContainer');
+      container.style.display = 'flex';
 
       // Cập nhật topbar
       const meta = TAB_META[tabKey] || { icon: '📄', title: tabKey };
@@ -3335,21 +3354,38 @@
       }
       document.getElementById('topbarTitle').textContent = meta.title;
 
-      // Load tab vào iframe using replace to prevent history build-up (stops edge-swipe back/forward)
-      // Thêm cache buster để đảm bảo cập nhật code mới nhất
-      const frame = document.getElementById('tabFrame');
-      const urlWithCacheBuster = fileName + '?v=' + Date.now();
-      if (frame.contentWindow) {
-        frame.contentWindow.location.replace(urlWithCacheBuster);
+      // SILENT LOADING LOGIC: Sử dụng hệ thống đa iframe để giữ cache
+      // Ẩn tất cả các iframe hiện có trong container
+      const allFrames = container.querySelectorAll('iframe');
+      allFrames.forEach(f => f.style.display = 'none');
+
+      let currentFrameId = `frame_${tabKey}`;
+      let frame = document.getElementById(currentFrameId);
+
+      // Nếu chưa có iframe cho tab này, tạo mới
+      if (!frame) {
+        frame = document.createElement('iframe');
+        frame.id = currentFrameId;
+        frame.className = 'tab-frame';
+        frame.style.width = '100%';
+        frame.style.height = '100%';
+        frame.style.border = 'none';
+        frame.src = fileName + '?v=' + Date.now();
+        frame.onload = () => onFrameLoad(frame);
+        container.appendChild(frame);
       } else {
-        frame.src = urlWithCacheBuster;
+        // Nếu đã có, chỉ cần hiển thị lại (Instant Load)
+        frame.style.display = 'block';
+        // Thông báo cho con biết nó vừa được "hiện" để nó có thể refresh data nếu cần
+        if (frame.contentWindow) {
+          frame.contentWindow.postMessage({ type: 'tabActivated' }, '*');
+        }
       }
     }
 
-    function onFrameLoad() {
-      // Khi iframe load xong — có thể truyền session vào
+    function onFrameLoad(frame) {
+      // Khi iframe load xong — truyền session vào
       try {
-        const frame = document.getElementById('tabFrame');
         const fw = frame.contentWindow;
         fw.sessionStorage.setItem('role', USER_ROLE);
         fw.sessionStorage.setItem('mnv', USER_MNV);
@@ -3357,17 +3393,15 @@
         fw.sessionStorage.setItem('xe_phu_trach', sessionStorage.getItem('xe_phu_trach') || '');
         fw.sessionStorage.setItem('logged', '1');
 
-        // Init Drawer Swipe for iframe
         if (fw.document) {
           initDrawerSwipe(fw.document);
-          // Also disable overscroll gestures inside the frame
           if (fw.document.body) {
             fw.document.body.style.overscrollBehavior = 'none';
             fw.document.documentElement.style.overscrollBehavior = 'none';
           }
         }
       } catch (e) {
-        // Cross-origin nếu dùng server - bỏ qua
+        console.warn("Frame load init failed:", e);
       }
     }
 

@@ -920,7 +920,8 @@
     document.getElementById('fuelForm').onsubmit = async (e) => {
         e.preventDefault();
         const role = (sessionStorage.getItem('role') || 'driver').toLowerCase();
-        if (!['manager', 'admin'].includes(role) && document.getElementById('editId').value) {
+        const id = document.getElementById('editId').value;
+        if (!['manager', 'admin'].includes(role) && id) {
             showToast("Bạn không có quyền sửa dữ liệu của người khác.", "error");
             return;
         }
@@ -942,17 +943,30 @@
             }
         });
 
-        const id = document.getElementById('editId').value;
         try {
-            let res;
-            if (id) res = await _supabase.from('fuel').update(payload).eq('id', id);
-            else res = await _supabase.from('fuel').insert([payload]);
-
-            if (res.error) throw res.error;
+            if (id) {
+                // AUDIT: Lấy dữ liệu cũ trước khi update
+                const oldItem = allFuelData.find(i => i.id == id);
+                const { error } = await _supabase.from('fuel').update(payload).eq('id', id);
+                if (error) throw error;
+                
+                // Ghi log audit
+                if (window.parent && window.parent.logAudit) {
+                    window.parent.logAudit('fuel', id, 'UPDATE', oldItem, payload);
+                }
+            } else {
+                const { data, error } = await _supabase.from('fuel').insert([payload]).select();
+                if (error) throw error;
+                
+                // Ghi log audit cho insert
+                if (window.parent && window.parent.logAudit && data) {
+                    window.parent.logAudit('fuel', data[0].id, 'INSERT', null, payload);
+                }
+            }
 
             showToast("Đã lưu dữ liệu cấp nhiên liệu!", "success");
             closeModal();
-            loadFuelData();
+            loadFuelData(true);
         } catch (error) { 
             showToast("Lỗi lưu dữ liệu: " + error.message, "error"); 
         } finally { 
@@ -973,10 +987,14 @@
         }
         showConfirm("Xác nhận xóa", "Bạn có chắc chắn muốn xóa bản ghi cấp nhiên liệu này không?", async (res) => {
             if (res) {
+                const oldItem = allFuelData.find(i => i.id == id);
                 const { error } = await _supabase.from('fuel').delete().eq('id', id);
                 if (error) {
                     showToast("Lỗi khi xóa: " + error.message, "error");
                 } else {
+                    if (window.parent && window.parent.logAudit) {
+                        window.parent.logAudit('fuel', id, 'DELETE', oldItem, null);
+                    }
                     showToast("Đã xóa bản ghi thành công");
                     loadFuelData(true);
                 }
@@ -999,7 +1017,8 @@
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
-        } else if (data && data.type === 'dataChanged' && (data.table === 'fuel' || !data.table)) {
+        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
+            // Khi tab được kích hoạt lại (Silent Loading), tự động tải lại dữ liệu ngầm
             loadFuelData(true);
         }
     });

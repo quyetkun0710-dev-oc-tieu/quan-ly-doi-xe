@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --primary: #6366f1; --secondary: #a855f7; --accent: #00ffcc;
@@ -176,6 +178,20 @@
         @media (max-width: 480px) {
             #stopsContainer { grid-template-columns: 1fr; } /* 1 column on very small phones */
         }
+
+        /* Map Styles */
+        #map {
+            width: 100%;
+            height: 350px;
+            border-radius: 24px;
+            margin-bottom: 25px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        .leaflet-container {
+            background: #111b2d !important;
+        }
     </style>
 </head>
 <body>
@@ -202,6 +218,9 @@
         </div>
 
         <div class="route-panel">
+            <!-- Bản đồ lộ trình trực quan -->
+            <div id="map"></div>
+
             <div class="visual-flow" id="visualFlow">
                 <p style="text-align:center; width:100%; color:var(--text-dim); font-weight:600;">HÃY CHỌN CÁC ĐIỂM ĐỂ BẮT ĐẦU TUYẾN ĐƯỜNG</p>
             </div>
@@ -356,6 +375,7 @@
             document.getElementById('resTime').innerText = totalTravelTime + ' Phút';
             document.getElementById('resEnd').innerText = runningTime.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', hour12:false});
             renderVisualFlow(stops);
+            updateMap(stops);
         }
 
         function updateStopUI(item, i, total) {
@@ -413,6 +433,64 @@
             }
         }
 
+        let map, routeLayer, markers = [];
+
+        async function initMap() {
+            map = L.map('map').setView([10.762622, 106.660172], 10); // Center on HCM
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+            
+            // Custom Dark Theme for Leaflet
+            document.querySelector('.leaflet-tile-container').style.filter = 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)';
+        }
+
+        function updateMap(stops) {
+            if (!map) return;
+            
+            // Clear old markers/layers
+            if (routeLayer) map.removeLayer(routeLayer);
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const latlngs = [];
+            const stopIcons = {
+                start: L.divIcon({ className: 'custom-div-icon', html: "<div style='background:#10b981; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px #10b981'></div>", iconSize: [12, 12] }),
+                mid: L.divIcon({ className: 'custom-div-icon', html: "<div style='background:#6366f1; width:10px; height:10px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px #6366f1'></div>", iconSize: [10, 10] }),
+                end: L.divIcon({ className: 'custom-div-icon', html: "<div style='background:#f43f5e; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px #f43f5e'></div>", iconSize: [12, 12] })
+            };
+
+            stops.forEach((s, i) => {
+                const lat = parseFloat(s.dataset.lat);
+                const lng = parseFloat(s.dataset.lng);
+                if (lat && lng) {
+                    const pos = [lat, lng];
+                    latlngs.push(pos);
+                    
+                    let icon = stopIcons.mid;
+                    if (i === 0) icon = stopIcons.start;
+                    else if (i === stops.length - 1) icon = stopIcons.end;
+
+                    const marker = L.marker(pos, { icon: icon }).addTo(map)
+                        .bindPopup(`<b>${i + 1}. ${s.querySelector('h4').innerText}</b>`);
+                    markers.push(marker);
+                }
+            });
+
+            if (latlngs.length > 1) {
+                routeLayer = L.polyline(latlngs, {
+                    color: '#6366f1',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 10',
+                    lineJoin: 'round'
+                }).addTo(map);
+                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+            } else if (latlngs.length === 1) {
+                map.setView(latlngs[0], 13);
+            }
+        }
+
         async function saveToSupabase() { 
             const stopsElements = document.querySelectorAll('.stop-item');
             if (stopsElements.length === 0) {
@@ -428,6 +506,8 @@
             stopsElements.forEach(el => {
                 stopsData.push({
                     name: el.querySelector('h4').innerText,
+                    lat: el.dataset.lat,
+                    lng: el.dataset.lng,
                     time_range: el.querySelector('.inp-time-range').value,
                     stay_min: el.querySelector('.inp-stay').value,
                     next_dist_km: el.querySelector('.inp-next-dist').value,
@@ -448,7 +528,7 @@
                     tong_km: totalKm,
                     tong_phut: totalMin,
                     ngay_lap: new Date().toISOString().split('T')[0]
-                }]);
+                }]).select();
 
                 if (error) {
                     if (error.code === '42P01') {
@@ -457,6 +537,14 @@
                         throw error;
                     }
                 } else {
+                    // Ghi log Audit
+                    if (window.parent && window.parent.logAudit && data) {
+                        window.parent.logAudit('lotrinh', data[0].id, 'INSERT', null, { 
+                            ten_lotrinh: routeName, 
+                            stops_count: stopsData.length,
+                            tong_km: totalKm 
+                        });
+                    }
                     showToast(`Đã lưu lộ trình "${routeName}" thành công!`, "success");
                     nameInput.value = "";
                 }
@@ -465,6 +553,20 @@
                 showToast("Lỗi khi lưu: " + err.message, "error");
             }
         }
+
+        window.addEventListener('message', (e) => {
+            const data = e.data;
+            if (data && data.type === 'tabActivated') {
+                // Resize map when tab is shown to fix rendering bugs
+                if (map) setTimeout(() => map.invalidateSize(), 300);
+            }
+        });
+
+        // Initialize things
+        (async () => {
+            await initMap();
+            await loadData();
+        })();
     </script>
 </body>
 </html>

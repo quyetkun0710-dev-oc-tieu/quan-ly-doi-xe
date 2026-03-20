@@ -989,11 +989,22 @@
 
         const id = document.getElementById('editId').value;
         try {
-            let res;
-            if (id) res = await _supabase.from('baoduong').update(payload).eq('id', id);
-            else res = await _supabase.from('baoduong').insert([payload]);
+            if (id) {
+                const oldItem = allMaintenance.find(i => i.id == id);
+                const { error } = await _supabase.from('baoduong').update(payload).eq('id', id);
+                if (error) throw error;
 
-            if (res.error) throw res.error;
+                if (window.parent && window.parent.logAudit) {
+                    window.parent.logAudit('baoduong', id, 'UPDATE', oldItem, payload);
+                }
+            } else {
+                const { data, error } = await _supabase.from('baoduong').insert([payload]).select();
+                if (error) throw error;
+
+                if (window.parent && window.parent.logAudit && data) {
+                    window.parent.logAudit('baoduong', data[0].id, 'INSERT', null, payload);
+                }
+            }
 
             showToast("Đã lưu dữ liệu bảo dưỡng thành công!");
             closeModal();
@@ -1013,10 +1024,14 @@
     async function deleteItem(id) {
         showConfirm("Xóa bản ghi", "Bạn có chắc chắn muốn xóa phiếu bảo trì này không?", async (res) => {
             if (res) {
+                const oldItem = allMaintenance.find(i => i.id == id);
                 const { error } = await _supabase.from('baoduong').delete().eq('id', id);
                 if (error) {
                     showToast("Lỗi khi xóa: " + error.message, "error");
                 } else {
+                    if (window.parent && window.parent.logAudit) {
+                        window.parent.logAudit('baoduong', id, 'DELETE', oldItem, null);
+                    }
                     showToast("Đã xóa bản ghi thành công");
                     loadMaintenance();
                 }
@@ -1039,7 +1054,7 @@
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
-        } else if (data && data.type === 'dataChanged' && (data.table === 'baoduong' || !data.table)) {
+        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
             loadMaintenance();
         }
     });

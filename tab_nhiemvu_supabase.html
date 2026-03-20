@@ -629,8 +629,24 @@
 
       const statusClass = t.trang_thai === 'Hoàn thành' ? 'status-xong' : t.trang_thai === 'Đang thực hiện' ? 'status-dang' : t.trang_thai === 'Chờ xử lý' ? 'status-cho' : 'status-cxl';
       const daysLeft = t.han_hoan_thanh ? Math.ceil((new Date(t.han_hoan_thanh) - new Date()) / 86400000) : null;
-      const deadlineStr = daysLeft !== null ? (daysLeft < 0 ? `⚠ Quá hạn ${Math.abs(daysLeft)} ngày` : daysLeft === 0 ? '⏰ Hôm nay' : `📅 Còn ${daysLeft} ngày`) : '—';
-      const deadlineColor = daysLeft !== null && daysLeft < 0 ? 'var(--danger)' : daysLeft === 0 ? 'var(--warning)' : 'inherit';
+      
+      let deadlineStr = '—';
+      let deadlineColor = 'inherit';
+      
+      if (isDone) {
+          deadlineStr = '✅ Đã hoàn thành';
+          deadlineColor = 'var(--success)';
+      } else if (daysLeft !== null) {
+          if (daysLeft < 0) {
+              deadlineStr = `⚠ Quá hạn ${Math.abs(daysLeft)} ngày`;
+              deadlineColor = 'var(--danger)';
+          } else if (daysLeft === 0) {
+              deadlineStr = '⏰ Hôm nay';
+              deadlineColor = 'var(--warning)';
+          } else {
+              deadlineStr = `📅 Còn ${daysLeft} ngày`;
+          }
+      }
 
       card.innerHTML += `
         <div class="task-header">
@@ -687,8 +703,12 @@
 
   async function deleteTask(id) {
     if (!confirm('Xóa nhiệm vụ này?')) return;
+    const oldItem = allTasks.find(x => x.id == id);
     const { error } = await _supabase.from('nhiemvu').delete().eq('id', id);
     if (!error) {
+       if (window.parent && window.parent.logAudit) {
+           window.parent.logAudit('nhiemvu', id, 'DELETE', oldItem, null);
+       }
        showToast("Đã xóa nhiệm vụ!");
        loadTasks();
     }
@@ -789,6 +809,7 @@
 
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
     try {
+        const oldItem = allTasks.find(x => x.id == id);
         const payload = { 
           trang_thai: status, 
           updated_at: new Date().toISOString()
@@ -803,6 +824,10 @@
         const { error } = await _supabase.from('nhiemvu').update(payload).eq('id', id);
         if (error) throw error;
         
+        if (window.parent && window.parent.logAudit) {
+            window.parent.logAudit('nhiemvu', id, 'UPDATE', oldItem, payload);
+        }
+
         const successMsg = status === 'Hoàn thành' ? 'Chúc mừng! Bạn đã hoàn thành nhiệm vụ 🎉' : (isFirstAccept ? 'Đã tiếp nhận nhiệm vụ. Chúc bạn vạn dặm bình an!' : 'Đã cập nhật tiến độ.');
         showToast(successMsg);
         
@@ -829,11 +854,21 @@
     });
     try {
       if (id) {
-        await _supabase.from('nhiemvu').update(payload).eq('id', id);
+        const oldItem = allTasks.find(x => x.id == id);
+        const { error } = await _supabase.from('nhiemvu').update(payload).eq('id', id);
+        if (error) throw error;
+        if (window.parent && window.parent.logAudit) {
+            window.parent.logAudit('nhiemvu', id, 'UPDATE', oldItem, payload);
+        }
       } else {
-        payload.id = 'task_' + Date.now(); // Generate unique TEXT ID
+        const uniqueId = 'task_' + Date.now();
+        payload.id = uniqueId; 
         payload.created_at = new Date().toISOString();
-        await _supabase.from('nhiemvu').insert([payload]);
+        const { error } = await _supabase.from('nhiemvu').insert([payload]);
+        if (error) throw error;
+        if (window.parent && window.parent.logAudit) {
+            window.parent.logAudit('nhiemvu', uniqueId, 'INSERT', null, payload);
+        }
       }
       
       showToast("Đã lưu nhiệm vụ!", "success");
@@ -853,7 +888,7 @@
         if (activeConfirmCallback) activeConfirmCallback(data.result);
         activeConfirmId = null;
         activeConfirmCallback = null;
-    } else if (data && data.type === 'dataChanged' && (data.table === 'nhiemvu' || !data.table)) {
+    } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
         loadTasks(true);
     }
   });
