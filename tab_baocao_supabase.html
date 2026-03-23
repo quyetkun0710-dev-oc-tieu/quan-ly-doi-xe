@@ -423,46 +423,35 @@
     return `${year}-${month}-${day}`;
   }
 
-  function applyQuickRange() {
+  // Tách biệt việc set ngày và việc tải báo cáo để tránh đệ quy và lỗi load
+  function applyQuickRange(shouldLoad = true) {
     const val = document.getElementById('quickRange').value;
     const today = new Date();
     let from, to;
 
     if (val === 'month') {
-      // Từ ngày 01 tháng này → hôm nay
       from = new Date(today.getFullYear(), today.getMonth(), 1);
       to = today;
-
     } else if (val === 'prev_month') {
-      // Từ ngày 01 → ngày cuối tháng trước
       from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0); // ngày 0 = ngày cuối tháng trước
-
+      to = new Date(today.getFullYear(), today.getMonth(), 0);
     } else if (val === 'prev2_month') {
       from = new Date(today.getFullYear(), today.getMonth() - 2, 1);
       to = new Date(today.getFullYear(), today.getMonth() - 1, 0);
-
     } else if (val === 'prev3_month') {
       from = new Date(today.getFullYear(), today.getMonth() - 3, 1);
       to = new Date(today.getFullYear(), today.getMonth() - 2, 0);
-
     } else if (val === 'quarter') {
-      // Quý hiện tại: tháng 1-3, 4-6, 7-9, 10-12
       const quarterStart = Math.floor(today.getMonth() / 3) * 3;
       from = new Date(today.getFullYear(), quarterStart, 1);
       to = today;
-
     } else if (val === 'year') {
-      // Đầu năm đến nay
       from = new Date(today.getFullYear(), 0, 1);
       to = today;
-
     } else if (val === 'all') {
       from = new Date('2020-01-01');
       to = today;
-
     } else {
-      // Số ngày qua (7, 30, ...)
       from = new Date(today);
       from.setDate(today.getDate() - parseInt(val));
       to = today;
@@ -470,7 +459,8 @@
 
     document.getElementById('fromDate').value = getLocalDateString(from);
     document.getElementById('toDate').value = getLocalDateString(to);
-    loadReport();
+    
+    if (shouldLoad) loadReport();
   }
 
   function scrollTo(id) {
@@ -479,14 +469,12 @@
   }
 
   async function loadReport(isSilent = false) {
-    let fromDate = document.getElementById('fromDate').value;
-    let toDate = document.getElementById('toDate').value;
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
 
-    // Safety: nếu chưa có ngày thì tự set tháng này
     if (!fromDate || !toDate) {
-      document.getElementById('quickRange').value = 'month';
-      applyQuickRange(); // gọi hàm chuẩn để set đúng ngày và load
-      return;
+      console.warn("Dates are missing, delaying loadReport...");
+      return; 
     }
 
     const refreshBtn = document.querySelector('.btn-refresh');
@@ -944,39 +932,38 @@
     document.body.removeChild(link);
   }
 
-  // INIT
-  function initApp() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Luôn luôn khởi tạo khoảng thời gian là "Tháng này" (Mặc định: Ngày 01 → Hôm nay)
-    const selectRange = document.getElementById('quickRange');
-    if (selectRange) {
-        selectRange.value = 'month';
-        applyQuickRange(); 
-    }
-  }
+  // INIT - Self-firing function to ensure it runs
+  (function initAll() {
+    try {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        const qr = document.getElementById('quickRange');
+        if (qr) {
+            qr.value = 'month';
+            applyQuickRange(false); // Set dates locally immediately
+            
+            // Wait slightly for DOM to settle then load from Supabase
+            setTimeout(() => {
+               const f = document.getElementById('fromDate').value;
+               const t = document.getElementById('toDate').value;
+               if (!f || !t) {
+                  applyQuickRange(true);
+               } else {
+                  loadReport(true);
+               }
+            }, 500);
+        }
+    } catch(err) { console.error("Self-init failed:", err); }
+  })();
 
-  // Gọi ngay khi DOM sẵn sàng
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-  } else {
-    initApp();
-  }
-
+  // Keep message listener for theme and sync
   window.addEventListener('message', (e) => {
     const data = e.data;
     if (data && data.type === 'changeTheme') {
         document.documentElement.setAttribute('data-theme', data.theme);
     } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
-        // Kiểm tra nếu ngày bị trống (do browser cache hoặc load lỗi) thì reset về mặc định
-        const fromD = document.getElementById('fromDate').value;
-        const toD = document.getElementById('toDate').value;
-        if (!fromD || !toD) {
-            initApp();
-        } else {
-            loadReport(true);
-        }
+        loadReport(true);
     }
   });
 </script>
