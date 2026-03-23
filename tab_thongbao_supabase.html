@@ -301,12 +301,7 @@
         .gte('created_at', isoCutOff)
         .order('created_at', { ascending: false });
 
-      // Admin chỉ xem được lịch sử của chính mình
-      if (ROLE === 'admin') {
-          query = query.eq('nguoi_dang', USER_NAME);
-      }
-      // Manager xem được toàn bộ (đã được lọc theo ngày ở trên)
-
+      // Manager và Admin đều load được hết thông báo (đã được lọc theo ngày ở trên)
       const { data, error } = await query;
       if (error) throw error;
       allNotices = data || [];
@@ -396,8 +391,10 @@
       const icon = n.muc_do === 'Khẩn cấp' ? '🚨' : n.muc_do === 'Quan trọng' ? '⭐' : '📢';
       div.className = `notice-item-container ${mucDoCls}`;
       
-      const isManager = ['manager','admin'].includes(ROLE.toLowerCase());
-      const actionHtml = isManager ? `
+      const isManager = ROLE === 'manager';
+      const isAdminOfThis = (ROLE === 'admin' && n.nguoi_dang === USER_NAME);
+      
+      const actionHtml = (isManager || isAdminOfThis) ? `
         <div class="notice-actions">
           <button class="btn-icon" onclick="editNotice(${n.id})" title="Sửa"><i class="fas fa-edit"></i></button>
           <button class="btn-icon" style="color:var(--danger)" onclick="deleteNotice(${n.id})" title="Xóa"><i class="fas fa-trash"></i></button>
