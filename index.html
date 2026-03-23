@@ -2701,6 +2701,7 @@
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'fuel' }, () => broadcastDataChange('fuel'))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'baoduong' }, () => broadcastDataChange('baoduong'))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'chiphi' }, () => broadcastDataChange('chiphi'))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'danhgia' }, () => broadcastDataChange('danhgia'))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'dangkylich' }, () => broadcastDataChange('dangkylich'))
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'taixe' }, (p) => {

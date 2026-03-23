@@ -437,10 +437,34 @@
      _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   } catch(e) { console.error("Supabase load failed"); }
 
+  // REAL-TIME UPDATE LOGIC
+  function setupRealtime() {
+    if (!_supabase) return;
+    // Báo cáo cần lắng nghe thay đổi từ tất cả bàn nguồn dữ liệu
+    const tables = ['nhatky', 'fuel', 'baoduong', 'chiphi', 'xe'];
+    tables.forEach(table => {
+      _supabase.channel(`report-${table}-changes`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: table }, () => {
+           console.log(`[Realtime] ${table} updated, refreshing report...`);
+           loadReport(true); 
+        })
+        .subscribe();
+    });
+  }
+
   // Start initial load as soon as possible
   window.addEventListener('load', () => {
-    if (_supabase) loadReport(true);
-    else setTimeout(() => { if(_supabase) loadReport(true); }, 1000);
+    if (_supabase) {
+        loadReport(true);
+        setupRealtime();
+    } else {
+        setTimeout(() => { 
+           if(_supabase) {
+               loadReport(true); 
+               setupRealtime();
+           }
+        }, 1000);
+    }
   });
 
   let charts = {};
