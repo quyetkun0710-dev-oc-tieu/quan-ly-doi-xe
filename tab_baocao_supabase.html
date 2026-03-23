@@ -516,6 +516,7 @@
           } else alert('Có lỗi khi tải dữ liệu: ' + e.message);
         }
     } finally {
+        const refreshBtn = document.querySelector('.btn-refresh');
         if (refreshBtn && !isSilent) {
             refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Làm mới';
             refreshBtn.disabled = false;
@@ -944,18 +945,38 @@
   }
 
   // INIT
-  window.addEventListener('DOMContentLoaded', () => {
+  function initApp() {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    applyQuickRange(); // Tự động tải dữ liệu với khoảng thời gian mặc định
-  });
+    
+    // Luôn luôn khởi tạo khoảng thời gian là "Tháng này" (Mặc định: Ngày 01 → Hôm nay)
+    const selectRange = document.getElementById('quickRange');
+    if (selectRange) {
+        selectRange.value = 'month';
+        applyQuickRange(); 
+    }
+  }
+
+  // Gọi ngay khi DOM sẵn sàng
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
 
   window.addEventListener('message', (e) => {
     const data = e.data;
     if (data && data.type === 'changeTheme') {
         document.documentElement.setAttribute('data-theme', data.theme);
     } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
-        loadReport(true); // Tải lại dữ liệu khi tab được kích hoạt
+        // Kiểm tra nếu ngày bị trống (do browser cache hoặc load lỗi) thì reset về mặc định
+        const fromD = document.getElementById('fromDate').value;
+        const toD = document.getElementById('toDate').value;
+        if (!fromD || !toD) {
+            initApp();
+        } else {
+            loadReport(true);
+        }
     }
   });
 </script>
