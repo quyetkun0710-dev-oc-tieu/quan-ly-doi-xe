@@ -417,6 +417,12 @@
       if (qr) qr.value = 'month';
       if (f) f.value = firstStr;
       if (t) t.value = todayStr;
+
+      // Theme init
+      try {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch(ex) {}
       
     } catch(err) { console.error("Early init error:", err); }
   })();
@@ -430,6 +436,12 @@
      const { createClient } = supabase;
      _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   } catch(e) { console.error("Supabase load failed"); }
+
+  // Start initial load as soon as possible
+  window.addEventListener('load', () => {
+    if (_supabase) loadReport(true);
+    else setTimeout(() => { if(_supabase) loadReport(true); }, 1000);
+  });
 
   let charts = {};
   let masterData = { xe:[], nhatky:[], fuel:[], baoduong:[], taixe:[], chiphi:[] };
@@ -938,10 +950,7 @@
     document.body.removeChild(link);
   }
 
-  // Initial Data Load
-  setTimeout(() => {
-     if (_supabase) loadReport(true);
-  }, 1000);
+  // Initial Data Load (Managed by earlyInit window.load listener)
 
   // Keep message listener for theme and sync
   window.addEventListener('message', (e) => {
