@@ -51,7 +51,7 @@
     }
     .logo-area h1 { 
       font-size: 1.5rem; font-weight: 800; 
-      background: linear-gradient(to right, #fff, var(--primary)); 
+      background: linear-gradient(to right, var(--text), var(--primary)); 
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
       background-clip: text; 
     }
@@ -122,7 +122,7 @@
     .kpi-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
     .kpi-card .icon { font-size: 1.5rem; margin-bottom: 5px; }
     .kpi-card .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-    .kpi-card .value { font-size: 1.8rem; font-weight: 800; color: white; line-height: 1.1; }
+    .kpi-card .value { font-size: 1.8rem; font-weight: 800; color: var(--text); line-height: 1.1; }
     .kpi-card .trend { font-size: 0.7rem; display: flex; align-items: center; gap: 4px; margin-top: 2px; }
     .trend.up { color: var(--success); }
     .trend.down { color: var(--danger); }
@@ -177,7 +177,7 @@
 
     /* Table Sections */
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; margin-top: 2rem; }
-    .section-title { font-size: 1.25rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; }
+    .section-title { font-size: 1.25rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px; }
     table { width: 100%; border-collapse: collapse; min-width: 800px; }
     th { background: rgba(99, 102, 241, 0.1); padding: 1rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
     td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; }
@@ -843,30 +843,20 @@
     document.body.removeChild(link);
   }
 
-  function initRealtime() {
-    // applyQuickRange đã bao gồm việc gọi loadReport()
-    // applyQuickRange(); // This will be called by loadDashboard() after theme is set
-    
-    // Đón sự kiện realtime từ index.html
-    window.addEventListener('message', (e) => {
-        const data = e.data;
-        if (data && data.type === 'changeTheme') {
-            document.documentElement.setAttribute('data-theme', data.theme);
-            // Optional: update charts if needed
-        } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
-            loadDashboard();
-        }
-    });
-
-    // Bỏ khai báo _supabase.channel thừa để tránh trùng lặp
-  }
-
   // INIT
   window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    loadDashboard(); // Initial load of dashboard data and UI
-    initRealtime(); // Initialize realtime listeners
+    applyQuickRange(); // Tự động tải dữ liệu với khoảng thời gian mặc định
+  });
+
+  window.addEventListener('message', (e) => {
+    const data = e.data;
+    if (data && data.type === 'changeTheme') {
+        document.documentElement.setAttribute('data-theme', data.theme);
+    } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
+        loadReport(true); // Tải lại dữ liệu khi tab được kích hoạt
+    }
   });
 </script>
 </body>
