@@ -21,6 +21,13 @@
             --danger: #ef4444;
         }
 
+        [data-theme='light'] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-dim: #64748b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -1080,6 +1087,15 @@
         document.getElementById('vehicleModal').classList.remove('active');
     }
 
+    function logAudit(tableName, recordId, action, oldData, newData) {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ 
+                type: 'logAudit', 
+                tableName, recordId, action, oldData, newData 
+            }, '*');
+        }
+    }
+
     function showToast(msg, theme = 'success') {
         if (window.parent && window.parent.postMessage) {
             window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
@@ -1144,7 +1160,10 @@
             }
 
             if (result.error) throw result.error;
-
+            
+            const oldItem = editId ? allVehicles.find(v => v.bien_so_xe === editId) : null;
+            logAudit('xe', editId || payload.bien_so_xe, editId ? 'UPDATE' : 'INSERT', oldItem, payload);
+            
             showToast("Đã lưu thông tin phương tiện!", "success");
             closeModal();
             loadVehicles();
@@ -1169,8 +1188,12 @@
         showConfirm("Xóa phương tiện", `Bạn có chắc muốn xóa xe ${bsx} khỏi hệ thống không?`, async (res) => {
             if (res) {
                 try {
+                    const oldItem = allVehicles.find(v => v.bien_so_xe === bsx);
                     const { error } = await _supabase.from('xe').delete().eq('bien_so_xe', bsx);
                     if (error) throw error;
+                    
+                    logAudit('xe', bsx, 'DELETE', oldItem, null);
+                    
                     showToast("Xóa xe thành công!", "success");
                     loadVehicles();
                 } catch (error) {
@@ -1182,7 +1205,9 @@
 
     window.addEventListener('message', (e) => {
         const data = e.data;
-        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
@@ -1203,7 +1228,7 @@
     window.addEventListener('scroll', () => {
         const header = document.querySelector('header');
         if (window.scrollY > 50) {
-            header.style.background = 'rgba(15, 23, 42, 0.9)';
+            header.style.background = 'var(--card-bg)';
             header.style.padding = '0.8rem 2rem';
             header.style.backdropFilter = 'blur(10px)';
             header.style.position = 'sticky';
@@ -1218,6 +1243,8 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
         checkAccess();
         loadVehicles();
         setupRealtime();

@@ -21,6 +21,13 @@
             --danger: #ef4444;
         }
 
+        [data-theme='light'] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-dim: #64748b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -58,7 +65,7 @@
             font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -1px;
-            background: linear-gradient(to right, #fff, var(--primary));
+            background: linear-gradient(to right, var(--text), var(--primary));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -102,7 +109,7 @@
         .search-box input {
             background: transparent;
             border: none;
-            color: white;
+            color: var(--text);
             outline: none;
             width: 250px;
             font-size: 1rem;
@@ -240,7 +247,7 @@
         .driver-name {
             font-size: 1.25rem;
             font-weight: 800;
-            color: white;
+            color: var(--text);
             margin-bottom: 2px;
         }
 
@@ -342,7 +349,7 @@
         .modal.active { display: flex; }
 
         .modal-content {
-            background: #1e293b;
+            background: var(--bg);
             padding: 2.5rem;
             border-radius: 32px;
             width: 100%;
@@ -412,11 +419,11 @@
         }
 
         .form-group input, .form-group select, .form-group textarea {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--card-bg);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             padding: 0.9rem;
             border-radius: 12px;
-            color: white;
+            color: var(--text);
             outline: none;
             transition: all 0.2s;
         }
@@ -431,7 +438,7 @@
         }
 
         .check-item {
-            background: rgba(15, 23, 42, 0.3);
+            background: var(--card-bg);
             padding: 1rem;
             border-radius: 12px;
             display: flex;
@@ -1191,6 +1198,15 @@
         document.getElementById('driverModal').classList.remove('active');
     }
 
+    function logAudit(tableName, recordId, action, oldData, newData) {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ 
+                type: 'logAudit', 
+                tableName, recordId, action, oldData, newData 
+            }, '*');
+        }
+    }
+
     function showToast(msg, theme = 'success') {
         if (window.parent && window.parent.postMessage) {
             window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
@@ -1259,6 +1275,10 @@
             }
 
             if (result.error) throw result.error;
+            
+            const oldItem = editId ? allDrivers.find(d => d.ma_nv === editId) : null;
+            logAudit('taixe', editId || payload.ma_nv, editId ? 'UPDATE' : 'INSERT', oldItem, payload);
+            
             showToast("Lưu thông tin tài xế thành công!", "success");
             closeModal();
             loadDrivers();
@@ -1283,8 +1303,12 @@
         showConfirm("Xóa tài xế", `Bạn có chắc muốn xóa tài xế ${ma} khỏi danh sách không?`, async (res) => {
             if (res) {
                 try {
+                    const oldItem = allDrivers.find(item => item.ma_nv === ma);
                     const { error } = await _supabase.from('taixe').delete().eq('ma_nv', ma);
                     if (error) throw error;
+                    
+                    logAudit('taixe', ma, 'DELETE', oldItem, null);
+                    
                     showToast("Xóa tài xế thành công!", "success");
                     loadDrivers();
                 } catch (error) {
@@ -1328,7 +1352,9 @@
 
     window.addEventListener('message', (e) => {
         const data = e.data;
-        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
@@ -1394,7 +1420,23 @@
         document.getElementById('imagePreviewModal').classList.remove('active');
     }
 
+    window.addEventListener('message', (e) => {
+        const data = e.data;
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+            if (activeConfirmCallback) activeConfirmCallback(data.result);
+            activeConfirmId = null;
+            activeConfirmCallback = null;
+        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
+            loadDrivers(true);
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
         if (typeof checkAccess === 'function') checkAccess();
         
         // Hide Add Button for non-admin roles (Tài xế/Hồ sơ chỉ được xem)

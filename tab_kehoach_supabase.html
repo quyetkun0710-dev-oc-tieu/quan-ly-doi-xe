@@ -22,6 +22,15 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7);
+            --bg-color: #0f172a;
+        }
+
+        [data-theme='light'] {
+            --bg-color: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
         }
 
         * {
@@ -32,13 +41,12 @@
         }
 
         body {
-            background: #0f172a;
+            background: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.5) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.3) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(15, 23, 42, 1) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
             background-attachment: fixed;
             padding: 20px;
         }
@@ -227,7 +235,7 @@
             border: 1px solid var(--glass-border);
             padding: 12px 20px;
             border-radius: 12px;
-            color: #fff;
+            color: var(--text-primary);
             width: 300px;
             outline: none;
         }
@@ -328,7 +336,7 @@
             gap: 6px 12px;
         }
         .plan-card-item { display: flex; flex-direction: column; gap: 1px; }
-        .plan-card-label { font-size: 0.55rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; }
+        .plan-card-label { font-size: 0.55rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
         .plan-card-value { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); }
         .plan-card-divider {
             border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 2px 0;
@@ -743,12 +751,17 @@
         }
 
         window.addEventListener('message', (e) => {
-            if (e.data && e.data.type === 'dataChanged' && (e.data.table === 'baoduong' || e.data.table === 'nhatky' || !e.data.table)) {
+            const data = e.data;
+            if (data && data.type === 'changeTheme') {
+                document.documentElement.setAttribute('data-theme', data.theme);
+            } else if (data && data.type === 'dataChanged' && (data.table === 'baoduong' || data.table === 'nhatky' || !data.table)) {
                 loadMaintenancePlan(true);
             }
         });
 
         async function initRealtime() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
             await loadMaintenancePlan();
             // Refresh plan if maintenance records or logs change
             _supabase.channel('plan-sync')

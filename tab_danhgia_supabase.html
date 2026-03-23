@@ -21,6 +21,13 @@
             --danger: #ef4444;
         }
 
+        [data-theme='light'] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-dim: #64748b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -86,7 +93,9 @@
         .search-box input {
             background: transparent;
             border: none;
-            color: white;
+            background: var(--bg);
+            border: 1px solid rgba(128,128,128,0.2);
+            color: var(--text);
             outline: none;
             width: 250px;
             font-size: 1rem;
@@ -188,7 +197,7 @@
             flex-direction: column;
         }
 
-        .name-mnv h4 { font-size: 1.1rem; font-weight: 700; color: white; }
+        .name-mnv h4 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .name-mnv span { font-size: 0.8rem; color: var(--text-dim); }
 
         .severity-tag {
@@ -288,11 +297,9 @@
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
         .form-group input, .form-group select, .form-group textarea {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 0.8rem;
-            border-radius: 12px;
-            color: white;
+            background: var(--bg);
+            border: 1px solid rgba(128,128,128,0.2);
+            color: var(--text);
             outline: none;
             font-size: 1rem;
         }
@@ -817,20 +824,24 @@
 
     window.addEventListener('message', (e) => {
         const data = e.data;
-        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
-        } else if (data && data.type === 'dataChanged' && (data.table === 'danhgia' || !data.table)) {
+        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
             loadEvaluations(true);
         }
     });
 
-    async function initRealtime() {
-        await initialize();
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        initialize();
+        // Realtime
         _supabase.channel('danhgia-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'danhgia' }, () => loadEvaluations(true)).subscribe();
-    }
-    document.addEventListener('DOMContentLoaded', initRealtime);
+    });
 </script>
 
 </body>

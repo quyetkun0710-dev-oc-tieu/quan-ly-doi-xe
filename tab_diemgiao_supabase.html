@@ -24,6 +24,16 @@
             --glass-border: rgba(255, 255, 255, 0.1);
         }
 
+        [data-theme='light'] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-dim: #64748b;
+            --glass: rgba(0, 0, 0, 0.03);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --primary-light: #4f46e5;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -176,6 +186,29 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+        }
+
+        .search-box {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 320px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
         }
 
         .point-icon {
@@ -568,6 +601,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
             checkAccess();
             try {
                 await loadPoints();
@@ -663,6 +698,31 @@
                 return;
             }
             window.open(url, '_blank');
+        }
+
+        let activeConfirmId = null;
+        let activeConfirmCallback = null;
+
+        window.addEventListener('message', (e) => {
+            const data = e.data;
+            if (data && data.type === 'changeTheme') {
+                document.documentElement.setAttribute('data-theme', data.theme);
+            } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+                if (activeConfirmCallback) activeConfirmCallback(data.result);
+                activeConfirmId = null;
+                activeConfirmCallback = null;
+            } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
+                loadPoints(true);
+            }
+        });
+
+        function logAudit(tableName, recordId, action, oldData, newData) {
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({ 
+                    type: 'logAudit', 
+                    tableName, recordId, action, oldData, newData 
+                }, '*');
+            }
         }
 
         function openModal(id = null) {
@@ -780,6 +840,10 @@
                     console.error("Supabase Save Error:", error);
                     alert("Lỗi lưu dữ liệu: " + error.message);
                 } else {
+                    const oldItem = id ? allPoints.find(p => p.id === id) : null;
+                    const recordId = id || (newRows && newRows[0] ? newRows[0].id : 'new');
+                    logAudit('diemgiaohang', recordId, id ? 'UPDATE' : 'INSERT', oldItem, payload);
+                    
                     closeModal();
                     await loadPoints();
                     if (window.parent && window.parent.postMessage) {
@@ -802,9 +866,13 @@
             }
             if (!confirm("Bạn có chắc chắn muốn xóa điểm giao hàng này?")) return;
             
+            const oldItem = allPoints.find(p => p.id === id);
             const { error } = await _supabase.from('diemgiaohang').delete().eq('id', id);
             if (error) alert("Lỗi khi xóa: " + error.message);
-            else await loadPoints();
+            else {
+                logAudit('diemgiaohang', id, 'DELETE', oldItem, null);
+                await loadPoints();
+            }
         }
 
         function setupRealtime() {

@@ -28,6 +28,16 @@
       --glass: rgba(15, 23, 42, 0.6);
     }
 
+    [data-theme='light'] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --border: rgba(0, 0, 0, 0.08);
+      --glass: rgba(255, 255, 255, 0.8);
+      --color-normal: #0f172a;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -1274,11 +1284,20 @@
     }
 
     window.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'dataChanged' && (e.data.table === 'lich_lam_viec' || e.data.table === 'dangkylich' || !e.data.table)) {
-        refreshGrid();
-      }
+        const data = e.data;
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
+            loadAttendance();
+        }
     });
 
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        init();
+    });
+</script>
     async function initRealtime() {
       await init();
       _supabase.channel('schedule-sync')

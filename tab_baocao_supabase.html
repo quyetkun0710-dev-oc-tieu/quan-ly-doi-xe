@@ -23,6 +23,15 @@
       --glass: rgba(255, 255, 255, 0.03);
       --glass-border: rgba(255, 255, 255, 0.05);
     }
+
+    [data-theme='light'] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --glass: rgba(0, 0, 0, 0.03);
+      --glass-border: rgba(0, 0, 0, 0.08);
+    }
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
     body { 
       background: var(--bg);
@@ -836,12 +845,16 @@
 
   function initRealtime() {
     // applyQuickRange đã bao gồm việc gọi loadReport()
-    applyQuickRange();
+    // applyQuickRange(); // This will be called by loadDashboard() after theme is set
     
     // Đón sự kiện realtime từ index.html
     window.addEventListener('message', (e) => {
-        if (e.data && e.data.type === 'dataChanged') {
-            loadReport(true); // Load ngầm (Silent Data Loading)
+        const data = e.data;
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+            // Optional: update charts if needed
+        } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
+            loadDashboard();
         }
     });
 
@@ -849,7 +862,12 @@
   }
 
   // INIT
-  window.addEventListener('DOMContentLoaded', initRealtime);
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    loadDashboard(); // Initial load of dashboard data and UI
+    initRealtime(); // Initialize realtime listeners
+  });
 </script>
 </body>
 </html>

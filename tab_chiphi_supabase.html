@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quản lý Chi Phí - Fleet Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #00ffcc;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme='light'] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-dim: #64748b;
+            --glass: rgba(0, 0, 0, 0.03);
+            --glass-border: rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+        body { 
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
+            color: var(--text); 
+            min-height: 100vh; 
+            padding: 2rem; 
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 2.5rem; animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-area h1 { 
+            font-size: 2.5rem; font-weight: 800; 
+            background: linear-gradient(to right, #fff, var(--primary)); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            background-clip: text; 
+        }
+        .logo-area p { color: var(--text-dim); font-size: 0.9rem; margin-top: 5px; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 1.5rem; backdrop-filter: blur(15px); transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex; align-items: center; gap: 1.2rem;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+        .stat-icon {
+            width: 54px; height: 54px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; background: rgba(99, 102, 241, 0.15); color: var(--primary);
+        }
+        .stat-info .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .stat-info .value { font-size: 1.5rem; font-weight: 800; color: white; margin-top: 2px; }
+
+        /* Controls */
+        .controls-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+        }
+        .filter-group { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+        
+        .search-box {
+            position: relative; background: var(--card-bg); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 10px;
+            min-width: 300px;
+        }
+        .search-box input {
+            background: transparent; border: none; color: white; outline: none; width: 100%;
+            font-size: 0.95rem; font-family: inherit;
+        }
+        .search-box i { color: var(--text-dim); }
+
+        .btn {
+            padding: 0.7rem 1.4rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+            border: none; font-family: inherit;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
+        
+        .btn-glass { 
+            background: var(--glass); color: var(--text); border: 1px solid var(--glass-border);
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.08); }
+        .btn-glass.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        /* Expense Grid */
+        .expense-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .expense-card {
+            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 1.25rem; backdrop-filter: blur(20px); transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .expense-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .category-tag {
+            background: rgba(99, 102, 241, 0.1); color: var(--primary);
+            padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800;
+            text-transform: uppercase; margin-bottom: 1rem; display: inline-block;
+        }
+        
+        .expense-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .expense-amount { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+        .expense-date { font-size: 0.8rem; color: var(--text-dim); }
+
+        .expense-details {
+            border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+        }
+        .detail-item { display: flex; flex-direction: column; gap: 2px; }
+        .detail-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .detail-value { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+
+        .expense-vehicle { font-size: 0.9rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .expense-description { font-size: 0.85rem; color: var(--text-dim); margin: 0.8rem 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .card-actions {
+            margin-top: 1.25rem; display: flex; justify-content: flex-end; gap: 8px;
+            opacity: 0; transition: all 0.3s;
+        }
+        .expense-card:hover .card-actions { opacity: 1; }
+        .btn-icon {
+            width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05); color: var(--text-dim); border: none; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.1); color: white; }
+        .btn-icon.delete:hover { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.8);
+            backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-box {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;
+            width: 100%; max-width: 550px; padding: 2.5rem; position: relative;
+            transform: translateY(20px); transition: transform 0.3s ease;
+        }
+        .modal.active .modal-box { transform: translateY(0); }
+        .modal-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.7rem; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: span 2; }
+        label { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea {
+            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem 1rem; border-radius: 12px; color: white; outline: none;
+            font-size: 0.95rem; font-family: inherit; transition: all 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: rgba(15,23,42,0.8); }
+        
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .logo-area h1 { font-size: 1.8rem; }
+            .controls-bar { flex-direction: column; align-items: stretch; }
+            .search-box { min-width: 100%; }
+            .filter-group { overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+            .filter-group .btn { flex-shrink: 0; }
+            .expense-grid { grid-template-columns: 1fr; }
+            .modal-box { padding: 1.5rem; border-radius: 20px; width: 95%; max-height: 90vh; overflow-y: auto; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+        }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center;
+            z-index: 2000; flex-direction: column; gap: 1rem;
+        }
+        .loader { width: 48px; height: 48px; border: 4px solid rgba(99, 102, 241, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+        <p style="color:var(--text-dim);font-weight:600">Đang đồng bộ dữ liệu...</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <h1><i class="fas fa-wallet"></i> CHI PHÍ</h1>
+                <p>Quản lý các khoản chi phí phát sinh ngoài bảo dưỡng & nhiên liệu</p>
+            </div>
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fas fa-plus"></i> Ghi nhận chi phí
+            </button>
+        </header>
+
+        <!-- Stats Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="stat-info">
+                    <div class="label">Tổng chi tháng này</div>
+                    <div class="value" id="statMonthTotal">0 đ</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--warning); background:rgba(245,158,11,0.15)"><i class="fas fa-road"></i></div>
+                <div class="stat-info">
+                    <div class="label">Phí cầu đường (ETC)</div>
+                    <div class="value" id="statTollTotal">0 đ</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color:var(--accent); background:rgba(0,255,204,0.15)"><i class="fas fa-parking"></i></div>
+                <div class="stat-info">
+                    <div class="label">Chi phí khác</div>
+                    <div class="value" id="statOtherTotal">0 đ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm biển số, nội dung, tài xế..." oninput="handleSearch()">
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-glass active" data-filter="all" onclick="filterData('all', this)">Tất cả</button>
+                <button class="btn btn-glass" data-filter="cau_duong" onclick="filterData('cau_duong', this)">Cầu đường</button>
+                <button class="btn btn-glass" data-filter="bai_do" onclick="filterData('bai_do', this)">Bãi đỗ</button>
+                <button class="btn btn-glass" data-filter="vi_pham" onclick="filterData('vi_pham', this)">Vi phạm</button>
+                <button class="btn btn-glass" data-filter="khac" onclick="filterData('khac', this)">Khác</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="expense-grid" id="expenseGrid">
+            <!-- Cards will be injected here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal" id="expenseModal">
+        <div class="modal-box">
+            <button class="btn-icon" style="position:absolute; top:2rem; right:2rem" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2 id="modalTitle"><i class="fas fa-file-invoice-dollar"></i> Ghi nhận chi phí</h2>
+            </div>
+            
+            <form id="expenseForm" onsubmit="saveExpense(event)">
+                <input type="hidden" id="expenseId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Ngày thực hiện</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Loại chi phí</label>
+                        <select id="expenseCategory" required>
+                            <option value="cau_duong">Cầu đường (ETC/Vé)</option>
+                            <option value="bai_do">Phí bến bãi/Đỗ xe</option>
+                            <option value="vi_pham">Vi phạm/Phạt nguội</option>
+                            <option value="bao_hiem">Bảo hiểm/Đăng kiểm</option>
+                            <option value="khac">Chi phí phát sinh khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Phương tiện</label>
+                        <select id="expenseVehicle" required>
+                            <option value="">Chọn xe...</option>
+                            <!-- Dynamic -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Số tiền (VNĐ)</label>
+                        <input type="number" id="expenseAmount" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mã tài xế (MNV)</label>
+                        <input type="text" id="expenseMnv" placeholder="Nhập mã nhân viên..." onblur="fetchDriverName()">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên tài xế</label>
+                        <input type="text" id="expenseDriverName" readonly placeholder="Tự động lấy tên...">
+                    </div>
+                    <div class="form-group full">
+                        <label>Nội dung chi tiết</label>
+                        <textarea id="expenseNote" rows="3" placeholder="Ghi chú nội dung khoản chi..."></textarea>
+                    </div>
+                    <div class="form-group full">
+                        <label>Mã hóa đơn/Ảnh (URL)</label>
+                        <input type="text" id="expenseInvoice" placeholder="Dán link ảnh hoặc mã hóa đơn (nếu có)">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2.5rem; display: flex; gap: 1rem;">
+                    <button type="button" class="btn btn-glass" style="flex:1; justify-content:center" onclick="closeModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" style="flex:2; justify-content:center" id="btnSave">Lưu dữ liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ============ CONFIG ============
+        const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let allExpenses = [];
+        let filteredExpenses = [];
+        let currentFilter = 'all';
+        let vehicles = [];
+        let drivers = [];
+
+        const CATEGORY_MAP = {
+            'cau_duong': { label: 'Cầu đường', icon: '🛣️', color: 'var(--warning)' },
+            'bai_do': { label: 'Bãi đỗ', icon: '🅿️', color: 'var(--accent)' },
+            'vi_pham': { label: 'Vi phạm', icon: '⚠️', color: 'var(--danger)' },
+            'bao_hiem': { label: 'Bảo hiểm', icon: '🛡️', color: '#3b82f6' },
+            'khac': { label: 'Phát sinh khác', icon: '📝', color: 'var(--text-dim)' }
+        };
+
+        // ============ INIT ============
+        window.onload = async () => {
+            await Promise.all([
+                loadExpenses(),
+                loadVehicles(),
+                loadDrivers()
+            ]);
+            document.getElementById('loadingOverlay').style.display = 'none';
+            initRealtime();
+        };
+
+        async function loadVehicles() {
+            const { data } = await _supabase.from('xe').select('bien_so_xe').order('bien_so_xe');
+            vehicles = data || [];
+            const select = document.getElementById('expenseVehicle');
+            select.innerHTML = '<option value="">Chọn xe...</option>' + 
+                vehicles.map(v => `<option value="${v.bien_so_xe}">${v.bien_so_xe}</option>`).join('');
+        }
+
+        async function loadDrivers() {
+            const { data } = await _supabase.from('taixe').select('ma_nv, ho_ten');
+            drivers = data || [];
+        }
+
+        async function loadExpenses() {
+            const { data, error } = await _supabase
+                .from('chiphi')
+                .select('*')
+                .order('ngay_thuc_ hiện', { ascending: false });
+            
+            if (error) {
+                console.error("Error loading expenses:", error);
+                // Nếu bảng chưa tồn tại, ta có thể log lỗi
+                if (error.code === '42P01') {
+                   // alert("Bảng 'chiphi' chưa tồn tại. Vui lòng tạo bảng trong Supabase Dashboard.");
+                   console.warn("Table 'chiphi' missing");
+                }
+            }
+            
+            allExpenses = data || [];
+            filteredExpenses = [...allExpenses];
+            renderGrid();
+            updateStats();
+        }
+
+        function initRealtime() {
+            _supabase.channel('chiphi_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'chiphi' }, () => {
+                    loadExpenses();
+                })
+                .subscribe();
+        }
+
+        function updateStats() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            const thisMonth = allExpenses.filter(e => {
+                const d = new Date(e.ngay_thuc_hien);
+                return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            });
+
+            const total = thisMonth.reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
+            const toll = thisMonth.filter(e => e.loai_chi_phi === 'cau_duong').reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
+            const others = thisMonth.filter(e => e.loai_chi_phi === 'khac').reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
+
+            document.getElementById('statMonthTotal').innerText = formatCurrency(total);
+            document.getElementById('statTollTotal').innerText = formatCurrency(toll);
+            document.getElementById('statOtherTotal').innerText = formatCurrency(others);
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('expenseGrid');
+            if (filteredExpenses.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:5rem; color:var(--text-dim)">
+                    <i class="fas fa-search" style="font-size:3rem; opacity:0.2; margin-bottom:1rem"></i>
+                    <p>Không tìm thấy khoản chi phí nào</p>
+                </div>`;
+                return;
+            }
+
+            grid.innerHTML = filteredExpenses.map(item => {
+                const cat = CATEGORY_MAP[item.loai_chi_phi] || CATEGORY_MAP.khac;
+                return `
+                <div class="expense-card">
+                    <div class="expense-header">
+                        <span class="category-tag" style="background:${cat.color}20; color:${cat.color}">
+                            ${cat.icon} ${cat.label}
+                        </span>
+                        <div class="expense-date">${formatDate(item.ngay_thuc_hien)}</div>
+                    </div>
+                    
+                    <div class="expense-amount">${formatCurrency(item.so_tien)}</div>
+                    <div class="expense-vehicle"><i class="fas fa-truck"></i> ${item.bien_so_xe}</div>
+                    
+                    <div class="expense-description">${item.ghi_chu || 'Không có mô tả'}</div>
+                    
+                    <div class="expense-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Tài xế</div>
+                            <div class="detail-value">${item.ho_ten_taixe || item.ma_nv || '-'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Hóa đơn</div>
+                            <div class="detail-value">${item.ma_hoa_don ? `<span style="color:var(--primary);cursor:pointer" onclick="viewInvoice('${item.ma_hoa_don}')">📌 Xem</span>` : '-'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <button class="btn-icon" onclick="editExpense('${item.id}')" title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon delete" onclick="deleteExpense('${item.id}')" title="Xóa"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // ============ ACTIONS ============
+        function handleSearch() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            filteredExpenses = allExpenses.filter(e => 
+                e.bien_so_xe.toLowerCase().includes(q) ||
+                (e.ghi_chu && e.ghi_chu.toLowerCase().includes(q)) ||
+                (e.ho_ten_taixe && e.ho_ten_taixe.toLowerCase().includes(q)) ||
+                (e.ma_nv && e.ma_nv.toLowerCase().includes(q))
+            );
+            renderGrid();
+        }
+
+        function filterData(k, btn) {
+            currentFilter = k;
+            document.querySelectorAll('.filter-group .btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (k === 'all') {
+                filteredExpenses = [...allExpenses];
+            } else {
+                filteredExpenses = allExpenses.filter(e => e.loai_chi_phi === k);
+            }
+            renderGrid();
+        }
+
+        function openModal(data = null) {
+            const modal = document.getElementById('expenseModal');
+            const form = document.getElementById('expenseForm');
+            form.reset();
+            
+            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('expenseId').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-file-invoice-dollar"></i> Ghi nhận chi phí';
+
+            if (data) {
+                document.getElementById('expenseId').value = data.id;
+                document.getElementById('expenseDate').value = data.ngay_thuc_hien;
+                document.getElementById('expenseCategory').value = data.loai_chi_phi;
+                document.getElementById('expenseVehicle').value = data.bien_so_xe;
+                document.getElementById('expenseAmount').value = data.so_tien;
+                document.getElementById('expenseMnv').value = data.ma_nv;
+                document.getElementById('expenseDriverName').value = data.ho_ten_taixe;
+                document.getElementById('expenseNote').value = data.ghi_chu;
+                document.getElementById('expenseInvoice').value = data.ma_hoa_don;
+                document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa chi phí';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('expenseModal').classList.remove('active');
+        }
+
+        function fetchDriverName() {
+            const mnv = document.getElementById('expenseMnv').value.trim().toUpperCase();
+            if (!mnv) {
+                document.getElementById('expenseDriverName').value = '';
+                return;
+            }
+            const d = drivers.find(drv => drv.ma_nv.toUpperCase() === mnv);
+            if (d) {
+                document.getElementById('expenseDriverName').value = d.ho_ten;
+            } else {
+                document.getElementById('expenseDriverName').value = 'Mã NV không tồn tại';
+                document.getElementById('expenseDriverName').style.color = 'var(--danger)';
+            }
+        }
+
+        async function saveExpense(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true;
+            btn.innerText = 'Đang lưu...';
+
+            const id = document.getElementById('expenseId').value;
+            const payload = {
+                ngay_thuc_hien: document.getElementById('expenseDate').value,
+                loai_chi_phi: document.getElementById('expenseCategory').value,
+                bien_so_xe: document.getElementById('expenseVehicle').value,
+                so_tien: parseFloat(document.getElementById('expenseAmount').value),
+                ma_nv: document.getElementById('expenseMnv').value.trim().toUpperCase(),
+                ho_ten_taixe: document.getElementById('expenseDriverName').value,
+                ghi_chu: document.getElementById('expenseNote').value,
+                ma_hoa_don: document.getElementById('expenseInvoice').value,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                let res;
+                if (id) {
+                    res = await _supabase.from('chiphi').update(payload).eq('id', id);
+                } else {
+                    payload.created_at = new Date().toISOString();
+                    res = await _supabase.from('chiphi').insert([payload]);
+                }
+
+                if (res.error) throw res.error;
+
+                // Log Audit
+                const oldItem = id ? allExpenses.find(e => e.id == id) : null;
+                logAudit('chiphi', id || 'new', id ? 'UPDATE' : 'INSERT', oldItem, payload);
+                
+                closeModal();
+                loadExpenses();
+                showToast(id ? 'Đã cập nhật chi phí' : 'Đã lưu chi phí mới', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Lỗi: ' + (err.message || 'Không thể lưu'), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Lưu dữ liệu';
+            }
+        }
+
+        async function deleteExpense(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa khoản chi này?')) return;
+            
+            try {
+                const oldItem = allExpenses.find(e => e.id == id);
+                const { error } = await _supabase.from('chiphi').delete().eq('id', id);
+                if (error) throw error;
+                
+                logAudit('chiphi', id, 'DELETE', oldItem, null);
+                loadExpenses();
+                showToast('Đã xóa thành công', 'success');
+            } catch (err) {
+                showToast('Lỗi khi xóa', 'error');
+            }
+        }
+
+        function editExpense(id) {
+            const item = allExpenses.find(e => e.id == id);
+            if (item) openModal(item);
+        }
+
+        function logAudit(tableName, recordId, action, oldData, newData) {
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({ 
+                    type: 'logAudit', 
+                    tableName, recordId, action, oldData, newData 
+                }, '*');
+            }
+        }
+
+        function formatCurrency(v) {
+            return new Intl.NumberFormat('vi-VN').format(v || 0) + ' đ';
+        }
+
+        function formatDate(d) {
+            if (!d) return '-';
+            const date = new Date(d);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function showToast(msg, theme = 'success') {
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+            } else {
+                console.log(`[Toast] ${theme}: ${msg}`);
+            }
+        }
+
+        function viewInvoice(url) {
+            if (url.startsWith('http')) {
+                window.open(url, '_blank');
+            } else {
+                alert('Mã hóa đơn: ' + url);
+            }
+        }
+
+        // Listen for theme changes from parent
+        window.addEventListener('message', e => {
+            if (e.data.type === 'changeTheme') {
+                document.documentElement.setAttribute('data-theme', e.data.theme);
+            }
+        });
+        
+        // Init theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+    </script>
+</body>
+</html>

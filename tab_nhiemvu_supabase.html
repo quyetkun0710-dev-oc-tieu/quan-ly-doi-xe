@@ -15,10 +15,17 @@
       --bg: #0f172a;
       --card-bg: rgba(30, 41, 59, 0.7);
       --text: #f8fafc;
-      --text-dim: #94a3b8;
+      --text-dim: #94a4b8;
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
+    }
+
+    [data-theme='light'] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text: #0f172a;
+      --text-dim: #64748b;
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
     body {
@@ -897,10 +904,16 @@
         activeConfirmCallback = null;
     } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
         loadTasks(true);
+    } else if (data && data.type === 'changeTheme') {
+        document.documentElement.setAttribute('data-theme', data.theme);
     }
   });
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Sync theme with parent
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     if (isManager) document.querySelectorAll('.manager-only').forEach(el => el.style.display = 'flex');
     loadTasks(); loadDropdowns();
     _supabase.channel('nhiemvu-changes').on('postgres_changes', { event:'*', schema:'public', table:'nhiemvu' }, () => loadTasks(true)).subscribe();

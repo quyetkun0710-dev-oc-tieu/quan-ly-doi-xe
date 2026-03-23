@@ -22,6 +22,28 @@
       --border: rgba(255, 255, 255, 0.1);
       --card-gradient: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
       --glass: rgba(30, 41, 59, 0.7);
+      --input-bg: rgba(15, 23, 42, 0.7);
+      --input-text: #ffffff;
+      --input-placeholder: rgba(255, 255, 255, 0.4);
+      --select-option-bg: #1e293b;
+      --select-option-text: #fff;
+      --table-hover-bg: rgba(99, 102, 241, 0.02);
+    }
+
+    [data-theme='light'] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --border: rgba(0, 0, 0, 0.08);
+      --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+      --glass: rgba(255, 255, 255, 0.8);
+      --input-bg: #ffffff;
+      --input-text: #0f172a;
+      --input-placeholder: #94a3b8;
+      --select-option-bg: #ffffff;
+      --select-option-text: #0f172a;
+      --table-hover-bg: rgba(0, 0, 0, 0.02);
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
     body { 
@@ -86,16 +108,22 @@
     .form-group label { font-size:0.75rem; font-weight:800; color:var(--text-dim); text-transform:uppercase; letter-spacing: 0.05em; }
     .form-group input, .form-group select, .form-group textarea {
       padding:0.85rem 1rem; border-radius:12px; border:1px solid var(--border); outline:none; transition:0.3s; font-size:1rem;
-      background: rgba(15, 23, 42, 0.7);
-      color: #ffffff;
+      background: var(--input-bg);
+      color: var(--input-text);
+    }
+    .search-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius:12px; padding:0.6rem 1rem; color: var(--text); outline:none;
+      transition:all 0.3s; width:220px; font-size:1rem;
     }
     .form-group input::placeholder, .form-group textarea::placeholder {
-      color: rgba(255, 255, 255, 0.4);
+      color: var(--input-placeholder);
       font-size: 0.9rem;
     }
     .form-group select option {
-      background: #1e293b;
-      color: #fff;
+      background: var(--select-option-bg);
+      color: var(--select-option-text);
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
       border-color:var(--primary); 
@@ -155,7 +183,7 @@
     .btn-danger { background:var(--danger); color:white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
     .btn-success:hover, .btn-danger:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
-    #requestsTable tr:hover { background: rgba(99, 102, 241, 0.02); }
+    #requestsTable tr:hover { background: var(--table-hover-bg); }
 
     .user-profile-badge { display:none; }
     .user-avatar {
@@ -322,7 +350,7 @@
 
 <script>
   const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnbiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
   const { createClient } = supabase;
   const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -358,13 +386,21 @@
 
   window.addEventListener('message', (e) => {
     const data = e.data;
-    if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+    if (data && data.type === 'changeTheme') {
+        document.documentElement.setAttribute('data-theme', data.theme);
+    } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
         if (activeConfirmCallback) activeConfirmCallback(data.result);
         activeConfirmId = null;
         activeConfirmCallback = null;
     } else if (data && data.type === 'dataChanged' && (data.table === 'dangkylich' || !data.table)) {
         if (typeof loadData === 'function') loadData();
     }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    init();
   });
 
   function init() {

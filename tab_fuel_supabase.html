@@ -21,6 +21,13 @@
             --danger: #ef4444;
         }
 
+        [data-theme='light'] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-dim: #64748b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -54,7 +61,7 @@
         .logo-area h1 {
             font-size: 2.5rem;
             font-weight: 800;
-            background: linear-gradient(to right, #fff, var(--primary));
+            background: linear-gradient(to right, var(--text), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -86,7 +93,7 @@
         .search-box input {
             background: transparent;
             border: none;
-            color: white;
+            color: var(--text);
             outline: none;
             width: 250px;
             font-size: 1rem;
@@ -141,7 +148,7 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 1rem;
         }
-        .stat-info .stat-value { font-size: 1.1rem; font-weight: 800; color: white; line-height: 1.2; }
+        .stat-info .stat-value { font-size: 1.1rem; font-weight: 800; color: var(--text); line-height: 1.2; }
         .stat-info .stat-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
 
         .control-btns { display: flex; gap: 10px; }
@@ -156,8 +163,8 @@
         .date-group { display: flex; flex-direction: column; gap: 4px; }
         .date-group label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
         .date-group input, .date-group select {
-            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1);
-            padding: 0.5rem 0.8rem; border-radius: 10px; color: white; outline: none;
+            background: var(--card-bg); border: 1px solid rgba(128, 128, 128, 0.2);
+            padding: 0.5rem 0.8rem; border-radius: 10px; color: var(--text); outline: none;
             font-family: 'Outfit', sans-serif; font-size: 0.85rem; transition: all 0.2s;
         }
 
@@ -235,12 +242,13 @@
         }
 
         .info-pane {
-            background: rgba(15, 23, 42, 0.3);
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 1rem;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.8rem;
+            border: 1px solid rgba(128, 128, 128, 0.1);
         }
 
         .info-item { display: flex; flex-direction: column; }
@@ -280,7 +288,7 @@
         .modal.active { display: flex; }
 
         .modal-content {
-            background: #1e293b;
+            background: var(--bg);
             padding: 2.5rem;
             border-radius: 24px;
             width: 100%;
@@ -299,11 +307,11 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
         .form-group input, .form-group select, .form-group textarea {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--card-bg);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             padding: 0.8rem;
             border-radius: 12px;
-            color: white;
+            color: var(--text);
             outline: none;
             font-size: 1rem;
         }
@@ -407,7 +415,7 @@
                 vertical-align: middle;
             }
             .mobile-data-table tr:last-child td { border-bottom: none; }
-            .td-title { font-weight: 800; color: white; display: block; font-size: 0.85rem; }
+            .td-title { font-weight: 800; color: var(--text); display: block; font-size: 0.85rem; }
             .td-sub { font-size: 0.6rem; color: var(--text-dim); }
             .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
             .dot.status-active { background: var(--success); box-shadow: 0 0 5px var(--success); }
@@ -1022,7 +1030,9 @@
 
     window.addEventListener('message', (e) => {
         const data = e.data;
-        if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+        if (data && data.type === 'changeTheme') {
+            document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
@@ -1039,7 +1049,11 @@
         _supabase.channel('fuel-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'fuel' }, () => loadFuelData(true)).subscribe();
     }
 
-    document.addEventListener('DOMContentLoaded', initialize);
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        initialize();
+    });
 </script>
 
 </body>

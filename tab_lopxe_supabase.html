@@ -19,6 +19,17 @@
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
+      --border-color: rgba(255,255,255,0.05);
+      --input-bg: rgba(15,23,42,0.5);
+    }
+
+    [data-theme='light'] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --border-color: rgba(0,0,0,0.08);
+      --input-bg: #ffffff;
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
     body {
@@ -35,8 +46,8 @@
     .logo-area h1 { font-size:2.2rem; font-weight:800; background:linear-gradient(to right,#fff,var(--primary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
     .logo-area p { color:var(--text-dim); font-size:0.9rem; margin-top:4px; }
     .controls { display:flex; gap:1rem; align-items:center; }
-    .search-box { background:var(--card-bg); border-radius:12px; padding:0.5rem 1rem; border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(10px); display:flex; align-items:center; gap:8px; }
-    .search-box input { background:transparent; border:none; color:white; outline:none; width:220px; font-size:0.95rem; font-family:'Outfit',sans-serif; }
+    .search-box { background:var(--bg); border-radius:12px; padding:0.5rem 1rem; border:1px solid rgba(128,128,128,0.2); backdrop-filter:blur(10px); display:flex; align-items:center; gap:8px; }
+    .search-box input { background:transparent; border:none; color:var(--text); outline:none; width:220px; font-size:0.95rem; font-family:'Outfit',sans-serif; }
     .btn-add { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; padding:0.75rem 1.4rem; border-radius:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.3s; font-family:'Outfit',sans-serif; }
     .btn-add:hover { transform:scale(1.05) translateY(-2px); }
 
@@ -115,17 +126,17 @@
     .km-bar-track { background:rgba(255,255,255,0.06); border-radius:99px; height:8px; overflow:hidden; }
     .km-bar-fill { height:100%; border-radius:99px; transition:width 0.6s; }
 
-    .tire-footer { display:flex; justify-content:flex-end; gap:8px; padding-top:0.5rem; border-top:1px solid rgba(255,255,255,0.05); }
+    .tire-footer { display:flex; justify-content:flex-end; gap:8px; padding-top:0.5rem; border-top:1px solid var(--border-color); }
     .btn-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); color:var(--text-dim); border:none; cursor:pointer; transition:all 0.2s; }
     .btn-icon:hover { background:var(--primary); color:white; }
 
     .modal { position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(15px); display:none; justify-content:center; align-items:center; z-index:1000; padding:1rem; }
     .modal.active { display:flex; }
-    .modal-content { background:#1e293b; padding:2.5rem; border-radius:28px; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.1); box-shadow:0 40px 80px rgba(0,0,0,0.5); }
+    .modal-content { background:var(--bg); padding:2.5rem; border-radius:28px; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; border:1px solid var(--border-color); box-shadow:0 40px 80px rgba(0,0,0,0.5); }
     .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.2rem; }
     .form-group { display:flex; flex-direction:column; gap:6px; }
     .form-group label { font-size:0.8rem; color:var(--text-dim); font-weight:600; text-transform:uppercase; }
-    .form-group input, .form-group select, .form-group textarea { background:rgba(15,23,42,0.5); border:1px solid rgba(255,255,255,0.1); padding:0.8rem; border-radius:12px; color:white; outline:none; font-family:'Outfit',sans-serif; transition:all 0.2s; }
+    .form-group input, .form-group select, .form-group textarea { background:var(--input-bg); border:1px solid var(--border-color); padding:0.8rem; border-radius:12px; color:var(--text); outline:none; font-family:'Outfit',sans-serif; transition:all 0.2s; }
     .form-group input:focus,.form-group select:focus { border-color:var(--primary); }
     .modal-actions { margin-top:2rem; display:flex; justify-content:flex-end; gap:1rem; }
     .btn-cancel { background:#334155; color:white; padding:0.8rem 1.5rem; border-radius:12px; font-weight:600; border:none; cursor:pointer; font-family:'Outfit',sans-serif; }
@@ -362,7 +373,9 @@
 
   window.addEventListener('message', (e) => {
     const data = e.data;
-    if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+    if (data && data.type === 'changeTheme') {
+        document.documentElement.setAttribute('data-theme', data.theme);
+    } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
         if (activeConfirmCallback) activeConfirmCallback(data.result);
         activeConfirmId = null;
         activeConfirmCallback = null;
@@ -599,6 +612,8 @@
   };
 
   document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
     loadTires(); loadDropdowns();
     const channel = _supabase.channel('db-changes');
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'lopxe' }, () => loadTires(true))
