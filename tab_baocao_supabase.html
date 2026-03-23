@@ -268,7 +268,7 @@
   </div>
 
   <!-- Summary KPIs -->
-  <div class="dashboard-grid">
+  <div class="dashboard-grid" style="grid-template-columns: repeat(5,1fr)">
     <div class="kpi-card" onclick="scrollTo('vehicleStats')">
       <div class="icon">🛣️</div>
       <div class="label">Tổng hành trình</div>
@@ -282,10 +282,16 @@
       <div class="trend" id="trendFuel">Đang tính toán...</div>
     </div>
     <div class="kpi-card" onclick="scrollTo('maintenanceStats')">
-      <div class="icon">💰</div>
+      <div class="icon">🔧</div>
       <div class="label">Chi phí bảo dưỡng</div>
       <div class="value" id="valTotalCost">0</div>
       <div class="trend" id="trendCost">Đang tính toán...</div>
+    </div>
+    <div class="kpi-card" onclick="scrollTo('expenseStats')" style="border-color:rgba(168,85,247,0.3)">
+      <div class="icon">💳</div>
+      <div class="label">Chi phí vận hành</div>
+      <div class="value" id="valTotalExpense">0</div>
+      <div class="trend" id="trendExpense">Chi phí phát sinh</div>
     </div>
     <div class="kpi-card" onclick="scrollTo('safetyStats')">
       <div class="icon">⚠️</div>
@@ -341,6 +347,7 @@
           <th>KM Trung bình</th>
           <th>Nhiên liệu (L)</th>
           <th>Định mức (L/100km)</th>
+          <th>Chi phí vận hành</th>
           <th>Trạng thái</th>
         </tr>
       </thead>
@@ -353,7 +360,7 @@
   <div class="section-header" id="maintenanceStats">
     <div class="section-title"><i class="fas fa-tools"></i> Nhật ký chi phí bảo dưỡng</div>
   </div>
-  <div class="table-card" style="margin-bottom: 5rem;">
+  <div class="table-card">
     <table>
       <thead>
         <tr>
@@ -371,6 +378,28 @@
     </table>
   </div>
 
+  <!-- Chi Phí Vận Hành Section -->
+  <div class="section-header" id="expenseStats">
+    <div class="section-title"><i class="fas fa-receipt"></i> Chi phí vận hành phát sinh</div>
+  </div>
+  <div class="table-card" style="margin-bottom: 5rem;">
+    <table>
+      <thead>
+        <tr>
+          <th>Ngày</th>
+          <th>Biển số xe</th>
+          <th>Loại chi phí</th>
+          <th>Tài xế</th>
+          <th>Số tiền (VNĐ)</th>
+          <th>Ghi chú</th>
+        </tr>
+      </thead>
+      <tbody id="expenseTableBody">
+        <tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-dim)">Đang tải...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>
 
 <script>
@@ -381,7 +410,7 @@
   const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let charts = {};
-  let masterData = { xe:[], nhatky:[], fuel:[], baoduong:[], taixe:[] };
+  let masterData = { xe:[], nhatky:[], fuel:[], baoduong:[], taixe:[], chiphi:[] };
 
   function applyQuickRange() {
     const val = document.getElementById('quickRange').value;
@@ -424,15 +453,16 @@
     
     // Batch Fetch
     try {
-        const [xe, nhatky, fuel, baoduong, taixe] = await Promise.all([
+        const [xe, nhatky, fuel, baoduong, taixe, chiphi] = await Promise.all([
             _supabase.from('xe').select('*'),
             _supabase.from('nhatky').select('*').gte('ngay_van_hanh', fromDate).lte('ngay_van_hanh', toDate),
             _supabase.from('fuel').select('*').gte('ngay_thuc_hien', fromDate).lte('ngay_thuc_hien', toDate),
             _supabase.from('baoduong').select('*').gte('ngay_ket_thuc', fromDate).lte('ngay_ket_thuc', toDate),
-             _supabase.from('taixe').select('ma_nv, ho_ten')
+            _supabase.from('taixe').select('ma_nv, ho_ten'),
+            _supabase.from('chiphi').select('*').gte('ngay_thuc_hien', fromDate).lte('ngay_thuc_hien', toDate)
         ]);
 
-        masterData = { xe: xe.data, nhatky: nhatky.data, fuel: fuel.data, baoduong: baoduong.data, taixe: taixe.data };
+        masterData = { xe: xe.data||[], nhatky: nhatky.data||[], fuel: fuel.data||[], baoduong: baoduong.data||[], taixe: taixe.data||[], chiphi: chiphi.data||[] };
         renderDashboard();
     } catch (e) {
         console.error(e);
@@ -446,32 +476,35 @@
   }
 
   function renderDashboard() {
-    const { nhatky, fuel, baoduong, xe } = masterData;
+    const { nhatky, fuel, baoduong, xe, chiphi } = masterData;
 
     // 1. KPIs
     const totalKm = nhatky.reduce((sum, item) => sum + (parseFloat(item.tong_km) || 0), 0);
     const totalLit = fuel.reduce((sum, item) => sum + (parseFloat(item.so_lit) || 0), 0);
     const totalCost = baoduong.reduce((sum, item) => sum + (parseFloat(item.tong_tien) || 0), 0);
+    const totalExpense = chiphi.reduce((sum, item) => sum + (parseFloat(item.so_tien) || 0), 0);
     const issueTrips = nhatky.filter(l => l.suco_toggle === 'co').length;
     const issueRate = nhatky.length ? ((issueTrips / nhatky.length) * 100).toFixed(1) : 0;
 
     document.getElementById('valTotalKm').innerText = totalKm.toLocaleString() + " km";
     document.getElementById('valTotalFuel').innerText = totalLit.toLocaleString() + " Lít";
     document.getElementById('valTotalCost').innerText = totalCost.toLocaleString() + " đ";
+    document.getElementById('valTotalExpense').innerText = totalExpense.toLocaleString() + " đ";
     document.getElementById('valIssueRate').innerText = issueRate + "%";
     
     document.getElementById('trendKm').innerText = `${nhatky.length} chuyến đi`;
     document.getElementById('trendFuel').innerText = fuel.length ? `Trung bình ${(totalLit/fuel.length).toFixed(1)} L/lần` : "—";
     document.getElementById('trendCost').innerText = `${baoduong.length} lệnh bảo trì`;
+    document.getElementById('trendExpense').innerText = `${chiphi.length} khoản phát sinh`;
 
-    // 2. Main Operaton Chart (Day by Day)
+    // 2. Main Operation Chart (by Vehicle KM)
     renderOperationChart(nhatky);
 
     // 3. Fuel Chart (by Vehicle)
     renderFuelChart(fuel);
 
-    // 4. Cost Chart (by Vehicle & Fuel)
-    renderCostChart(baoduong, fuel);
+    // 4. Cost Chart (Fuel + Maintenance + Expense)
+    renderCostChart(baoduong, fuel, chiphi);
 
     // 5. Driver Ranking
     renderDriverRanking(nhatky);
@@ -605,36 +638,34 @@
     });
   }
 
-  function renderCostChart(baoduongData, fuelData) {
+  function renderCostChart(baoduongData, fuelData, chiPhiData) {
     const ctx = document.getElementById('costChart').getContext('2d');
     if (charts.cost) charts.cost.destroy();
 
-    let maintenance = 0;
-    let repair = 0;
-    let fuelTotal = 0;
+    let maintenance = 0, repair = 0, fuelTotal = 0, expenseTotal = 0;
     
     baoduongData.forEach(item => {
         const val = parseFloat(item.tong_tien) || 0;
         if(item.loai_hinh === 'Bảo dưỡng') maintenance += val;
         else repair += val;
     });
+    fuelData.forEach(item => { fuelTotal += parseFloat(item.thanh_tien) || 0; });
+    chiPhiData.forEach(item => { expenseTotal += parseFloat(item.so_tien) || 0; });
 
-    fuelData.forEach(item => {
-        const val = parseFloat(item.thanh_tien) || 0;
-        fuelTotal += val;
+    // Group chiphi by category for breakdown
+    const expByType = {};
+    chiPhiData.forEach(item => {
+        const k = item.loai_chi_phi || 'Khác';
+        expByType[k] = (expByType[k] || 0) + (parseFloat(item.so_tien) || 0);
     });
 
     charts.cost = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Nhiên liệu', 'Bảo dưỡng', 'Sửa chữa'],
+            labels: ['Nhiên liệu', 'Bảo dưỡng', 'Sửa chữa', ...Object.keys(expByType)],
             datasets: [{
-                data: [fuelTotal, maintenance, repair],
-                backgroundColor: [
-                    '#10b981', 
-                    '#f59e0b', 
-                    '#ef4444'
-                ],
+                data: [fuelTotal, maintenance, repair, ...Object.values(expByType)],
+                backgroundColor: ['#10b981','#f59e0b','#ef4444','#6366f1','#a855f7','#00ffcc','#f97316','#ec4899'],
                 hoverOffset: 15,
                 borderColor: 'rgba(15, 23, 42, 0.8)',
                 borderWidth: 3
@@ -646,12 +677,12 @@
             plugins: {
                 legend: { 
                     position: 'right', 
-                    labels: { color: '#94a3b8', font: { family: 'Outfit', size: 11 }, padding: 15, usePointStyle: true, pointStyle: 'circle' } 
+                    labels: { color: '#94a3b8', font: { family: 'Outfit', size: 10 }, padding: 10, usePointStyle: true, pointStyle: 'circle' } 
                 },
                 tooltip: { 
                     backgroundColor: 'rgba(15, 23, 42, 0.95)',
                     padding: 12,
-                    callbacks: { label: (c) => ` ${c.label}: ${c.raw.toLocaleString()} VNĐ` } 
+                    callbacks: { label: (c) => ` ${c.label}: ${Number(c.raw).toLocaleString()} đ` } 
                 }
             },
             cutout: '72%',
@@ -763,11 +794,11 @@
   }
 
   function renderTables() {
-    const { nhatky, fuel, baoduong, xe } = masterData;
+    const { nhatky, fuel, baoduong, xe, chiphi } = masterData;
 
     // Vehicle Table
     const vStats = {};
-    xe.forEach(v => vStats[v.bien_so_xe] = { trips: 0, km: 0, fuel: 0, status: v.tinh_trang_hoat_dong });
+    xe.forEach(v => vStats[v.bien_so_xe] = { trips: 0, km: 0, fuel: 0, expense: 0, status: v.tinh_trang_hoat_dong });
     nhatky.forEach(l => {
         if(vStats[l.bien_so_xe]) {
             vStats[l.bien_so_xe].trips++;
@@ -777,6 +808,9 @@
     fuel.forEach(f => {
         if(vStats[f.bien_so_xe]) vStats[f.bien_so_xe].fuel += parseFloat(f.so_lit) || 0;
     });
+    chiphi.forEach(c => {
+        if(vStats[c.bien_so_xe]) vStats[c.bien_so_xe].expense += parseFloat(c.so_tien) || 0;
+    });
 
     const vBody = document.getElementById('vehicleTableBody');
     vBody.innerHTML = Object.entries(vStats).map(([plate, s]) => {
@@ -784,7 +818,6 @@
         const consumption = s.km > 0 ? ((s.fuel / s.km) * 100).toFixed(1) : "—";
         const statusBadge = s.status === 'dang_hoat_dong' ? 'badge-success' : 'badge-danger';
         const statusText = s.status === 'dang_hoat_dong' ? 'Sẵn sàng' : 'Tạm dừng';
-
         return `
             <tr>
               <td><strong>${plate}</strong></td>
@@ -793,10 +826,11 @@
               <td>${avgKm} km</td>
               <td>${s.fuel.toLocaleString()} L</td>
               <td style="color:var(--accent); font-weight:700">${consumption}</td>
+              <td style="color:var(--secondary); font-weight:700">${s.expense ? s.expense.toLocaleString() + ' đ' : '—'}</td>
               <td><span class="badge ${statusBadge}">${statusText}</span></td>
             </tr>
         `;
-    }).join('') || '<tr><td colspan="7" style="text-align:center">Không có dữ liệu xe</td></tr>';
+    }).join('') || '<tr><td colspan="8" style="text-align:center">Không có dữ liệu xe</td></tr>';
 
     // Maintenance Table
     const mBody = document.getElementById('maintenanceTableBody');
@@ -811,6 +845,24 @@
         </tr>
     `).join('') || '<tr><td colspan="6" style="text-align:center">Không có dữ liệu bảo dưỡng</td></tr>';
   }
+
+
+    // Expense Table (Chi phí vận hành)
+    const eBody = document.getElementById('expenseTableBody');
+    const expenseCatLabels = {
+      'nhien_lieu': 'Nhiên liệu', 'sua_chua': 'Sửa chữa', 'cau_duong': 'Cầu đường',
+      'bai_do_xe': 'Bãi đỗ xe', 'phat': 'Phạt vi phạm', 'bao_duong': 'Bảo dưỡng', 'khac': 'Khác'
+    };
+    eBody.innerHTML = chiphi.slice(0, 30).map(c => `
+        <tr>
+          <td>${c.ngay_thuc_hien || '—'}</td>
+          <td><strong>${c.bien_so_xe || '—'}</strong></td>
+          <td><span class="badge" style="background:rgba(168,85,247,0.15);color:var(--secondary)">${expenseCatLabels[c.loai_chi_phi] || c.loai_chi_phi || '—'}</span></td>
+          <td>${c.ho_ten_taixe || c.ma_nv || '—'}</td>
+          <td style="font-weight:700; color:var(--secondary)">${(parseFloat(c.so_tien)||0).toLocaleString()} đ</td>
+          <td style="font-size:0.8rem;color:var(--text-dim)">${c.ghi_chu || '—'}</td>
+        </tr>
+    `).join('') || '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-dim)">Không có dữ liệu chi phí vận hành</td></tr>';
 
   function exportExcel() {
     const { nhatky } = masterData;
