@@ -440,15 +440,23 @@
   }
 
   async function loadReport(isSilent = false) {
-    const fromDate = document.getElementById('fromDate').value;
-    const toDate = document.getElementById('toDate').value;
-    const btn = document.querySelector('.btn-main');
-    let originalHtml = "";
+    let fromDate = document.getElementById('fromDate').value;
+    let toDate = document.getElementById('toDate').value;
 
-    if (btn && !isSilent) {
-        originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
-        btn.disabled = true;
+    // Safety: nếu chưa có ngày thì tự set tháng này
+    if (!fromDate || !toDate) {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      fromDate = firstDay.toISOString().split('T')[0];
+      toDate = today.toISOString().split('T')[0];
+      document.getElementById('fromDate').value = fromDate;
+      document.getElementById('toDate').value = toDate;
+    }
+
+    const refreshBtn = document.querySelector('.btn-refresh');
+    if (refreshBtn && !isSilent) {
+      refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+      refreshBtn.disabled = true;
     }
     
     // Batch Fetch
@@ -466,11 +474,15 @@
         renderDashboard();
     } catch (e) {
         console.error(e);
-        if (!isSilent) alert("Có lỗi khi tải dữ liệu. Vui lòng thử lại.");
+        if (!isSilent) {
+          if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'toast', message: 'Lỗi tải báo cáo: ' + e.message, theme: 'error' }, '*');
+          } else alert('Có lỗi khi tải dữ liệu: ' + e.message);
+        }
     } finally {
-        if (btn && !isSilent) {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+        if (refreshBtn && !isSilent) {
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Làm mới';
+            refreshBtn.disabled = false;
         }
     }
   }
