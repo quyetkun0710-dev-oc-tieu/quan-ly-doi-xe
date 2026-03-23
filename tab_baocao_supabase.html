@@ -402,16 +402,38 @@
 </div>
 
 <script>
+  (function earlyInit() {
+    try {
+      const today = new Date();
+      const first = new Date(today.getFullYear(), today.getMonth(), 1);
+      const f = document.getElementById('fromDate');
+      const t = document.getElementById('toDate');
+      const qr = document.getElementById('quickRange');
+      
+      const pad = (n) => (n < 10 ? '0' + n : n);
+      const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+      const firstStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-01`;
+      
+      if (qr) qr.value = 'month';
+      if (f) f.value = firstStr;
+      if (t) t.value = todayStr;
+      
+    } catch(err) { console.error("Early init error:", err); }
+  })();
+
   // SUPABASE CONFIG
   const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
-  const { createClient } = supabase;
-  const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+  let _supabase;
+  try {
+     const { createClient } = supabase;
+     _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch(e) { console.error("Supabase load failed"); }
 
   let charts = {};
   let masterData = { xe:[], nhatky:[], fuel:[], baoduong:[], taixe:[], chiphi:[] };
 
-  // Helper to get YYYY-MM-DD in local time
   function getLocalDateString(date) {
     try {
       const year = date.getFullYear();
@@ -421,7 +443,6 @@
     } catch(e) { return ""; }
   }
 
-  // Tách biệt việc set ngày và việc tải báo cáo để tránh đệ quy và lỗi load
   function applyQuickRange(shouldLoad = true) {
     const val = document.getElementById('quickRange').value;
     const today = new Date();
@@ -917,37 +938,10 @@
     document.body.removeChild(link);
   }
 
-  // INIT - Self-firing function to ensure it runs
-  (function initAll() {
-    try {
-        // Theme init with safety
-        try {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        } catch(e) {}
-        
-        const qr = document.getElementById('quickRange');
-        const f = document.getElementById('fromDate');
-        const t = document.getElementById('toDate');
-
-        if (qr && f && t) {
-            qr.value = 'month';
-            // Set dates manually right here to be super sure
-            const today = new Date();
-            const y = today.getFullYear();
-            let m = today.getMonth() + 1;
-            let d = today.getDate();
-            const mm = (m < 10 ? '0' + m : m);
-            const dd = (d < 10 ? '0' + d : d);
-            
-            f.value = y + '-' + mm + '-01';
-            t.value = y + '-' + mm + '-' + dd;
-            
-            // Trigger load after 300ms
-            setTimeout(() => { loadReport(true); }, 300);
-        }
-    } catch(err) { console.error("Self-init fatal error:", err); }
-  })();
+  // Initial Data Load
+  setTimeout(() => {
+     if (_supabase) loadReport(true);
+  }, 1000);
 
   // Keep message listener for theme and sync
   window.addEventListener('message', (e) => {
