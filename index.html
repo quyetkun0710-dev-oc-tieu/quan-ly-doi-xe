@@ -3308,22 +3308,7 @@
     const CACHED_TABS = ['home', 'nhiemvu', 'fuel', 'nhatky', 'lotrinh', 'baoduong'];
     const tabCache = {}; // Lưu trữ iframe của các tab đã mở
 
-    async function logAudit(tableName, recordId, action, oldData, newData) {
-      if (!USER_MNV) return; // Chỉ log khi đã đăng nhập
-      try {
-        await _supabase.from('audit_logs').insert({
-          table_name: tableName,
-          record_id: recordId ? recordId.toString() : 'new',
-          action: action,
-          old_data: oldData,
-          new_data: newData,
-          changed_by: USER_MNV
-        });
-        console.log(`[Audit] Logged ${action} on ${tableName}:${recordId}`);
-      } catch (err) {
-        console.error("[Audit] Error logging change:", err);
-      }
-    }
+
 
     function openTab(tabKey, fileName) {
       if (!tabKey) return;
@@ -3808,11 +3793,54 @@
 
       t.className = 'show ' + type;
 
-      clearTimeout(toastTimer);
       toastTimer = setTimeout(() => {
         t.classList.remove('show');
       }, 3500);
     }
+
+    // ============ AUDIT LOGS ============
+    async function logAudit(tableName, recordId, action, oldData, newData) {
+      if (!_supabase) return;
+      try {
+        const payload = {
+          table_name: tableName,
+          record_id: String(recordId),
+          action: action,
+          old_data: oldData,
+          new_data: newData,
+          changed_by: USER_MNV || 'System',
+          changed_at: new Date().toISOString()
+        };
+        const { error } = await _supabase.from('audit_logs').insert([payload]);
+        if (error) console.error("[Audit] Error:", error);
+        else console.log(`[Audit] ${action} on ${tableName} recorded.`);
+      } catch (e) {
+        console.error("[Audit] Exception:", e);
+      }
+    }
+    // Gán vào window để debug hoặc gọi trực tiếp nếu cùng origin
+    window.logAudit = logAudit;
+
+    // ============ MESSAGE LISTENER (CORS FIX) ============
+    window.addEventListener('message', (e) => {
+      const data = e.data;
+      if (!data) return;
+
+      // Xử lý yêu cầu ghi Log Audit từ các iFrame (Tabs)
+      if (data.type === 'logAudit') {
+        logAudit(data.tableName, data.recordId, data.action, data.oldData, data.newData);
+      }
+
+      // Xử lý Toast từ iFrame
+      if (data.type === 'toast') {
+        showToast(data.message, data.theme);
+      }
+
+      // Xử lý Refresh Data badges
+      if (data === 'refreshStats' || data.type === 'refreshStats') {
+        updateHomeStats();
+      }
+    });
 
     // ============ INIT ============
     window.addEventListener('DOMContentLoaded', () => {

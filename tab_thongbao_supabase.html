@@ -276,15 +276,8 @@
   let currentFilter = 'all';
 
   function safeNotifyParent() {
-    try {
-      if (window.parent && window.parent.postMessage) {
-        window.parent.postMessage('refreshStats', '*');
-      }
-      if (window.parent && window.parent.updateHomeStats) {
-        window.parent.updateHomeStats();
-      }
-    } catch (e) {
-      console.warn("Parent update blocked (Cross-Origin), using postMessage instead.");
+    if (window.parent && window.parent.postMessage) {
+      window.parent.postMessage('refreshStats', '*');
     }
   }
 

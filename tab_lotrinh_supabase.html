@@ -993,6 +993,21 @@
             const totalKm = parseFloat(document.getElementById('resDistance').innerText) || 0;
             const totalMin = parseInt(document.getElementById('resTime').innerText) || 0;
 
+            function showToast(msg, type = 'success') {
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({ type: 'toast', message: msg, theme: type }, '*');
+                } else alert(msg);
+            }
+
+            function logAudit(tableName, recordId, action, oldData, newData) {
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({ 
+                        type: 'logAudit', 
+                        tableName, recordId, action, oldData, newData 
+                    }, '*');
+                }
+            }
+
             showToast("Đang kết nối database...", "warning");
 
             try {
@@ -1013,8 +1028,8 @@
                     }
                 } else {
                     // Ghi log Audit
-                    if (window.parent && window.parent.logAudit && data) {
-                        window.parent.logAudit('lotrinh', data[0].id, 'INSERT', null, {
+                    if (data) {
+                        logAudit('lotrinh', data[0].id, 'INSERT', null, {
                             ten_lotrinh: routeName,
                             stops_count: stopsData.length,
                             tong_km: totalKm

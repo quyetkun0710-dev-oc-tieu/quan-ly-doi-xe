@@ -943,6 +943,15 @@
         }
     }
 
+    function logAudit(tableName, recordId, action, oldData, newData) {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ 
+                type: 'logAudit', 
+                tableName, recordId, action, oldData, newData 
+            }, '*');
+        }
+    }
+
     let activeConfirmId = null;
     let activeConfirmCallback = null;
     function showConfirm(title, message, callback) {
@@ -994,15 +1003,15 @@
                 const { error } = await _supabase.from('baoduong').update(payload).eq('id', id);
                 if (error) throw error;
 
-                if (window.parent && window.parent.logAudit) {
-                    window.parent.logAudit('baoduong', id, 'UPDATE', oldItem, payload);
+                if (oldItem) {
+                    logAudit('baoduong', id, 'UPDATE', oldItem, payload);
                 }
             } else {
                 const { data, error } = await _supabase.from('baoduong').insert([payload]).select();
                 if (error) throw error;
 
-                if (window.parent && window.parent.logAudit && data) {
-                    window.parent.logAudit('baoduong', data[0].id, 'INSERT', null, payload);
+                if (data) {
+                    logAudit('baoduong', data[0].id, 'INSERT', null, payload);
                 }
             }
 
@@ -1029,8 +1038,8 @@
                 if (error) {
                     showToast("Lỗi khi xóa: " + error.message, "error");
                 } else {
-                    if (window.parent && window.parent.logAudit) {
-                        window.parent.logAudit('baoduong', id, 'DELETE', oldItem, null);
+                    if (oldItem) {
+                        logAudit('baoduong', id, 'DELETE', oldItem, null);
                     }
                     showToast("Đã xóa bản ghi thành công");
                     loadMaintenance();

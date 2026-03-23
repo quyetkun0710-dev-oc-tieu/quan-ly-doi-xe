@@ -1097,6 +1097,15 @@
         }
     }
 
+    function logAudit(tableName, recordId, action, oldData, newData) {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ 
+                type: 'logAudit', 
+                tableName, recordId, action, oldData, newData 
+            }, '*');
+        }
+    }
+
     let activeConfirmId = null;
     let activeConfirmCallback = null;
     function showConfirm(title, message, callback) {
@@ -1154,16 +1163,16 @@
                 const { error } = await _supabase.from('nhatky').update(payload).eq('id', id);
                 if (error) throw error;
 
-                if (window.parent && window.parent.logAudit) {
-                    window.parent.logAudit('nhatky', id, 'UPDATE', existing, payload);
+                if (existing) {
+                    logAudit('nhatky', id, 'UPDATE', existing, payload);
                 }
             }
             else {
                 const { data, error } = await _supabase.from('nhatky').insert([payload]).select();
                 if (error) throw error;
 
-                if (window.parent && window.parent.logAudit && data) {
-                    window.parent.logAudit('nhatky', data[0].id, 'INSERT', null, payload);
+                if (data) {
+                    logAudit('nhatky', data[0].id, 'INSERT', null, payload);
                 }
             }
 
@@ -1173,9 +1182,6 @@
             try {
                 if (window.parent && window.parent.postMessage) {
                     window.parent.postMessage('refreshStats', '*');
-                }
-                if (window.parent && typeof window.parent.updateHomeStats === 'function') {
-                    window.parent.updateHomeStats();
                 }
             } catch(e) {}
 
@@ -1207,8 +1213,8 @@
                     if (error) {
                         showToast("Lỗi khi xóa: " + error.message, "error");
                     } else {
-                        if (window.parent && window.parent.logAudit) {
-                            window.parent.logAudit('nhatky', id, 'DELETE', existing, null);
+                        if (existing) {
+                            logAudit('nhatky', id, 'DELETE', existing, null);
                         }
                         showToast("Đã xóa nhật ký thành công");
                         loadLogs(true);

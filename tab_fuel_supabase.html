@@ -899,6 +899,15 @@
         }
     }
 
+    function logAudit(tableName, recordId, action, oldData, newData) {
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ 
+                type: 'logAudit', 
+                tableName, recordId, action, oldData, newData 
+            }, '*');
+        }
+    }
+
     let activeConfirmId = null;
     let activeConfirmCallback = null;
     function showConfirm(title, message, callback) {
@@ -951,16 +960,16 @@
                 if (error) throw error;
                 
                 // Ghi log audit
-                if (window.parent && window.parent.logAudit) {
-                    window.parent.logAudit('fuel', id, 'UPDATE', oldItem, payload);
+                if (oldItem) {
+                    logAudit('fuel', id, 'UPDATE', oldItem, payload);
                 }
             } else {
                 const { data, error } = await _supabase.from('fuel').insert([payload]).select();
                 if (error) throw error;
                 
                 // Ghi log audit cho insert
-                if (window.parent && window.parent.logAudit && data) {
-                    window.parent.logAudit('fuel', data[0].id, 'INSERT', null, payload);
+                if (data) {
+                    logAudit('fuel', data[0].id, 'INSERT', null, payload);
                 }
             }
 
@@ -992,8 +1001,8 @@
                 if (error) {
                     showToast("Lỗi khi xóa: " + error.message, "error");
                 } else {
-                    if (window.parent && window.parent.logAudit) {
-                        window.parent.logAudit('fuel', id, 'DELETE', oldItem, null);
+                    if (oldItem) {
+                        logAudit('fuel', id, 'DELETE', oldItem, null);
                     }
                     showToast("Đã xóa bản ghi thành công");
                     loadFuelData(true);
