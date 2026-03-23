@@ -434,8 +434,7 @@
     const payload = {
       tieu_de: document.getElementById('tieu_de').value.trim(),
       noi_dung: document.getElementById('noi_dung').value.trim(),
-      muc_do: document.getElementById('muc_do').value,
-      updated_at: new Date().toISOString()
+      muc_do: document.getElementById('muc_do').value
     };
     if (!id) payload.nguoi_dang = USER_NAME;
     

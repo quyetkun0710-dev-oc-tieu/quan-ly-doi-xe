@@ -4089,8 +4089,12 @@
       const btn = document.getElementById('btnPushBell');
       if (!btn) return;
 
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        btn.style.display = 'none'; // ẩn nút nếu không hỗ trợ
+      const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !isSecure) {
+        btn.style.opacity = '0.4';
+        btn.style.cursor = 'not-allowed';
+        btn.onclick = () => showToast('Thiết bị hoặc trình duyệt (HTTP) không hỗ trợ thông báo.', 'warning');
         return;
       }
 
