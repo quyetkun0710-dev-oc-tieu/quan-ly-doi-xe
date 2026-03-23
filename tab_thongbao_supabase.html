@@ -303,9 +303,7 @@
 
       // Admin chỉ xem được lịch sử của chính mình
       if (ROLE === 'admin') {
-          query = query.eq('ma_nv', USER_MNV);
-          // Fallback cho dữ liệu cũ chưa có ma_nv
-          // query = query.or(`ma_nv.eq.${USER_MNV},nguoi_dang.eq.${USER_NAME}`); 
+          query = query.eq('nguoi_dang', USER_NAME);
       }
       // Manager xem được toàn bộ (đã được lọc theo ngày ở trên)
 
@@ -473,7 +471,6 @@
     };
     if (!id) {
         payload.nguoi_dang = USER_NAME;
-        payload.ma_nv = USER_MNV;
     }
     
     try {
