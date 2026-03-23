@@ -2200,10 +2200,7 @@
 
 
 
-      <button class="nav-item admin-and-above" data-tab="chiphi" onclick="openTab('chiphi','tab_chiphi_supabase.html')">
-        <div class="nav-icon" style="color: #f43f5e"><i class="fas fa-wallet"></i></div>
-        <span class="nav-label">Chi Phí</span>
-      </button>
+
 
       <div class="nav-divider"></div>
 
@@ -2459,12 +2456,7 @@
             </div>
             <div class="label">Kế Hoạch BĐ</div>
           </div>
-          <div class="app-card admin-and-above" onclick="openTab('chiphi','tab_chiphi_supabase.html')">
-            <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #f43f5e, #fb7185)">
-              <i class="fas fa-wallet"></i>
-            </div>
-            <div class="label">Chi Phí</div>
-          </div>
+
           <div class="app-card admin-and-above" onclick="openTab('baocao','tab_baocao_supabase.html')">
             <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #2dd4bf, #5eead4)">
               <i class="fas fa-chart-pie"></i>
@@ -3335,8 +3327,7 @@
       lichlamviec: { icon: '<i class="fas fa-calendar-alt"></i>', title: 'Lịch Ca Trực' },
       dangkylich: { icon: '<i class="fas fa-edit"></i>', title: 'Đăng Ký Lịch' },
       diemgiao: { icon: '<i class="fas fa-location-dot"></i>', title: 'Điểm Giao' },
-      lotrinh: { icon: '<i class="fas fa-route"></i>', title: 'Lộ Trình' },
-      chiphi: { icon: '<i class="fas fa-wallet"></i>', title: 'Chi Phí' }
+      lotrinh: { icon: '<i class="fas fa-route"></i>', title: 'Lộ Trình' }
     };
 
     function showMyActivity() {
@@ -3407,8 +3398,7 @@
         'thongbao': ['manager', 'admin', 'taixe'],
         'diemgiao': ['manager', 'admin', 'taixe'],
         'lotrinh': ['manager', 'admin', 'taixe'],
-        'lichlamviec': ['manager', 'admin', 'taixe'],
-        'chiphi': ['manager', 'admin']
+        'lichlamviec': ['manager', 'admin', 'taixe']
       };
 
       if (permissions[tabKey] && !permissions[tabKey].includes(USER_ROLE)) {

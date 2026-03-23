@@ -415,6 +415,14 @@
   let charts = {};
   let masterData = { xe:[], nhatky:[], fuel:[], baoduong:[], taixe:[], chiphi:[] };
 
+  // Helper to get YYYY-MM-DD in local time
+  function getLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   function applyQuickRange() {
     const val = document.getElementById('quickRange').value;
     const today = new Date();
@@ -460,8 +468,8 @@
       to = today;
     }
 
-    document.getElementById('fromDate').value = from.toISOString().split('T')[0];
-    document.getElementById('toDate').value = to.toISOString().split('T')[0];
+    document.getElementById('fromDate').value = getLocalDateString(from);
+    document.getElementById('toDate').value = getLocalDateString(to);
     loadReport();
   }
 
