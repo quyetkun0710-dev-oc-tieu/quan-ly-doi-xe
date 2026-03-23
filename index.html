@@ -2135,6 +2135,11 @@
         <span class="nav-label">Nhiên Liệu</span>
       </button>
 
+      <button class="nav-item" data-tab="chiphi" onclick="openTab('chiphi','tab_chiphi_supabase.html')">
+        <div class="nav-icon" style="color: #f59e0b"><i class="fas fa-wallet"></i></div>
+        <span class="nav-label">Chi Phí</span>
+      </button>
+
       <button class="nav-item" data-tab="baoduong" onclick="openTab('baoduong','tab_baoduong_supabase.html')">
         <div class="nav-icon" style="color: #ec4899"><i class="fas fa-tools"></i></div>
         <span class="nav-label">Bảo Dưỡng</span>
@@ -2393,6 +2398,12 @@
               <i class="fas fa-gas-pump"></i>
             </div>
             <div class="label">Nhiên Liệu</div>
+          </div>
+          <div class="app-card" onclick="openTab('chiphi','tab_chiphi_supabase.html')">
+            <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #f97316, #fb923c)">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div class="label">Chi Phí</div>
           </div>
           <div class="app-card" onclick="openTab('lotrinh','tab_lotrinh_supabase.html')">
             <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #4ade80, #22c55e)">
@@ -3312,6 +3323,7 @@
       taixe: { icon: '<i class="fas fa-id-card"></i>', title: 'Tài Xế' },
       nhatky: { icon: '<i class="fas fa-book-open"></i>', title: 'Nhật Ký' },
       fuel: { icon: '<i class="fas fa-gas-pump"></i>', title: 'Nhiên Liệu' },
+      chiphi: { icon: '<i class="fas fa-wallet"></i>', title: 'Chi Phí' },
       baoduong: { icon: '<i class="fas fa-tools"></i>', title: 'Bảo Dưỡng' },
       lopxe: { icon: '<i class="fas fa-dharmachakra"></i>', title: 'Quản Lý Lốp' },
       nhiemvu: { icon: '<i class="fas fa-clipboard-list"></i>', title: 'Nhiệm Vụ' },
@@ -3382,6 +3394,7 @@
         'kehoach': ['manager', 'admin', 'taixe'],
         'nhatky': ['manager', 'admin', 'taixe'],
         'fuel': ['manager', 'admin', 'taixe'],
+        'chiphi': ['manager', 'admin', 'taixe'],
         'baoduong': ['manager', 'admin', 'taixe'],
         'lopxe': ['manager', 'admin', 'taixe'],
         'nhiemvu': ['manager', 'admin', 'taixe'],

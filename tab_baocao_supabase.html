@@ -333,6 +333,30 @@
   </div>
 
   <!-- Detailed Tables -->
+  <!-- Layer 3: Consolidated Financial Report -->
+  <div class="section-header" id="financialSummary">
+    <div class="section-title" style="color:var(--accent)"><i class="fas fa-file-invoice-dollar"></i> Báo cáo tổng hợp chi phí & hiệu quả kinh tế</div>
+  </div>
+  <div class="table-card" style="border-color: rgba(0, 255, 204, 0.2); box-shadow: 0 0 30px rgba(0, 255, 204, 0.05);">
+    <table>
+      <thead>
+        <tr style="background: rgba(0, 255, 204, 0.05);">
+          <th>Biển số xe</th>
+          <th>Tổng KM</th>
+          <th>Số chuyến</th>
+          <th>Tiền Nhiên liệu</th>
+          <th>Tiền Bảo trì</th>
+          <th>Phát sinh khác</th>
+          <th style="color:var(--text); font-weight:800">TỔNG CHI PHÍ</th>
+          <th style="color:var(--accent); font-weight:800">CHI PHÍ / KM</th>
+        </tr>
+      </thead>
+      <tbody id="financialTableBody">
+        <tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text-dim)">Đang tính toán dữ liệu tổng hợp...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="section-header" id="vehicleStats">
     <div class="section-title"><i class="fas fa-truck-moving"></i> Hiệu suất sử dụng phương tiện</div>
   </div>
@@ -531,7 +555,8 @@
             _supabase.from('xe').select('*'),
             _supabase.from('nhatky').select('*').gte('ngay_van_hanh', fromDate).lte('ngay_van_hanh', toDate),
             _supabase.from('fuel').select('*').gte('ngay_thuc_hien', fromDate).lte('ngay_thuc_hien', toDate),
-            _supabase.from('baoduong').select('*').gte('ngay_ket_thuc', fromDate).lte('ngay_ket_thuc', toDate),
+            // Lấy tất cả bảo dưỡng bắt đầu trong khoảng chọn HOẶC đang xử lý chưa xong (tránh bỏ sót xe nằm xưởng lâu ngày)
+            _supabase.from('baoduong').select('*').or(`and(ngay_bat_dau.gte.${fromDate},ngay_bat_dau.lte.${toDate}),ket_qua.neq.Đã hoàn thành`),
             _supabase.from('taixe').select('ma_nv, ho_ten'),
             _supabase.from('chiphi').select('*').gte('ngay_thuc_hien', fromDate).lte('ngay_thuc_hien', toDate)
         ]);
@@ -731,17 +756,23 @@
     fuelData.forEach(item => { fuelTotal += parseFloat(item.thanh_tien) || 0; });
     chiPhiData.forEach(item => { expenseTotal += parseFloat(item.so_tien) || 0; });
 
+    const expenseCatLabels = {
+      'nhien_lieu': 'Nhiên liệu', 'sua_chua': 'Sửa chữa', 'cau_duong': 'Cầu đường',
+      'bai_do_xe': 'Bãi đỗ xe', 'phat': 'Phạt vi phạm', 'bao_duong': 'Bảo dưỡng', 'khac': 'Khác'
+    };
+
     // Group chiphi by category for breakdown
     const expByType = {};
     chiPhiData.forEach(item => {
-        const k = item.loai_chi_phi || 'Khác';
+        const rawK = item.loai_chi_phi || 'khac';
+        const k = expenseCatLabels[rawK] || rawK;
         expByType[k] = (expByType[k] || 0) + (parseFloat(item.so_tien) || 0);
     });
 
     charts.cost = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Nhiên liệu', 'Bảo dưỡng', 'Sửa chữa', ...Object.keys(expByType)],
+            labels: ['Nhiên liệu (Xăng)', 'Bảo dưỡng định kỳ', 'Sửa chữa phát sinh', ...Object.keys(expByType)],
             datasets: [{
                 data: [fuelTotal, maintenance, repair, ...Object.values(expByType)],
                 backgroundColor: ['#10b981','#f59e0b','#ef4444','#6366f1','#a855f7','#00ffcc','#f97316','#ec4899'],
@@ -877,7 +908,16 @@
 
     // Vehicle Table
     const vStats = {};
-    xe.forEach(v => vStats[v.bien_so_xe] = { trips: 0, km: 0, fuel: 0, expense: 0, status: v.tinh_trang_hoat_dong });
+    xe.forEach(v => vStats[v.bien_so_xe] = { 
+        trips: 0, 
+        km: 0, 
+        fuelVolume: 0, 
+        fuelCost: 0, 
+        maintenanceCost: 0, 
+        expense: 0, 
+        status: v.tinh_trang_hoat_dong 
+    });
+
     nhatky.forEach(l => {
         if(vStats[l.bien_so_xe]) {
             vStats[l.bien_so_xe].trips++;
@@ -885,28 +925,55 @@
         }
     });
     fuel.forEach(f => {
-        if(vStats[f.bien_so_xe]) vStats[f.bien_so_xe].fuel += parseFloat(f.so_lit) || 0;
+        if(vStats[f.bien_so_xe]) {
+            vStats[f.bien_so_xe].fuelVolume += parseFloat(f.so_lit) || 0;
+            vStats[f.bien_so_xe].fuelCost += parseFloat(f.thanh_tien) || 0;
+        }
+    });
+    baoduong.forEach(b => {
+        if(vStats[b.bien_so_xe]) {
+            vStats[b.bien_so_xe].maintenanceCost += parseFloat(b.tong_tien) || 0;
+        }
     });
     chiphi.forEach(c => {
         if(vStats[c.bien_so_xe]) vStats[c.bien_so_xe].expense += parseFloat(c.so_tien) || 0;
     });
 
+    // Render Financial Summary Table
+    const fBody = document.getElementById('financialTableBody');
+    fBody.innerHTML = Object.entries(vStats).map(([plate, s]) => {
+        const totalCost = s.fuelCost + s.maintenanceCost + s.expense;
+        const costPerKm = s.km > 0 ? Math.round(totalCost / s.km) : 0;
+        return `
+            <tr style="border-left: 2px solid ${costPerKm > 20000 ? 'var(--danger)' : 'transparent'}">
+              <td><strong style="font-size:1rem">${plate}</strong></td>
+              <td style="font-weight:700">${s.km.toLocaleString()} <span style="font-size:0.6rem; color:var(--text-dim)">KM</span></td>
+              <td>${s.trips}</td>
+              <td style="color:var(--success)">${s.fuelCost.toLocaleString()} đ</td>
+              <td style="color:var(--warning)">${s.maintenanceCost.toLocaleString()} đ</td>
+              <td style="color:var(--secondary)">${s.expense.toLocaleString()} đ</td>
+              <td style="font-weight:800; color:var(--text); background:rgba(255,255,255,0.02)">${totalCost.toLocaleString()} đ</td>
+              <td style="font-weight:900; color:var(--accent); background:rgba(0,255,204,0.05)">${costPerKm.toLocaleString()} đ <span style="font-size:0.6rem; color:var(--text-dim) translate-y-[-2px]">/KM</span></td>
+            </tr>
+        `;
+    }).join('') || '<tr><td colspan="8" style="text-align:center">Không có dữ liệu tổng hợp chi phí</td></tr>';
+
     const vBody = document.getElementById('vehicleTableBody');
     vBody.innerHTML = Object.entries(vStats).map(([plate, s]) => {
         const avgKm = s.trips ? Math.round(s.km / s.trips) : 0;
-        const consumption = s.km > 0 ? ((s.fuel / s.km) * 100).toFixed(1) : "—";
+        const consumption = s.km > 0 ? ((s.fuelVolume / s.km) * 100).toFixed(1) : "—";
         const statusBadge = s.status === 'dang_hoat_dong' ? 'badge-success' : 'badge-danger';
         const statusText = s.status === 'dang_hoat_dong' ? 'Sẵn sàng' : 'Tạm dừng';
         return `
             <tr>
-              <td><strong>${plate}</strong></td>
-              <td>${s.trips}</td>
-              <td>${s.km.toLocaleString()}</td>
-              <td>${avgKm} km</td>
-              <td>${s.fuel.toLocaleString()} L</td>
+              <td><strong>${plate || '—'}</strong></td>
+              <td>${s.trips || 0}</td>
+              <td>${(s.km || 0).toLocaleString()}</td>
+              <td>${avgKm.toLocaleString()} km</td>
+              <td>${(s.fuelVolume || 0).toLocaleString()} L</td>
               <td style="color:var(--accent); font-weight:700">${consumption}</td>
               <td style="color:var(--secondary); font-weight:700">${s.expense ? s.expense.toLocaleString() + ' đ' : '—'}</td>
-              <td><span class="badge ${statusBadge}">${statusText}</span></td>
+              <td><span class="badge ${statusBadge}">${statusText || 'Chưa xác định'}</span></td>
             </tr>
         `;
     }).join('') || '<tr><td colspan="8" style="text-align:center">Không có dữ liệu xe</td></tr>';
@@ -915,17 +982,14 @@
     const mBody = document.getElementById('maintenanceTableBody');
     mBody.innerHTML = baoduong.slice(0, 20).map(b => `
         <tr>
-          <td>${b.ngay_bat_dau || b.ngay_ket_thuc || '—'}</td>
-          <td><strong>${b.bien_so_xe}</strong></td>
-          <td>${b.loai_hinh}</td>
-          <td><div style="font-size:0.8rem; color:var(--text-dim); max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${b.hang_muc}">${b.hang_muc || '—'}</div></td>
+          <td>${b.ngay_bat_dau || '—'}</td>
+          <td><strong>${b.bien_so_xe || '—'}</strong></td>
+          <td>${b.loai_hinh || '—'}</td>
+          <td><div style="font-size:0.8rem; color:var(--text-dim); max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${b.hang_muc || '—'}">${b.hang_muc || '—'}</div></td>
           <td style="font-weight:700; color:var(--warning)">${(parseFloat(b.tong_tien)||0).toLocaleString()}</td>
-          <td><span class="badge ${b.trang_thai === 'Hoàn thành' ? 'badge-success' : 'badge-warning'}">${b.trang_thai}</span></td>
+          <td><span class="badge ${b.ket_qua === 'Đã hoàn thành' ? 'badge-success' : 'badge-warning'}">${b.ket_qua || 'Đang xử lý'}</span></td>
         </tr>
     `).join('') || '<tr><td colspan="6" style="text-align:center">Không có dữ liệu bảo dưỡng</td></tr>';
-  }
-
-
     // Expense Table (Chi phí vận hành)
     const eBody = document.getElementById('expenseTableBody');
     const expenseCatLabels = {
@@ -942,6 +1006,7 @@
           <td style="font-size:0.8rem;color:var(--text-dim)">${c.ghi_chu || '—'}</td>
         </tr>
     `).join('') || '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-dim)">Không có dữ liệu chi phí vận hành</td></tr>';
+  }
 
   function exportExcel() {
     const { nhatky } = masterData;

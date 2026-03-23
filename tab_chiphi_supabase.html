@@ -391,7 +391,7 @@
             const { data, error } = await _supabase
                 .from('chiphi')
                 .select('*')
-                .order('ngay_thuc_ hiện', { ascending: false });
+                .order('ngay_thuc_hien', { ascending: false });
             
             if (error) {
                 console.error("Error loading expenses:", error);
