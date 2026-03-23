@@ -417,10 +417,12 @@
 
   // Helper to get YYYY-MM-DD in local time
   function getLocalDateString(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    try {
+      const year = date.getFullYear();
+      let m = date.getMonth() + 1;
+      let d = date.getDate();
+      return year + '-' + (m < 10 ? '0' + m : m) + '-' + (d < 10 ? '0' + d : d);
+    } catch(e) { return ""; }
   }
 
   // Tách biệt việc set ngày và việc tải báo cáo để tránh đệ quy và lỗi load
@@ -935,33 +937,40 @@
   // INIT - Self-firing function to ensure it runs
   (function initAll() {
     try {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        // Theme init with safety
+        try {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        } catch(e) {}
         
         const qr = document.getElementById('quickRange');
-        if (qr) {
+        const f = document.getElementById('fromDate');
+        const t = document.getElementById('toDate');
+
+        if (qr && f && t) {
             qr.value = 'month';
-            applyQuickRange(false); // Set dates locally immediately
+            // Set dates manually right here to be super sure
+            const today = new Date();
+            const y = today.getFullYear();
+            let m = today.getMonth() + 1;
+            let d = today.getDate();
+            const mm = (m < 10 ? '0' + m : m);
+            const dd = (d < 10 ? '0' + d : d);
             
-            // Wait slightly for DOM to settle then load from Supabase
-            setTimeout(() => {
-               const f = document.getElementById('fromDate').value;
-               const t = document.getElementById('toDate').value;
-               if (!f || !t) {
-                  applyQuickRange(true);
-               } else {
-                  loadReport(true);
-               }
-            }, 500);
+            f.value = y + '-' + mm + '-01';
+            t.value = y + '-' + mm + '-' + dd;
+            
+            // Trigger load after 300ms
+            setTimeout(() => { loadReport(true); }, 300);
         }
-    } catch(err) { console.error("Self-init failed:", err); }
+    } catch(err) { console.error("Self-init fatal error:", err); }
   })();
 
   // Keep message listener for theme and sync
   window.addEventListener('message', (e) => {
     const data = e.data;
     if (data && data.type === 'changeTheme') {
-        document.documentElement.setAttribute('data-theme', data.theme);
+        try { document.documentElement.setAttribute('data-theme', data.theme); } catch(ex) {}
     } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
         loadReport(true);
     }
