@@ -538,7 +538,6 @@
     const targetName = (selTarget && selTarget.selectedIndex > 0) ? selTarget.options[selTarget.selectedIndex].text.split(' (')[0] : MY_NAME;
 
     const payload = {
-        id: "DKL_" + Date.now(),
         ma_nv: targetMnv,
         ho_ten: targetName,
         thang_nam: document.getElementById('thang_nam').value.trim(),

@@ -769,15 +769,11 @@
                     const { error: err } = await _supabase.from('diemgiaohang').update(payload).eq('id', id);
                     error = err;
                 } else {
-                    // Let Supabase handle ID if possible, but keep fallback for custom text IDs if existing schema requires it
-                    // Search for existing IDs suggests they might be strings or numbers
-                    // We'll try without ID first, or use a simpler numeric-like ID if it's an integer column
-                    // To be safe, we omit ID and let Supabase generate it
-                    payload.id = 'dg_' + Date.now(); 
                     payload.created_at = new Date().toISOString();
                     payload.created_by = USER_MNV;
-                    const { error: err } = await _supabase.from('diemgiaohang').insert([payload]);
+                    const { data: newRows, error: err } = await _supabase.from('diemgiaohang').insert([payload]).select();
                     error = err;
+                    // Optional: if you had audit log here, you'd use newRows[0].id
                 }
 
                 if (error) {

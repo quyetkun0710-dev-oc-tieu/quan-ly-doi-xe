@@ -861,13 +861,11 @@
             window.parent.logAudit('nhiemvu', id, 'UPDATE', oldItem, payload);
         }
       } else {
-        const uniqueId = 'task_' + Date.now();
-        payload.id = uniqueId; 
         payload.created_at = new Date().toISOString();
-        const { error } = await _supabase.from('nhiemvu').insert([payload]);
+        const { data: newTasks, error } = await _supabase.from('nhiemvu').insert([payload]).select().single();
         if (error) throw error;
-        if (window.parent && window.parent.logAudit) {
-            window.parent.logAudit('nhiemvu', uniqueId, 'INSERT', null, payload);
+        if (window.parent && window.parent.logAudit && newTasks) {
+            window.parent.logAudit('nhiemvu', newTasks.id, 'INSERT', null, payload);
         }
       }
       
