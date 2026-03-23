@@ -249,8 +249,11 @@
   const { createClient } = supabase;
   const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let ROLE = sessionStorage.getItem('role') || 'taixe';
+  let ROLE = (sessionStorage.getItem('role') || 'taixe').toLowerCase();
   let USER_NAME = sessionStorage.getItem('name') || 'Người dùng';
+  let USER_MNV = sessionStorage.getItem('mnv') || '';
+  
+  const MAX_NOTICE_DAYS = 30; // Số ngày tối đa hiển thị thông báo
   
   let allNotices = [];
   let currentFilter = 'all';
@@ -273,8 +276,26 @@
   async function loadNotices(isSilent = false) {
     const feed = document.getElementById('noticeFeed');
     if (!isSilent) feed.innerHTML = '<div style="text-align:center;padding:5rem"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
+    
     try {
-      const { data, error } = await _supabase.from('thongbao').select('*').order('created_at', { ascending: false });
+      // Tính ngày cắt (30 ngày trước)
+      const cutOffDate = new Date();
+      cutOffDate.setDate(cutOffDate.getDate() - MAX_NOTICE_DAYS);
+      const isoCutOff = cutOffDate.toISOString();
+
+      let query = _supabase.from('thongbao').select('*')
+        .gte('created_at', isoCutOff)
+        .order('created_at', { ascending: false });
+
+      // Admin chỉ xem được lịch sử của chính mình
+      if (ROLE === 'admin') {
+          query = query.eq('ma_nv', USER_MNV);
+          // Fallback cho dữ liệu cũ chưa có ma_nv
+          // query = query.or(`ma_nv.eq.${USER_MNV},nguoi_dang.eq.${USER_NAME}`); 
+      }
+      // Manager xem được toàn bộ (đã được lọc theo ngày ở trên)
+
+      const { data, error } = await query;
       if (error) throw error;
       allNotices = data || [];
       
@@ -436,7 +457,10 @@
       noi_dung: document.getElementById('noi_dung').value.trim(),
       muc_do: document.getElementById('muc_do').value
     };
-    if (!id) payload.nguoi_dang = USER_NAME;
+    if (!id) {
+        payload.nguoi_dang = USER_NAME;
+        payload.ma_nv = USER_MNV;
+    }
     
     try {
       let res;
@@ -460,9 +484,10 @@
   };
 
   document.addEventListener('DOMContentLoaded', () => {
-    const role = (ROLE || '').toLowerCase();
-    if (['manager','admin'].includes(role)) {
-      document.querySelectorAll('.manager-only').forEach(el=>el.style.display='flex');
+    if (['manager', 'admin'].includes(ROLE)) {
+      document.querySelectorAll('.manager-only').forEach(el => {
+          el.style.display = 'flex';
+      });
     }
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
