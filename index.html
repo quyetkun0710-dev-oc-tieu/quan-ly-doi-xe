@@ -3966,12 +3966,25 @@
       return sub ? 'subscribed' : 'unsubscribed';
     }
 
-    // --- Đăng ký push & lưu lên Supabase ---
     async function subscribePush() {
       try {
+        // 1. Kiểm tra môi trường HTTPS
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          showToast('Thông báo Push yêu cầu môi trường HTTPS bảo mật.', 'warning');
+          return false;
+        }
+
+        // 2. Kiểm tra nếu quyền đã bị chặn vĩnh viễn
+        if (Notification.permission === 'denied') {
+          showToast('Quyền thông báo đang bị chặn. Hãy bấm biểu tượng ổ khóa cạnh URL để Cho phép (Allow).', 'warning');
+          return false;
+        }
+
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-          showToast('Bạn đã từ chối quyền thông báo.', 'error');
+          if (permission === 'denied') {
+            showToast('Bạn đã từ chối quyền thông báo.', 'error');
+          }
           return false;
         }
 
