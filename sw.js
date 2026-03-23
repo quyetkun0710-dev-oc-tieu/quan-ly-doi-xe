@@ -1,5 +1,5 @@
-// Service Worker - Quản Lý Đội Xe PWA
-const CACHE_NAME = 'doi-xe-v5';
+// Service Worker - Quản Lý Đội Xe PWA v6 (+ Web Push)
+const CACHE_NAME = 'doi-xe-v6';
 
 // Các file cần cache khi cài đặt
 const STATIC_ASSETS = [
@@ -93,4 +93,75 @@ self.addEventListener('fetch', (event) => {
                 });
             })
     );
+});
+
+// ===== PUSH: Nhận Web Push Notification =====
+self.addEventListener('push', (event) => {
+    let data = {
+        title: '🚛 Quản Lý Đội Xe',
+        body: 'Có thông báo mới từ hệ thống.',
+        url: '/',
+        icon: './icons/icon-192.png',
+        badge: './icons/icon-96.png',
+    };
+
+    if (event.data) {
+        try {
+            Object.assign(data, event.data.json());
+        } catch (e) {
+            data.body = event.data.text();
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: data.icon,
+        badge: data.badge,
+        tag: 'doi-xe-notify',         // gộp các thông báo cùng tag
+        renotify: true,               // rung lại ngay cả khi đã có tag
+        vibrate: [200, 100, 200],     // rung pattern
+        requireInteraction: false,    // tự đóng sau vài giây (mobile)
+        data: { url: data.url },
+        actions: [
+            { action: 'open', title: '📱 Mở ứng dụng' },
+            { action: 'dismiss', title: '✖ Bỏ qua' },
+        ],
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+// ===== NOTIFICATION CLICK: Xử lý khi bấm vào notification =====
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    if (event.action === 'dismiss') return;
+
+    const targetUrl = event.notification.data?.url || '/';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // Nếu app đang mở → focus vào tab đó
+            for (const client of clientList) {
+                if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    client.focus();
+                    client.postMessage({ type: 'PUSH_NAVIGATE', url: targetUrl });
+                    return;
+                }
+            }
+            // Nếu chưa mở → mở tab mới
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
+        })
+    );
+});
+
+// ===== MESSAGE: Nhận lệnh từ JS chính (skipWaiting) =====
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });

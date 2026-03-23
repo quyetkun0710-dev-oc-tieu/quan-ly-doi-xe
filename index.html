@@ -2218,6 +2218,17 @@
               <div class="user-role" id="userRoleTop">-</div>
             </div>
           </div>
+
+          <!-- PUSH NOTIFICATION BELL -->
+          <button id="btnPushBell" onclick="togglePushNotification()"
+            title="Bật Push Notification"
+            style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+                   color:var(--text-dim); width:40px; height:40px; border-radius:12px;
+                   cursor:pointer; display:flex; align-items:center; justify-content:center;
+                   font-size:1rem; transition:all 0.2s; flex-shrink:0;">
+            <i class="fas fa-bell-slash"></i>
+          </button>
+
           <button class="btn-logout" onclick="doLogout()">
             <i class="fas fa-sign-out-alt"></i>
           </button>
@@ -2633,13 +2644,24 @@
       updateHomeStats();
       showToast(`Chào mừng ${USER_NAME} 👋`, 'success');
       initWeather();
+      setTimeout(initPush, 1200); // Khởi tạo Web Push sau khi app load
 
       // Realtime for badges
       _supabase.channel('main-dashboard-sync')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'thongbao' }, (p) => {
           updateHomeStats();
           broadcastDataChange('thongbao');
-          if (p.eventType === 'INSERT') showToast(`Thông báo mới: ${p.new.tieu_de}`, 'warning');
+          if (p.eventType === 'INSERT') {
+            showToast(`Thông báo mới: ${p.new.tieu_de}`, 'warning');
+            // Gửi Web Push đến tất cả người dùng đã subscribe
+            if (typeof sendPushToAll === 'function') {
+              sendPushToAll(
+                `🔔 ${p.new.tieu_de}`,
+                p.new.noi_dung || 'Có thông báo mới từ quản lý',
+                '/?tab=thongbao'
+              );
+            }
+          }
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'nhiemvu' }, (p) => {
           updateHomeStats();
@@ -3814,7 +3836,187 @@
         }, 500);
       }, 600);
     });
+
+    // ============================================================
+    // ===  WEB PUSH MODULE  ======================================
+    // ============================================================
+    const VAPID_PUBLIC_KEY = 'BJP3QkBQFBSJ5qPEzpb7flcaIjkzpBkGfMd8iz3pd4OyeLR1i8c8LB5_Zdbf5JGqBU2iqCcfOUx2BMUjtoCgLr4';
+    const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/send-push`;
+
+    // --- Helper: chuyển base64url → Uint8Array (cho applicationServerKey) ---
+    function urlBase64ToUint8(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(base64);
+      return Uint8Array.from(raw, c => c.charCodeAt(0));
+    }
+
+    // --- Lấy trạng thái đăng ký push hiện tại ---
+    async function getPushState() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      return sub ? 'subscribed' : 'unsubscribed';
+    }
+
+    // --- Đăng ký push & lưu lên Supabase ---
+    async function subscribePush() {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          showToast('Bạn đã từ chối quyền thông báo.', 'error');
+          return false;
+        }
+
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8(VAPID_PUBLIC_KEY),
+        });
+
+        const key = sub.getKey('p256dh');
+        const auth = sub.getKey('auth');
+
+        const { error } = await _supabase.from('push_subscriptions').upsert({
+          ma_nv: USER_MNV,
+          endpoint: sub.endpoint,
+          p256dh: btoa(String.fromCharCode(...new Uint8Array(key))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
+          auth: btoa(String.fromCharCode(...new Uint8Array(auth))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
+          user_agent: navigator.userAgent.slice(0, 200),
+        }, { onConflict: 'endpoint' });
+
+        if (error) throw error;
+
+        showToast('🔔 Đã bật thông báo push!', 'success');
+        updatePushBellUI(true);
+        return true;
+      } catch (e) {
+        console.error('Subscribe push error:', e);
+        showToast('Lỗi bật thông báo: ' + e.message, 'error');
+        return false;
+      }
+    }
+
+    // --- Hủy đăng ký push & xóa khỏi Supabase ---
+    async function unsubscribePush() {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await _supabase.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+          await sub.unsubscribe();
+        }
+        showToast('🔕 Đã tắt thông báo push.', 'success');
+        updatePushBellUI(false);
+      } catch (e) {
+        showToast('Lỗi tắt thông báo: ' + e.message, 'error');
+      }
+    }
+
+    // --- Toggle push on/off khi bấm nút bell ---
+    async function togglePushNotification() {
+      const state = await getPushState();
+      if (state === 'subscribed') {
+        await unsubscribePush();
+      } else if (state === 'unsubscribed') {
+        await subscribePush();
+      } else {
+        showToast('Thiết bị này không hỗ trợ Web Push.', 'error');
+      }
+    }
+
+    // --- Gửi push đến user cụ thể (gọi từ tab quản lý khi có sự kiện) ---
+    window.sendPushToUser = async function(ma_nvTarget, title, body, url = '/') {
+      try {
+        const resp = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+          },
+          body: JSON.stringify({ ma_nv: ma_nvTarget, title, body, url }),
+        });
+        const result = await resp.json();
+        console.log('[Push] Sent:', result);
+        return result;
+      } catch (e) {
+        console.error('[Push] Error sending:', e);
+      }
+    };
+
+    // --- Gửi push đến TẤT CẢ users (gọi khi tạo thông báo chung) ---
+    window.sendPushToAll = async function(title, body, url = '/') {
+      return window.sendPushToUser(undefined, title, body, url);
+    };
+
+    // --- Cập nhật UI nút bell ---
+    function updatePushBellUI(isOn) {
+      const btn = document.getElementById('btnPushBell');
+      if (!btn) return;
+      if (isOn) {
+        btn.style.color = 'var(--accent)';
+        btn.title = 'Tắt Push Notification';
+        btn.querySelector('i').className = 'fas fa-bell';
+      } else {
+        btn.style.color = 'var(--text-dim)';
+        btn.title = 'Bật Push Notification';
+        btn.querySelector('i').className = 'fas fa-bell-slash';
+      }
+    }
+
+    // --- Khởi tạo push khi app load ---
+    async function initPush() {
+      const btn = document.getElementById('btnPushBell');
+      if (!btn) return;
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        btn.style.display = 'none'; // ẩn nút nếu không hỗ trợ
+        return;
+      }
+
+      const state = await getPushState();
+      updatePushBellUI(state === 'subscribed');
+
+      // Lắng nghe PUSH_NAVIGATE từ Service Worker (khi bấm notification)
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'PUSH_NAVIGATE') {
+          const url = event.data.url;
+          // Điều hướng đến tab phù hợp nếu cần
+          if (url && url !== '/') {
+            const tabMatch = url.match(/tab=(\w+)/);
+            if (tabMatch) {
+              const tabName = tabMatch[1];
+              const tabMap = {
+                nhiemvu: 'tab_nhiemvu_supabase.html',
+                thongbao: 'tab_thongbao_supabase.html',
+                nhatky: 'tab_nhatky_supabase.html',
+              };
+              if (tabMap[tabName]) openTab(tabName, tabMap[tabName]);
+            }
+          }
+          // Focus tab thông báo mặc định
+          openTab('thongbao', 'tab_thongbao_supabase.html');
+        }
+      });
+    }
+
+    // Gọi initPush() sau khi app hiển thị (được gọi trong showApp)
+    const _origShowApp = showApp;
+    // Patch showApp để gọi initPush sau khi UI ready
+    const _pushInitHook = () => {
+      setTimeout(initPush, 1500);
+      // Tích hợp: khi tạo thông báo mới trong Supabase → push tự động
+      // (được gọi từ tab_thongbao_supabase.html qua postMessage)
+    };
+    window.addEventListener('load', () => {
+      if (sessionStorage.getItem('logged') === '1') _pushInitHook();
+    });
+    // Hook sau showApp
+    const __origShowApp = window.showApp;
+    window.addEventListener('appShellReady', _pushInitHook);
+
   </script>
+
 </body>
 
 </html>
