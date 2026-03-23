@@ -250,14 +250,10 @@
       <label>Thời điểm</label>
       <select id="quickRange" onchange="applyQuickRange()">
         <option value="month" selected>Tháng này</option>
-        <option value="prev_month">Tháng trước</option>
-        <option value="prev2_month">2 tháng trước</option>
-        <option value="prev3_month">3 tháng trước</option>
+        <option value="today">Hôm nay</option>
         <option value="7">7 ngày qua</option>
         <option value="30">30 ngày qua</option>
-        <option value="quarter">Quý này</option>
-        <option value="year">Đầu năm đến nay</option>
-        <option value="all">Tất cả</option>
+        <option value="all">Tất cả các tháng</option>
       </select>
     </div>
     <div class="control-btns">
@@ -434,21 +430,8 @@
     if (val === 'month') {
       from = new Date(today.getFullYear(), today.getMonth(), 1);
       to = today;
-    } else if (val === 'prev_month') {
-      from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      to = new Date(today.getFullYear(), today.getMonth(), 0);
-    } else if (val === 'prev2_month') {
-      from = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-      to = new Date(today.getFullYear(), today.getMonth() - 1, 0);
-    } else if (val === 'prev3_month') {
-      from = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-      to = new Date(today.getFullYear(), today.getMonth() - 2, 0);
-    } else if (val === 'quarter') {
-      const quarterStart = Math.floor(today.getMonth() / 3) * 3;
-      from = new Date(today.getFullYear(), quarterStart, 1);
-      to = today;
-    } else if (val === 'year') {
-      from = new Date(today.getFullYear(), 0, 1);
+    } else if (val === 'today') {
+      from = today;
       to = today;
     } else if (val === 'all') {
       from = new Date('2020-01-01');
