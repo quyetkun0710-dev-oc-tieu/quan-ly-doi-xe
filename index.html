@@ -3902,6 +3902,17 @@
       // Xử lý yêu cầu ghi Log Audit từ các iFrame (Tabs)
       if (data.type === 'logAudit') {
         logAudit(data.tableName, data.recordId, data.action, data.oldData, data.newData);
+        // Tự động phát tin cho các tab khác biết dữ liệu đã thay đổi (đảm bảo real-time ngay cả khi Supabase Realtime bị lỗi)
+        if (typeof broadcastDataChange === 'function') {
+          broadcastDataChange(data.tableName);
+        }
+      }
+
+      // Xử lý thông báo thay đổi dữ liệu từ iFrame
+      if (data.type === 'dataChanged') {
+        if (typeof broadcastDataChange === 'function') {
+            broadcastDataChange(data.table);
+        }
       }
 
       // Xử lý Toast từ iFrame

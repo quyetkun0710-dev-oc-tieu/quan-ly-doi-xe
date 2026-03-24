@@ -586,6 +586,10 @@
                 
                 closeModal();
                 loadExpenses();
+                // Thông báo cho hệ thống (các tab khác như Báo cáo) cập nhật lại
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({ type: 'dataChanged', table: 'chiphi' }, '*');
+                }
                 showToast(id ? 'Đã cập nhật chi phí' : 'Đã lưu chi phí mới', 'success');
             } catch (err) {
                 console.error(err);
@@ -607,6 +611,9 @@
                 logAudit('chiphi', id, 'DELETE', oldItem, null);
                 loadExpenses();
                 showToast('Đã xóa thành công', 'success');
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({ type: 'dataChanged', table: 'chiphi' }, '*');
+                }
             } catch (err) {
                 showToast('Lỗi khi xóa', 'error');
             }
