@@ -101,6 +101,27 @@
       z-index: 1000;
     }
 
+    .login-logo img {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 1rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .sidebar-logo {
+      padding: 10px 0;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .sidebar-logo img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+    }
+
     #loginScreen.active {
       display: flex;
     }
@@ -2084,7 +2105,7 @@
   <div id="loginScreen">
     <div class="login-box">
       <div class="login-logo">
-        <div class="icon">🚛</div>
+        <img src="logo.png" alt="Logo">
         <h1>Quản Lý Đội Xe</h1>
         <p>Hệ thống quản lý phương tiện V2</p>
       </div>
@@ -2108,7 +2129,9 @@
 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
-      <div class="sidebar-logo">🚛</div>
+      <div class="sidebar-logo">
+        <img src="logo.png" alt="Logo" style="width: 44px; height: 44px;">
+      </div>
 
       <button class="nav-item active" data-tab="home" onclick="goHome()">
         <div class="nav-icon" style="color:var(--primary)"><i class="fas fa-home"></i></div>
