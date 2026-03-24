@@ -634,15 +634,15 @@
             }
 
             allPoints = data || [];
-            renderPoints(allPoints);
+            renderPoints(allPoints, isSilent);
             if (!isSilent) hideLoader();
         }
 
-        function renderPoints(data) {
+        function renderPoints(data, isSilent = false) {
             const grid = document.getElementById('pointsGrid');
             // Same as desktop, responsive handled by CSS
             grid.innerHTML = data.map((item, index) => `
-                <div class="point-card" style="animation-delay: ${index * 0.05}s">
+                <div class="point-card" style="${isSilent ? 'animation:none; opacity:1;' : `animation-delay: ${index * 0.05}s`}">
                     <div class="point-header">
                         <div class="point-icon"><i class="fas fa-location-dot"></i></div>
                         ${isStaff ? `
@@ -818,7 +818,7 @@
             btn.innerText = "Đang xử lý...";
 
             try {
-                let error;
+                let error, newRows;
                 if (id) {
                     if (!isStaff) {
                         alert("Bạn chỉ có quyền thêm mới, không có quyền chỉnh sửa điểm giao cũ.");
@@ -829,11 +829,20 @@
                     const { error: err } = await _supabase.from('diemgiaohang').update(payload).eq('id', id);
                     error = err;
                 } else {
+                    // Tự tạo ID ngẫu nhiên nếu cột id không phải là kiểu Identity (xử lý lỗi null constraint)
+                    // (Vẫn khuyến khích chạy SQL SET DEFAULT gen_random_uuid())
+                    if (!payload.id) {
+                        try {
+                            payload.id = crypto.randomUUID();
+                        } catch(e) {
+                            payload.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+                        }
+                    }
                     payload.created_at = new Date().toISOString();
                     payload.created_by = USER_MNV;
-                    const { data: newRows, error: err } = await _supabase.from('diemgiaohang').insert([payload]).select();
+                    const { data, error: err } = await _supabase.from('diemgiaohang').insert([payload]).select();
                     error = err;
-                    // Optional: if you had audit log here, you'd use newRows[0].id
+                    newRows = data;
                 }
 
                 if (error) {
@@ -841,7 +850,7 @@
                     alert("Lỗi lưu dữ liệu: " + error.message);
                 } else {
                     const oldItem = id ? allPoints.find(p => p.id === id) : null;
-                    const recordId = id || (newRows && newRows[0] ? newRows[0].id : 'new');
+                    const recordId = id || (newRows && newRows[0] ? newRows[0].id : (payload.id || 'new'));
                     logAudit('diemgiaohang', recordId, id ? 'UPDATE' : 'INSERT', oldItem, payload);
                     
                     closeModal();
