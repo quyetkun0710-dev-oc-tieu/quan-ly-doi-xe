@@ -1022,7 +1022,18 @@
                 }
             }
 
-            showToast("Đã lưu dữ liệu bảo dưỡng thành công!");
+            // AUTO-UPDATE VEHICLE STATUS
+            // If maintenance is ongoing, set vehicle to 'bao_tri'
+            // If maintenance is finished, set vehicle to 'dang_hoat_dong'
+            const statusToSet = payload.ket_qua === 'Đã hoàn thành' ? 'dang_hoat_dong' : 'bao_tri';
+            await _supabase.from('xe').update({ tinh_trang_hoat_dong: statusToSet }).eq('bien_so_xe', payload.bien_so_xe);
+            
+            // Broadcast change for other tabs
+            if (window.parent && window.parent.postMessage) {
+              window.parent.postMessage({ type: 'dataChanged', table: 'xe' }, '*');
+            }
+
+            showToast("Đã lưu dữ liệu bảo dưỡng và cập nhật trạng thái xe!");
             closeModal();
             loadMaintenance();
         } catch (error) { 

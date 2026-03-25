@@ -962,8 +962,14 @@
     vBody.innerHTML = Object.entries(vStats).map(([plate, s]) => {
         const avgKm = s.trips ? Math.round(s.km / s.trips) : 0;
         const consumption = s.km > 0 ? ((s.fuelVolume / s.km) * 100).toFixed(1) : "—";
-        const statusBadge = s.status === 'dang_hoat_dong' ? 'badge-success' : 'badge-danger';
-        const statusText = s.status === 'dang_hoat_dong' ? 'Sẵn sàng' : 'Tạm dừng';
+        let statusBadge = 'badge-danger', statusText = 'Tạm dừng';
+        if (s.status === 'dang_hoat_dong') {
+            statusBadge = 'badge-success';
+            statusText = 'Sẵn sàng';
+        } else if (s.status === 'bao_tri') {
+            statusBadge = 'badge-warning';
+            statusText = 'Bảo trì';
+        }
         return `
             <tr>
               <td><strong>${plate || '—'}</strong></td>
@@ -973,7 +979,7 @@
               <td>${(s.fuelVolume || 0).toLocaleString()} L</td>
               <td style="color:var(--accent); font-weight:700">${consumption}</td>
               <td style="color:var(--secondary); font-weight:700">${s.expense ? s.expense.toLocaleString() + ' đ' : '—'}</td>
-              <td><span class="badge ${statusBadge}">${statusText || 'Chưa xác định'}</span></td>
+              <td><span class="badge ${statusBadge}">${statusText}</span></td>
             </tr>
         `;
     }).join('') || '<tr><td colspan="8" style="text-align:center">Không có dữ liệu xe</td></tr>';
