@@ -896,8 +896,6 @@
             const ketQuaBox = document.getElementById('ket_qua');
             if (ketQuaBox.value !== 'Đã hoàn thành') {
                 ketQuaBox.value = 'Đã hoàn thành';
-                // Chuyển sang tab "Thanh toán" để người dùng nhập tiền luôn
-                setTimeout(() => switchTab(3), 500);
             }
         }
     }
@@ -999,12 +997,21 @@
             'loai_thanh_toan', 'hoa_don', 'tong_tien', 'ghi_chu'
         ];
         
-        const ketQua = document.getElementById('ket_qua').value;
+        const ketQuaBox = document.getElementById('ket_qua');
         const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
+        const tongTien = parseFloat(document.getElementById('tong_tien').value) || 0;
 
-        if (ketQua === 'Đã hoàn thành' && !ngayKetThuc) {
-            showToast("Vui lòng nhập ngày kết thúc (ngày sửa xong) để hoàn thành phiếu!", "warning");
-            switchTab(1); // Mở tab chứa ô ngày tháng
+        // RULE 1: Nếu chưa có ngày kết thúc, ép trạng thái về "Đang thực hiện" và cho phép lưu
+        if (!ngayKetThuc) {
+            if (ketQuaBox.value === 'Đã hoàn thành') {
+                showToast("Chưa có ngày kết thúc, hệ thống sẽ tự động chuyển về trạng thái 'Đang thực hiện'", "warning");
+                ketQuaBox.value = 'Đang thực hiện';
+            }
+        } 
+        // RULE 2: Nếu đã có ngày kết thúc (hoàn thành), bắt buộc phải có số tiền
+        else if (ngayKetThuc && tongTien <= 0) {
+            showToast("Đã có ngày hoàn thành, vui lòng nhập số tiền chi phí!", "error");
+            switchTab(3); // Mở tab Thanh toán
             btn.disabled = false;
             return;
         }
