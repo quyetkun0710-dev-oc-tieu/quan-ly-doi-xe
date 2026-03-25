@@ -591,8 +591,8 @@
                     <div class="form-group">
                         <label>Kết quả</label>
                         <select id="ket_qua">
-                            <option value="Đã hoàn thành">Đã hoàn thành</option>
                             <option value="Đang thực hiện">Đang thực hiện</option>
+                            <option value="Đã hoàn thành">Đã hoàn thành</option>
                             <option value="Chờ xử lý">Chờ xử lý</option>
                         </select>
                     </div>
@@ -891,6 +891,14 @@
             const e = new Date(end);
             const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
             document.getElementById('tong_ngay').value = diff > 0 ? diff : 0;
+            
+            // Tự động chuyển trạng thái lên "Đã hoàn thành" khi có ngày kết thúc
+            const ketQuaBox = document.getElementById('ket_qua');
+            if (ketQuaBox.value !== 'Đã hoàn thành') {
+                ketQuaBox.value = 'Đã hoàn thành';
+                // Chuyển sang tab "Thanh toán" để người dùng nhập tiền luôn
+                setTimeout(() => switchTab(3), 500);
+            }
         }
     }
 
@@ -991,6 +999,16 @@
             'loai_thanh_toan', 'hoa_don', 'tong_tien', 'ghi_chu'
         ];
         
+        const ketQua = document.getElementById('ket_qua').value;
+        const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
+
+        if (ketQua === 'Đã hoàn thành' && !ngayKetThuc) {
+            showToast("Vui lòng nhập ngày kết thúc (ngày sửa xong) để hoàn thành phiếu!", "warning");
+            switchTab(1); // Mở tab chứa ô ngày tháng
+            btn.disabled = false;
+            return;
+        }
+
         const payload = { updated_at: new Date().toISOString() };
         fields.forEach(f => {
             const el = document.getElementById(f);
