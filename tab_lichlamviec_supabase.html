@@ -1288,7 +1288,7 @@
         if (data && data.type === 'changeTheme') {
             document.documentElement.setAttribute('data-theme', data.theme);
         } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
-            loadAttendance();
+            refreshGrid();
         }
     });
 

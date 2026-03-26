@@ -3482,24 +3482,37 @@
     }
 
     function onFrameLoad(frame) {
-      // Khi iframe load xong — truyền session vào
       try {
         const fw = frame.contentWindow;
-        fw.sessionStorage.setItem('role', USER_ROLE);
-        fw.sessionStorage.setItem('mnv', USER_MNV);
-        fw.sessionStorage.setItem('name', USER_NAME);
-        fw.sessionStorage.setItem('xe_phu_trach', sessionStorage.getItem('xe_phu_trach') || '');
-        fw.sessionStorage.setItem('logged', '1');
+        if (!fw) return;
 
-        if (fw.document) {
-          initDrawerSwipe(fw.document);
-          if (fw.document.body) {
-            fw.document.body.style.overscrollBehavior = 'none';
-            fw.document.documentElement.style.overscrollBehavior = 'none';
-          }
+        // Try direct session sync (works on http/https/localhost)
+        // Wrapped in it's own try to fail gracefully on file://
+        try {
+          fw.sessionStorage.setItem('role', USER_ROLE);
+          fw.sessionStorage.setItem('mnv', USER_MNV);
+          fw.sessionStorage.setItem('name', USER_NAME);
+          fw.sessionStorage.setItem('xe_phu_trach', sessionStorage.getItem('xe_phu_trach') || '');
+          fw.sessionStorage.setItem('logged', '1');
+        } catch (sEx) {
+          // If file:// protocol, direct access is blocked. 
+          // We provide fallback via URL params or postMessage if needed
+          // But cleaning up the red error in console is the priority here.
         }
+
+        // Apply swipe gesture logic inside the frame
+        try {
+          if (fw.document) {
+            initDrawerSwipe(fw.document);
+            if (fw.document.body) {
+              fw.document.body.style.overscrollBehavior = 'none';
+              fw.document.documentElement.style.overscrollBehavior = 'none';
+            }
+          }
+        } catch (dEx) { }
+
       } catch (e) {
-        console.warn("Frame load init failed:", e);
+        // Suppress cross-origin frame noise on file://
       }
     }
 
@@ -3951,6 +3964,15 @@
 
     // ============ INIT ============
     window.addEventListener('DOMContentLoaded', () => {
+      // Đăng ký Service Worker (PWA)
+      if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          console.log('[PWA] Service Worker registered.');
+        }).catch(err => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+      }
+
       // Hide loading sau 600ms, check session
       initTheme();
       setTimeout(() => {

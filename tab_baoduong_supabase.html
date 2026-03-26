@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -37,7 +38,7 @@
 
         body {
             background: var(--bg);
-            background-image: 
+            background-image:
                 radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
             color: var(--text);
@@ -84,7 +85,7 @@
             background: var(--card-bg);
             border-radius: 12px;
             padding: 0.5rem 1rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
@@ -94,7 +95,7 @@
             background: transparent;
             border: none;
             background: var(--bg);
-            border: 1px solid rgba(128,128,128,0.2);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             color: var(--text);
             outline: none;
             width: 250px;
@@ -117,24 +118,60 @@
             box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
         }
 
-        .btn-add:hover { transform: scale(1.05) translateY(-2px); }
+        .btn-add:hover {
+            transform: scale(1.05) translateY(-2px);
+        }
 
         /* Filter Buttons */
-        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+        .filter-bar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
         .filter-btn {
-            padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
-            transition: all 0.2s; font-size: 0.75rem; font-weight: 600;
-            display: flex; align-items: center; gap: 6px; white-space: nowrap;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
         }
+
         .filter-btn .btn-badge {
-            background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 6px;
-            font-size: 0.8rem; font-weight: 800; min-width: 18px; text-align: center;
-            color: var(--accent); box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            min-width: 18px;
+            text-align: center;
+            color: var(--accent);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
         }
-        .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
-        .filter-btn.active .btn-badge { background: white; color: #6366f1; }
-        .filter-btn:hover { background: rgba(255,255,255,0.12); }
+
+        .filter-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .filter-btn.active .btn-badge {
+            background: white;
+            color: #6366f1;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
 
         /* Maintenance Grid */
         .maintenance-grid {
@@ -148,7 +185,7 @@
             background: var(--card-bg);
             border-radius: 20px;
             padding: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(15px);
             transition: all 0.3s;
             position: relative;
@@ -161,7 +198,7 @@
         .maintenance-card:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .maintenance-header {
@@ -187,8 +224,15 @@
             text-transform: uppercase;
         }
 
-        .type-bd { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
-        .type-sc { background: rgba(168, 85, 247, 0.15); color: var(--secondary); }
+        .type-bd {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+        }
+
+        .type-sc {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--secondary);
+        }
 
         .info-pane {
             background: rgba(15, 23, 42, 0.3);
@@ -199,9 +243,21 @@
             gap: 0.8rem;
         }
 
-        .info-item { display: flex; flex-direction: column; }
-        .info-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
-        .info-value { font-size: 0.9rem; font-weight: 600; }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
 
         .status-bar {
             padding: 8px 12px;
@@ -213,24 +269,42 @@
             gap: 8px;
         }
 
-        .status-done { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .status-waiting { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .status-done {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-waiting {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
 
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             padding-top: 1rem;
         }
 
-        .cost-area { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+        .cost-area {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
 
         /* Modal */
         .modal {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(15px);
             display: none;
@@ -239,7 +313,10 @@
             z-index: 1000;
             padding: 1rem;
         }
-        .modal.active { display: flex; }
+
+        .modal.active {
+            display: flex;
+        }
 
         .modal-content {
             background: #1e293b;
@@ -249,7 +326,7 @@
             max-width: 950px;
             max-height: 90vh;
             overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Modal Tabs */
@@ -257,9 +334,10 @@
             display: flex;
             gap: 1rem;
             margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             padding-bottom: 0.5rem;
         }
+
         .m-tab {
             padding: 0.5rem 1.5rem;
             cursor: pointer;
@@ -268,13 +346,19 @@
             transition: all 0.3s;
             border-radius: 10px;
         }
+
         .m-tab.active {
             background: var(--primary);
             color: white;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
 
         .form-grid {
             display: grid;
@@ -282,16 +366,31 @@
             gap: 1.2rem;
         }
 
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             background: var(--bg);
-            border: 1px solid rgba(128,128,128,0.2);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             color: var(--text);
             outline: none;
             font-size: 0.95rem;
         }
-        .form-group input:focus { border-color: var(--primary); }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
 
         .modal-actions {
             margin-top: 2.5rem;
@@ -302,88 +401,245 @@
 
         .btn-save {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white; padding: 0.8rem 2.5rem;
-            border-radius: 12px; font-weight: 600;
-            border: none; cursor: pointer;
+            color: white;
+            padding: 0.8rem 2.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-icon {
-            width: 36px; height: 36px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05); color: var(--text-dim);
-            border: none; cursor: pointer; transition: all 0.2s;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-refresh i { transition: transform 0.4s; }
-        .btn-refresh:hover i { transform: rotate(180deg); }
 
-        .control-btns { display: flex; gap: 10px; }
-        .btn-add:hover { transform: scale(1.05) translateY(-2px); }
+        .btn-refresh i {
+            transition: transform 0.4s;
+        }
+
+        .btn-refresh:hover i {
+            transform: rotate(180deg);
+        }
+
+        .control-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-add:hover {
+            transform: scale(1.05) translateY(-2px);
+        }
 
         /* Controls / Date Bar */
         .date-bar {
-            background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
-            padding: 0.75rem 1.25rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
-            margin-bottom: 1.5rem; backdrop-filter: blur(15px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
-        .date-group { display: flex; flex-direction: column; gap: 4px; }
-        .date-group label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        .date-group input, .date-group select {
-            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1);
-            padding: 0.5rem 0.8rem; border-radius: 10px; color: white; outline: none;
-            font-family: 'Outfit', sans-serif; font-size: 0.85rem; transition: all 0.2s;
+
+        .date-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
+
+        .date-group label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .date-group input,
+        .date-group select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 0.8rem;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
         .btn-refresh {
-            background: var(--primary); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 12px;
-            font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* Stats Row */
-        .hidden { display: none; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            body { padding: 15px; }
-            header { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 2rem; text-align: center; }
-            .logo-area { display: none; }
-            .controls { flex-direction: column; width: 100%; gap: 10px; }
-            .search-box { width: 100%; }
-            .search-box input { width: 100%; }
-
-            .control-btns { 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                gap: 8px; 
-                width: 100%; 
+            body {
+                padding: 15px;
             }
-            .btn-refresh, .btn-add { width: 100% !important; justify-content: center; margin: 0; }
-            .date-bar { gap: 10px; padding: 10px; }
-            .date-group { flex: 1; min-width: 120px; }
-            .btn-refresh { width: 100%; justify-content: center; }
-            .stats-row { 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 0.6rem; 
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                margin-bottom: 2rem;
+                text-align: center;
+            }
+
+            .logo-area {
+                display: none;
+            }
+
+            .controls {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+
+            .control-btns {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .btn-refresh,
+            .btn-add {
+                width: 100% !important;
+                justify-content: center;
+                margin: 0;
+            }
+
+            .date-bar {
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .date-group {
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .btn-refresh {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.6rem;
                 margin-bottom: 1rem;
             }
-            .stat-card { 
-                padding: 0.8rem 0.5rem; 
+
+            .stat-card {
+                padding: 0.8rem 0.5rem;
                 border-radius: 12px;
             }
-            .stat-card h3 { 
-                font-size: 0.65rem; 
+
+            .stat-card h3 {
+                font-size: 0.65rem;
                 margin-bottom: 2px;
             }
-            .stat-card .value { font-size: 1.3rem; }
-            .maintenance-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .modal-content { padding: 1.5rem; width: 95%; max-width: 100%; border-radius: 20px; }
-            .modal-content h2 { font-size: 1.5rem !important; }
-            .modal-tabs { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
-            .m-tab { padding: 8px 15px; font-size: 0.85rem; }
-            .form-grid { grid-template-columns: 1fr; gap: 10px; }
-            .form-group { grid-column: span 1 !important; }
+
+            .stat-card .value {
+                font-size: 1.3rem;
+            }
+
+            .maintenance-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+
+            .modal-content h2 {
+                font-size: 1.5rem !important;
+            }
+
+            .modal-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 10px;
+            }
+
+            .m-tab {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .form-group {
+                grid-column: span 1 !important;
+            }
 
             /* Mobile Table View Styles */
             .mobile-table-container {
@@ -391,327 +647,364 @@
                 overflow-x: auto;
                 background: var(--card-bg);
                 border-radius: 15px;
-                border: 1px solid rgba(255,255,255,0.05);
+                border: 1px solid rgba(255, 255, 255, 0.05);
                 margin-top: 10px;
             }
+
             .mobile-data-table {
                 width: 100%;
                 border-collapse: collapse;
                 font-size: 0.75rem;
                 min-width: 500px;
             }
+
             .mobile-data-table th {
                 text-align: left;
                 padding: 12px 10px;
-                background: rgba(255,255,255,0.03);
+                background: rgba(255, 255, 255, 0.03);
                 color: var(--text-dim);
                 font-weight: 700;
                 text-transform: uppercase;
                 font-size: 0.6rem;
                 letter-spacing: 0.5px;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             }
+
             .mobile-data-table td {
                 padding: 12px 10px;
-                border-bottom: 1px solid rgba(255,255,255,0.03);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.03);
                 vertical-align: middle;
             }
-            .mobile-data-table tr:last-child td { border-bottom: none; }
-            .td-title { font-weight: 800; color: white; display: block; font-size: 0.85rem; }
-            .td-sub { font-size: 0.6rem; color: var(--text-dim); }
-            .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-            .dot.status-active { background: var(--success); box-shadow: 0 0 5px var(--success); }
-            .dot.status-maintenance { background: var(--warning); box-shadow: 0 0 5px var(--warning); }
+
+            .mobile-data-table tr:last-child td {
+                border-bottom: none;
+            }
+
+            .td-title {
+                font-weight: 800;
+                color: white;
+                display: block;
+                font-size: 0.85rem;
+            }
+
+            .td-sub {
+                font-size: 0.6rem;
+                color: var(--text-dim);
+            }
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .dot.status-active {
+                background: var(--success);
+                box-shadow: 0 0 5px var(--success);
+            }
+
+            .dot.status-maintenance {
+                background: var(--warning);
+                box-shadow: 0 0 5px var(--warning);
+            }
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <header>
-        <div class="logo-area">
-            <h1><i class="fas fa-tools"></i> BẢO DƯỠNG</h1>
-            <p>Quản lý bảo dưỡng & sửa chữa phương tiện</p>
-        </div>
-        <div class="controls">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Tìm biển số, đơn vị..." oninput="filterMaintenance()">
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <h1><i class="fas fa-tools"></i> BẢO DƯỠNG</h1>
+                <p>Quản lý bảo dưỡng & sửa chữa phương tiện</p>
             </div>
-            <div class="control-btns">
-                <button class="btn-refresh" onclick="loadMaintenance()">
-                    <i class="fas fa-sync-alt"></i> Làm mới
-                </button>
-                <button class="btn-add" onclick="openModal()">
-                    <i class="fas fa-tools"></i> TẠO PHIẾU
-                </button>
+            <div class="controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm biển số, đơn vị..."
+                        oninput="filterMaintenance()">
+                </div>
+                <div class="control-btns">
+                    <button class="btn-refresh" onclick="loadMaintenance()">
+                        <i class="fas fa-sync-alt"></i> Làm mới
+                    </button>
+                    <button class="btn-add" onclick="openModal()">
+                        <i class="fas fa-tools"></i> TẠO PHIẾU
+                    </button>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <div class="date-bar">
-        <div class="date-group">
-            <label>Từ ngày</label>
-            <input type="date" id="fromDate">
+        <div class="date-bar">
+            <div class="date-group">
+                <label>Từ ngày</label>
+                <input type="date" id="fromDate">
+            </div>
+            <div class="date-group">
+                <label>Đến ngày</label>
+                <input type="date" id="toDate">
+            </div>
+            <div class="date-group">
+                <label>Thời điểm</label>
+                <select id="quickRange" onchange="applyQuickRange()">
+                    <option value="month" selected>Tháng này</option>
+                    <option value="7">7 ngày qua</option>
+                    <option value="30">30 ngày qua</option>
+                    <option value="all">Tất cả các tháng</option>
+                </select>
+            </div>
         </div>
-        <div class="date-group">
-            <label>Đến ngày</label>
-            <input type="date" id="toDate">
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterByStatus('all', this)">
+                📋 TẤT CẢ <span class="btn-badge" id="btnCountTotal">0</span>
+            </button>
+            <button class="filter-btn" onclick="filterByStatus('pending', this)">
+                ⏳ ĐANG LÀM <span class="btn-badge" id="btnCountPending">0</span>
+            </button>
+            <div class="filter-btn"
+                style="cursor:default; background:rgba(0,255,204,0.05); border-color:rgba(0,255,204,0.1)">
+                💰 TỔNG CHI PHÍ: <span id="spanTotalCost" style="color:var(--accent); font-weight:800">0đ</span>
+            </div>
         </div>
-        <div class="date-group">
-            <label>Thời điểm</label>
-            <select id="quickRange" onchange="applyQuickRange()">
-                <option value="month" selected>Tháng này</option>
-                <option value="7">7 ngày qua</option>
-                <option value="30">30 ngày qua</option>
-                <option value="all">Tất cả các tháng</option>
-            </select>
+
+        <div class="maintenance-grid" id="mainGrid">
+            <!-- Cards injected here -->
         </div>
     </div>
 
-    <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterByStatus('all', this)">
-            📋 TẤT CẢ <span class="btn-badge" id="btnCountTotal">0</span>
-        </button>
-        <button class="filter-btn" onclick="filterByStatus('pending', this)">
-            ⏳ ĐANG LÀM <span class="btn-badge" id="btnCountPending">0</span>
-        </button>
-        <div class="filter-btn" style="cursor:default; background:rgba(0,255,204,0.05); border-color:rgba(0,255,204,0.1)">
-            💰 TỔNG CHI PHÍ: <span id="spanTotalCost" style="color:var(--accent); font-weight:800">0đ</span>
+    <!-- Modal -->
+    <div class="modal" id="mainModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                <div>
+                    <h2 id="modalTitle" style="font-weight: 800; font-size: 1.8rem">Phiếu Bảo Trì Mới</h2>
+                    <p style="color: var(--text-dim)">Vui lòng điền chi tiết nội dung bảo dưỡng/sửa chữa.</p>
+                </div>
+                <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-tabs">
+                <div class="m-tab active" onclick="switchTab(0)">Cơ bản</div>
+                <div class="m-tab" onclick="switchTab(1)">Thời gian & Đơn vị</div>
+                <div class="m-tab" onclick="switchTab(2)">Nội dung & Kết quả</div>
+                <div class="m-tab" onclick="switchTab(3)">Thanh toán</div>
+            </div>
+
+            <form id="mainForm">
+                <input type="hidden" id="editId">
+
+                <!-- Tab 0: Co ban -->
+                <div class="tab-content active" id="tab0">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Biển Số Xe</label>
+                            <input type="text" id="bien_so_xe" list="vehicleList" required placeholder="Chọn xe..."
+                                onchange="fetchLastKM()">
+                            <datalist id="vehicleList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Loại hình</label>
+                            <select id="loai_hinh" onchange="toggleMocBD()">
+                                <option value="Bảo dưỡng">Bảo dưỡng</option>
+                                <option value="Sửa chữa">Sửa chữa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>KM hiện tại</label>
+                            <input type="number" id="km_sau" placeholder="Nhập ODO hiện tại..." oninput="calcKmDiff()">
+                        </div>
+                        <div class="form-group">
+                            <label>KM Bảo trì lần trước (Tự động)</label>
+                            <input type="number" id="km_truoc" readonly placeholder="---"
+                                style="background: rgba(255,255,255,0.05)">
+                        </div>
+                        <div class="form-group">
+                            <label>Khoảng cách bảo trì (KM)</label>
+                            <input type="number" id="km_chenh_lech" readonly placeholder="0"
+                                style="background: rgba(255,255,255,0.05)">
+                        </div>
+                        <div class="form-group" id="mocBDBox">
+                            <label>Mốc bảo dưỡng</label>
+                            <select id="moc_bao_duong">
+                                <option value="">-- Mốc KM --</option>
+                                <option value="5000">5,000 KM</option>
+                                <option value="10000">10,000 KM</option>
+                                <option value="15000">15,000 KM</option>
+                                <option value="20000">20,000 KM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 1: Thoi gian & Don vi -->
+                <div class="tab-content" id="tab1">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Ngày bắt đầu</label>
+                            <input type="date" id="ngay_bat_dau" onchange="calcTotalDays()">
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày kết thúc</label>
+                            <input type="date" id="ngay_ket_thuc" onchange="calcTotalDays()">
+                        </div>
+                        <div class="form-group">
+                            <label>Tổng ngày (Tự động)</label>
+                            <input type="text" id="tong_ngay" readonly placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Đơn vị thực hiện</label>
+                            <input type="text" id="don_vi" placeholder="Gara, Isuzu, Thaco...">
+                        </div>
+                        <div class="form-group">
+                            <label>Loại đơn vị</label>
+                            <select id="loai_don_vi">
+                                <option value="Gara hợp đồng">Gara hợp đồng</option>
+                                <option value="Hãng xe">Hãng xe</option>
+                                <option value="Gara ngoài">Gara ngoài</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Noi dung & Ket qua -->
+                <div class="tab-content" id="tab2">
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 3">
+                            <label>Hạng mục thực hiện</label>
+                            <input type="text" id="hang_muc" placeholder="VD: Thay dầu, lọc nhớt, vệ sinh thắng...">
+                        </div>
+                        <div class="form-group" style="grid-column: span 3">
+                            <label>Phát sinh / Thay thế</label>
+                            <input type="text" id="phat_sinh" placeholder="Nêu các vật tư phát sinh...">
+                        </div>
+                        <div class="form-group">
+                            <label>Kết quả</label>
+                            <select id="ket_qua">
+                                <option value="Đang thực hiện">Đang thực hiện</option>
+                                <option value="Đã hoàn thành">Đã hoàn thành</option>
+                                <option value="Chờ xử lý">Chờ xử lý</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Thanh toan -->
+                <div class="tab-content" id="tab3">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Loại thanh toán</label>
+                            <select id="loai_thanh_toan">
+                                <option value="Công nợ">Công nợ</option>
+                                <option value="Tiền mặt">Tiền mặt</option>
+                                <option value="Chuyển khoản">Chuyển khoản</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hoá đơn</label>
+                            <select id="hoa_don">
+                                <option value="Có">Có hoá đơn</option>
+                                <option value="Không">Không hoá đơn</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tổng tiền (VNĐ)</label>
+                            <input type="number" id="tong_tien" placeholder="Nhập giá trị...">
+                        </div>
+                        <div class="form-group" style="grid-column: span 3">
+                            <label>Ghi chú thêm</label>
+                            <textarea id="ghi_chu" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-icon" style="width: auto; padding: 0 1.5rem"
+                        onclick="closeModal()">Đóng</button>
+                    <button type="submit" class="btn-save" id="saveBtn">Lưu Phiếu</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div class="maintenance-grid" id="mainGrid">
-        <!-- Cards injected here -->
-    </div>
-</div>
+    <script>
+        const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
 
-<!-- Modal -->
-<div class="modal" id="mainModal">
-    <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-            <div>
-                <h2 id="modalTitle" style="font-weight: 800; font-size: 1.8rem">Phiếu Bảo Trì Mới</h2>
-                <p style="color: var(--text-dim)">Vui lòng điền chi tiết nội dung bảo dưỡng/sửa chữa.</p>
-            </div>
-            <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
-        </div>
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <div class="modal-tabs">
-            <div class="m-tab active" onclick="switchTab(0)">Cơ bản</div>
-            <div class="m-tab" onclick="switchTab(1)">Thời gian & Đơn vị</div>
-            <div class="m-tab" onclick="switchTab(2)">Nội dung & Kết quả</div>
-            <div class="m-tab" onclick="switchTab(3)">Thanh toán</div>
-        </div>
+        let allMaintenance = [];
 
-        <form id="mainForm">
-            <input type="hidden" id="editId">
-            
-            <!-- Tab 0: Co ban -->
-            <div class="tab-content active" id="tab0">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Biển Số Xe</label>
-                        <input type="text" id="bien_so_xe" list="vehicleList" required placeholder="Chọn xe..." onchange="fetchLastKM()">
-                        <datalist id="vehicleList"></datalist>
-                    </div>
-                    <div class="form-group">
-                        <label>Loại hình</label>
-                        <select id="loai_hinh" onchange="toggleMocBD()">
-                            <option value="Bảo dưỡng">Bảo dưỡng</option>
-                            <option value="Sửa chữa">Sửa chữa</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>KM hiện tại</label>
-                        <input type="number" id="km_sau" placeholder="Nhập ODO hiện tại..." oninput="calcKmDiff()">
-                    </div>
-                    <div class="form-group">
-                        <label>KM Bảo trì lần trước (Tự động)</label>
-                        <input type="number" id="km_truoc" readonly placeholder="---" style="background: rgba(255,255,255,0.05)">
-                    </div>
-                    <div class="form-group">
-                        <label>Khoảng cách bảo trì (KM)</label>
-                        <input type="number" id="km_chenh_lech" readonly placeholder="0" style="background: rgba(255,255,255,0.05)">
-                    </div>
-                    <div class="form-group" id="mocBDBox">
-                        <label>Mốc bảo dưỡng</label>
-                        <select id="moc_bao_duong">
-                            <option value="">-- Mốc KM --</option>
-                            <option value="5000">5,000 KM</option>
-                            <option value="10000">10,000 KM</option>
-                            <option value="15000">15,000 KM</option>
-                            <option value="20000">20,000 KM</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 1: Thoi gian & Don vi -->
-            <div class="tab-content" id="tab1">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Ngày bắt đầu</label>
-                        <input type="date" id="ngay_bat_dau" onchange="calcTotalDays()">
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày kết thúc</label>
-                        <input type="date" id="ngay_ket_thuc" onchange="calcTotalDays()">
-                    </div>
-                    <div class="form-group">
-                        <label>Tổng ngày (Tự động)</label>
-                        <input type="text" id="tong_ngay" readonly placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Đơn vị thực hiện</label>
-                        <input type="text" id="don_vi" placeholder="Gara, Isuzu, Thaco...">
-                    </div>
-                    <div class="form-group">
-                        <label>Loại đơn vị</label>
-                        <select id="loai_don_vi">
-                            <option value="Gara hợp đồng">Gara hợp đồng</option>
-                            <option value="Hãng xe">Hãng xe</option>
-                            <option value="Gara ngoài">Gara ngoài</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 2: Noi dung & Ket qua -->
-            <div class="tab-content" id="tab2">
-                <div class="form-grid">
-                    <div class="form-group" style="grid-column: span 3">
-                        <label>Hạng mục thực hiện</label>
-                        <input type="text" id="hang_muc" placeholder="VD: Thay dầu, lọc nhớt, vệ sinh thắng...">
-                    </div>
-                    <div class="form-group" style="grid-column: span 3">
-                        <label>Phát sinh / Thay thế</label>
-                        <input type="text" id="phat_sinh" placeholder="Nêu các vật tư phát sinh...">
-                    </div>
-                    <div class="form-group">
-                        <label>Kết quả</label>
-                        <select id="ket_qua">
-                            <option value="Đang thực hiện">Đang thực hiện</option>
-                            <option value="Đã hoàn thành">Đã hoàn thành</option>
-                            <option value="Chờ xử lý">Chờ xử lý</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 3: Thanh toan -->
-            <div class="tab-content" id="tab3">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Loại thanh toán</label>
-                        <select id="loai_thanh_toan">
-                            <option value="Công nợ">Công nợ</option>
-                            <option value="Tiền mặt">Tiền mặt</option>
-                            <option value="Chuyển khoản">Chuyển khoản</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Hoá đơn</label>
-                        <select id="hoa_don">
-                            <option value="Có">Có hoá đơn</option>
-                            <option value="Không">Không hoá đơn</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Tổng tiền (VNĐ)</label>
-                        <input type="number" id="tong_tien" placeholder="Nhập giá trị...">
-                    </div>
-                    <div class="form-group" style="grid-column: span 3">
-                        <label>Ghi chú thêm</label>
-                        <textarea id="ghi_chu" rows="3"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" class="btn-icon" style="width: auto; padding: 0 1.5rem" onclick="closeModal()">Đóng</button>
-                <button type="submit" class="btn-save" id="saveBtn">Lưu Phiếu</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    const SUPABASE_URL = "https://mpuqcmektepsqsazuvtb.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXFjbWVrdGVwc3FzYXp1dnRiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE0NjU5OCwiZXhwIjoyMDg4NzIyNTk4fQ.eBWCfXV5v4SNSICYg_wVwaez9ycRk7-XmTry7UnHTU8";
-    
-    const { createClient } = supabase;
-    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let allMaintenance = [];
-
-    async function initialize() {
-        applyQuickRange();
-        await loadMaintenance();
-        await loadVehicles();
-    }
-
-    function applyQuickRange() {
-        const val = document.getElementById('quickRange').value;
-        const today = new Date();
-        let from = new Date();
-        
-        if (val === 'all') {
-            from = new Date('2020-01-01');
-        } else if (val === 'month') {
-            from.setDate(1);
-        } else {
-            from.setDate(today.getDate() - parseInt(val));
-        }
-        
-        document.getElementById('fromDate').value = from.toISOString().split('T')[0];
-        document.getElementById('toDate').value = today.toISOString().split('T')[0];
-        
-        if (allMaintenance.length > 0) loadMaintenance();
-    }
-
-    async function loadMaintenance() {
-        const grid = document.getElementById('mainGrid');
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
-
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
-        
-        try {
-            const { data, error } = await _supabase
-                .from('baoduong')
-                .select('*')
-                .gte('ngay_bat_dau', fromDate)
-                .lte('ngay_bat_dau', toDate)
-                .order('ngay_bat_dau', { ascending: false });
-
-            if (error) throw error;
-            allMaintenance = data || [];
-            renderGrid(allMaintenance);
-            updateStats(allMaintenance);
-        } catch (error) {
-            grid.innerHTML = `<div style="color: var(--danger)">Lỗi: ${error.message}</div>`;
-        }
-    }
-
-    async function loadVehicles() {
-        const { data: xe } = await _supabase.from('xe').select('bien_so_xe');
-        const xeList = document.getElementById('vehicleList');
-        if (xe) xeList.innerHTML = xe.map(v => `<option value="${v.bien_so_xe}">`).join('');
-    }
-
-    function renderGrid(data) {
-        const grid = document.getElementById('mainGrid');
-        const isMobile = window.innerWidth <= 768;
-        grid.innerHTML = '';
-
-        if (data.length === 0) {
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim)">Chưa có dữ liệu bảo trì.</div>';
-            return;
+        async function initialize() {
+            applyQuickRange();
+            await loadMaintenance();
+            await loadVehicles();
         }
 
-        if (isMobile) {
-            let html = `
+        function applyQuickRange() {
+            const val = document.getElementById('quickRange').value;
+            const today = new Date();
+            let from = new Date();
+
+            if (val === 'all') {
+                from = new Date('2020-01-01');
+            } else if (val === 'month') {
+                from.setDate(1);
+            } else {
+                from.setDate(today.getDate() - parseInt(val));
+            }
+
+            document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+
+            if (allMaintenance.length > 0) loadMaintenance();
+        }
+
+        async function loadMaintenance() {
+            const grid = document.getElementById('mainGrid');
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 5rem;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+            try {
+                const { data, error } = await _supabase
+                    .from('baoduong')
+                    .select('*')
+                    .gte('ngay_bat_dau', fromDate)
+                    .lte('ngay_bat_dau', toDate)
+                    .order('ngay_bat_dau', { ascending: false });
+
+                if (error) throw error;
+                allMaintenance = data || [];
+                renderGrid(allMaintenance);
+                updateStats(allMaintenance);
+            } catch (error) {
+                grid.innerHTML = `<div style="color: var(--danger)">Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        async function loadVehicles() {
+            const { data: xe } = await _supabase.from('xe').select('bien_so_xe');
+            const xeList = document.getElementById('vehicleList');
+            if (xe) xeList.innerHTML = xe.map(v => `<option value="${v.bien_so_xe}">`).join('');
+        }
+
+        function renderGrid(data) {
+            const grid = document.getElementById('mainGrid');
+            const isMobile = window.innerWidth <= 768;
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim)">Chưa có dữ liệu bảo trì.</div>';
+                return;
+            }
+
+            if (isMobile) {
+                let html = `
                 <div class="mobile-table-container">
                     <table class="mobile-data-table">
                         <thead>
@@ -725,10 +1018,10 @@
                         </thead>
                         <tbody>
             `;
-            const isAdmin = ['manager', 'admin'].includes((sessionStorage.getItem('role') || '').toLowerCase());
-            data.forEach(item => {
-                const statusDot = item.ket_qua === 'Đã hoàn thành' ? 'status-active' : 'status-maintenance';
-                html += `
+                const isAdmin = ['manager', 'admin'].includes((sessionStorage.getItem('role') || '').toLowerCase());
+                data.forEach(item => {
+                    const statusDot = item.ket_qua === 'Đã hoàn thành' ? 'status-active' : 'status-maintenance';
+                    html += `
                     <tr onclick="${isAdmin ? `editItem(${item.id})` : ''}">
                         <td><div class="td-title">${item.bien_so_xe}</div><div class="td-sub">${item.loai_hinh}</div></td>
                         <td>${formatDate(item.ngay_bat_dau)}</td>
@@ -739,23 +1032,23 @@
                         </td>
                     </tr>
                 `;
-            });
-            html += `</tbody></table></div>`;
-            grid.innerHTML = html;
-            return;
-        }
+                });
+                html += `</tbody></table></div>`;
+                grid.innerHTML = html;
+                return;
+            }
 
-        data.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'maintenance-card';
-            
-            let statusClass = 'status-waiting';
-            if (item.ket_qua === 'Đã hoàn thành') statusClass = 'status-done';
-            else if (item.ket_qua === 'Đang thực hiện') statusClass = 'status-pending';
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'maintenance-card';
 
-            const typeClass = item.loai_hinh === 'Bảo dưỡng' ? 'type-bd' : 'type-sc';
+                let statusClass = 'status-waiting';
+                if (item.ket_qua === 'Đã hoàn thành') statusClass = 'status-done';
+                else if (item.ket_qua === 'Đang thực hiện') statusClass = 'status-pending';
 
-            card.innerHTML = `
+                const typeClass = item.loai_hinh === 'Bảo dưỡng' ? 'type-bd' : 'type-sc';
+
+                card.innerHTML = `
                 <div class="maintenance-header">
                     <span class="plate-tag">${item.bien_so_xe}</span>
                     <span class="type-tag ${typeClass}">${item.loai_hinh}</span>
@@ -789,338 +1082,339 @@
                     </div>
                 </div>
             `;
-            grid.appendChild(card);
-        });
-    }
-
-    function updateStats(data) {
-        const total = data.length;
-        const totalCost = data.reduce((sum, i) => sum + (parseFloat(i.tong_tien) || 0), 0);
-        const pending = data.filter(i => i.ket_qua !== 'Đã hoàn thành').length;
-
-        document.getElementById('btnCountTotal').innerText = total;
-        document.getElementById('btnCountPending').innerText = pending;
-        document.getElementById('spanTotalCost').innerText = formatCurrency(totalCost);
-    }
-
-    function filterByStatus(status, btn) {
-        if (btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+                grid.appendChild(card);
+            });
         }
-        if (status === 'all') {
-            renderGrid(allMaintenance);
-        } else {
-            const filtered = allMaintenance.filter(m => m.ket_qua !== 'Đã hoàn thành');
+
+        function updateStats(data) {
+            const total = data.length;
+            const totalCost = data.reduce((sum, i) => sum + (parseFloat(i.tong_tien) || 0), 0);
+            const pending = data.filter(i => i.ket_qua !== 'Đã hoàn thành').length;
+
+            document.getElementById('btnCountTotal').innerText = total;
+            document.getElementById('btnCountPending').innerText = pending;
+            document.getElementById('spanTotalCost').innerText = formatCurrency(totalCost);
+        }
+
+        function filterByStatus(status, btn) {
+            if (btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            if (status === 'all') {
+                renderGrid(allMaintenance);
+            } else {
+                const filtered = allMaintenance.filter(m => m.ket_qua !== 'Đã hoàn thành');
+                renderGrid(filtered);
+            }
+        }
+
+        function switchTab(index) {
+            document.querySelectorAll('.m-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.tab-content').forEach((c, i) => {
+                c.classList.toggle('active', i === index);
+            });
+        }
+
+        function toggleMocBD() {
+            const type = document.getElementById('loai_hinh').value;
+            const box = document.getElementById('mocBDBox');
+            box.style.opacity = type === 'Bảo dưỡng' ? '1' : '0.3';
+            box.style.pointerEvents = type === 'Bảo dưỡng' ? 'auto' : 'none';
+            if (type !== 'Bảo dưỡng') document.getElementById('moc_bao_duong').value = '';
+        }
+
+        function calcKmDiff() {
+            const kAfter = parseFloat(document.getElementById('km_sau').value) || 0;
+            const kBefore = parseFloat(document.getElementById('km_truoc').value) || 0;
+            const diffInput = document.getElementById('km_chenh_lech');
+
+            if (kAfter > 0 && kBefore > 0) {
+                const diff = kAfter - kBefore;
+                diffInput.value = diff > 0 ? diff : 0;
+            } else {
+                diffInput.value = 0;
+            }
+        }
+
+        async function fetchLastKM() {
+            const editId = document.getElementById('editId').value;
+            if (editId) return;
+
+            const plate = document.getElementById('bien_so_xe').value.trim();
+            if (!plate) return;
+
+            const kBeforeInput = document.getElementById('km_truoc');
+            kBeforeInput.value = "Đang tải...";
+
+            try {
+                // Xem trong dữ liệu đã có trước
+                const lastEntry = allMaintenance.find(m => m.bien_so_xe === plate);
+
+                if (lastEntry) {
+                    kBeforeInput.value = lastEntry.km_sau || 0;
+                    calcKmDiff();
+                } else {
+                    const { data } = await _supabase
+                        .from('baoduong')
+                        .select('km_sau')
+                        .eq('bien_so_xe', plate)
+                        .order('ngay_bat_dau', { ascending: false })
+                        .limit(1);
+
+                    if (data && data.length > 0) {
+                        kBeforeInput.value = data[0].km_sau || 0;
+                    } else {
+                        kBeforeInput.value = 0;
+                    }
+                    calcKmDiff();
+                }
+            } catch (e) {
+                kBeforeInput.value = 0;
+            }
+        }
+
+        function calcTotalDays() {
+            const start = document.getElementById('ngay_bat_dau').value;
+            const end = document.getElementById('ngay_ket_thuc').value;
+            if (start && end) {
+                const s = new Date(start);
+                const e = new Date(end);
+                const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
+                document.getElementById('tong_ngay').value = diff > 0 ? diff : 0;
+
+                // Tự động chuyển trạng thái lên "Đã hoàn thành" khi có ngày kết thúc
+                const ketQuaBox = document.getElementById('ket_qua');
+                if (ketQuaBox.value !== 'Đã hoàn thành') {
+                    ketQuaBox.value = 'Đã hoàn thành';
+                }
+            }
+        }
+
+        function filterMaintenance() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = allMaintenance;
+            if (q) {
+                filtered = filtered.filter(m =>
+                    m.bien_so_xe.toLowerCase().includes(q) ||
+                    (m.don_vi && m.don_vi.toLowerCase().includes(q))
+                );
+            }
             renderGrid(filtered);
         }
-    }
 
-    function switchTab(index) {
-        document.querySelectorAll('.m-tab').forEach((t, i) => {
-            t.classList.toggle('active', i === index);
-        });
-        document.querySelectorAll('.tab-content').forEach((c, i) => {
-            c.classList.toggle('active', i === index);
-        });
-    }
-
-    function toggleMocBD() {
-        const type = document.getElementById('loai_hinh').value;
-        const box = document.getElementById('mocBDBox');
-        box.style.opacity = type === 'Bảo dưỡng' ? '1' : '0.3';
-        box.style.pointerEvents = type === 'Bảo dưỡng' ? 'auto' : 'none';
-        if (type !== 'Bảo dưỡng') document.getElementById('moc_bao_duong').value = '';
-    }
-
-    function calcKmDiff() {
-        const kAfter = parseFloat(document.getElementById('km_sau').value) || 0;
-        const kBefore = parseFloat(document.getElementById('km_truoc').value) || 0;
-        const diffInput = document.getElementById('km_chenh_lech');
-        
-        if (kAfter > 0 && kBefore > 0) {
-            const diff = kAfter - kBefore;
-            diffInput.value = diff > 0 ? diff : 0;
-        } else {
-            diffInput.value = 0;
+        function filterByStatus(status) {
+            let filtered = allMaintenance;
+            if (status === 'pending') {
+                filtered = allMaintenance.filter(m => m.ket_qua !== 'Đã hoàn thành');
+            }
+            renderGrid(filtered);
         }
-    }
 
-    async function fetchLastKM() {
-        const editId = document.getElementById('editId').value;
-        if (editId) return;
+        function openModal(editData = null) {
+            const form = document.getElementById('mainForm');
+            form.reset();
+            switchTab(0);
+            document.getElementById('ngay_bat_dau').value = new Date().toISOString().split('T')[0];
+            toggleMocBD();
 
-        const plate = document.getElementById('bien_so_xe').value.trim();
-        if (!plate) return;
-
-        const kBeforeInput = document.getElementById('km_truoc');
-        kBeforeInput.value = "Đang tải...";
-
-        try {
-            // Xem trong dữ liệu đã có trước
-            const lastEntry = allMaintenance.find(m => m.bien_so_xe === plate);
-            
-            if (lastEntry) {
-                kBeforeInput.value = lastEntry.km_sau || 0;
-                calcKmDiff();
+            if (editData) {
+                document.getElementById('modalTitle').innerText = "Cập Nhật Phiếu Bảo Trì";
+                document.getElementById('editId').value = editData.id;
+                const fields = [
+                    'bien_so_xe', 'loai_hinh', 'km_sau', 'km_truoc', 'km_chenh_lech', 'moc_bao_duong',
+                    'ngay_bat_dau', 'ngay_ket_thuc', 'tong_ngay', 'don_vi', 'loai_don_vi',
+                    'hang_muc', 'phat_sinh', 'ket_qua',
+                    'loai_thanh_toan', 'hoa_don', 'tong_tien', 'ghi_chu'
+                ];
+                fields.forEach(f => {
+                    const el = document.getElementById(f);
+                    if (el) el.value = editData[f] || '';
+                });
+                toggleMocBD();
             } else {
-                const { data } = await _supabase
-                    .from('baoduong')
-                    .select('km_sau')
-                    .eq('bien_so_xe', plate)
-                    .order('ngay_bat_dau', { ascending: false })
-                    .limit(1);
-                
-                if (data && data.length > 0) {
-                    kBeforeInput.value = data[0].km_sau || 0;
-                } else {
-                    kBeforeInput.value = 0;
-                }
-                calcKmDiff();
+                document.getElementById('modalTitle').innerText = "Phiếu Bảo Trì Mới";
+                document.getElementById('editId').value = '';
             }
-        } catch (e) {
-            kBeforeInput.value = 0;
+            document.getElementById('mainModal').classList.add('active');
         }
-    }
 
-    function calcTotalDays() {
-        const start = document.getElementById('ngay_bat_dau').value;
-        const end = document.getElementById('ngay_ket_thuc').value;
-        if (start && end) {
-            const s = new Date(start);
-            const e = new Date(end);
-            const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
-            document.getElementById('tong_ngay').value = diff > 0 ? diff : 0;
-            
-            // Tự động chuyển trạng thái lên "Đã hoàn thành" khi có ngày kết thúc
-            const ketQuaBox = document.getElementById('ket_qua');
-            if (ketQuaBox.value !== 'Đã hoàn thành') {
-                ketQuaBox.value = 'Đã hoàn thành';
+        function showToast(msg, theme = 'success') {
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
+            } else {
+                alert(msg);
             }
         }
-    }
 
-    function filterMaintenance() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        let filtered = allMaintenance;
-        if (q) {
-            filtered = filtered.filter(m => 
-                m.bien_so_xe.toLowerCase().includes(q) || 
-                (m.don_vi && m.don_vi.toLowerCase().includes(q))
-            );
+        function logAudit(tableName, recordId, action, oldData, newData) {
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({
+                    type: 'logAudit',
+                    tableName, recordId, action, oldData, newData
+                }, '*');
+            }
         }
-        renderGrid(filtered);
-    }
 
-    function filterByStatus(status) {
-        let filtered = allMaintenance;
-        if (status === 'pending') {
-            filtered = allMaintenance.filter(m => m.ket_qua !== 'Đã hoàn thành');
+        let activeConfirmId = null;
+        let activeConfirmCallback = null;
+        function showConfirm(title, message, callback) {
+            if (window.parent && window.parent.postMessage) {
+                activeConfirmId = Date.now();
+                activeConfirmCallback = callback;
+                window.parent.postMessage({
+                    type: 'confirmRequest',
+                    title: title,
+                    message: message,
+                    requestId: activeConfirmId
+                }, '*');
+            } else {
+                if (confirm(message)) callback(true);
+                else callback(false);
+            }
         }
-        renderGrid(filtered);
-    }
 
-    function openModal(editData = null) {
-        const form = document.getElementById('mainForm');
-        form.reset();
-        switchTab(0);
-        document.getElementById('ngay_bat_dau').value = new Date().toISOString().split('T')[0];
-        toggleMocBD();
+        function closeModal() { document.getElementById('mainModal').classList.remove('active'); }
 
-        if (editData) {
-            document.getElementById('modalTitle').innerText = "Cập Nhật Phiếu Bảo Trì";
-            document.getElementById('editId').value = editData.id;
+        document.getElementById('mainForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+
             const fields = [
                 'bien_so_xe', 'loai_hinh', 'km_sau', 'km_truoc', 'km_chenh_lech', 'moc_bao_duong',
                 'ngay_bat_dau', 'ngay_ket_thuc', 'tong_ngay', 'don_vi', 'loai_don_vi',
                 'hang_muc', 'phat_sinh', 'ket_qua',
                 'loai_thanh_toan', 'hoa_don', 'tong_tien', 'ghi_chu'
             ];
+
+            const ketQuaBox = document.getElementById('ket_qua');
+            const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
+            const tongTien = parseFloat(document.getElementById('tong_tien').value) || 0;
+
+            // RULE 1: Nếu chưa có ngày kết thúc, ép trạng thái về "Đang thực hiện" và cho phép lưu
+            if (!ngayKetThuc) {
+                if (ketQuaBox.value === 'Đã hoàn thành') {
+                    showToast("Chưa có ngày kết thúc, hệ thống sẽ tự động chuyển về trạng thái 'Đang thực hiện'", "warning");
+                    ketQuaBox.value = 'Đang thực hiện';
+                }
+            }
+            // RULE 2: Nếu đã có ngày kết thúc (hoàn thành), bắt buộc phải có số tiền
+            else if (ngayKetThuc && tongTien <= 0) {
+                showToast("Vui lòng nhập số tiền chi phí!", "error");
+                switchTab(3); // Mở tab Thanh toán
+                btn.disabled = false;
+                return;
+            }
+
+            const payload = { updated_at: new Date().toISOString() };
             fields.forEach(f => {
                 const el = document.getElementById(f);
-                if (el) el.value = editData[f] || '';
-            });
-            toggleMocBD();
-        } else {
-            document.getElementById('modalTitle').innerText = "Phiếu Bảo Trì Mới";
-            document.getElementById('editId').value = '';
-        }
-        document.getElementById('mainModal').classList.add('active');
-    }
-
-    function showToast(msg, theme = 'success') {
-        if (window.parent && window.parent.postMessage) {
-            window.parent.postMessage({ type: 'toast', message: msg, theme: theme }, '*');
-        } else {
-            alert(msg);
-        }
-    }
-
-    function logAudit(tableName, recordId, action, oldData, newData) {
-        if (window.parent && window.parent.postMessage) {
-            window.parent.postMessage({ 
-                type: 'logAudit', 
-                tableName, recordId, action, oldData, newData 
-            }, '*');
-        }
-    }
-
-    let activeConfirmId = null;
-    let activeConfirmCallback = null;
-    function showConfirm(title, message, callback) {
-        if (window.parent && window.parent.postMessage) {
-            activeConfirmId = Date.now();
-            activeConfirmCallback = callback;
-            window.parent.postMessage({ 
-                type: 'confirmRequest', 
-                title: title, 
-                message: message, 
-                requestId: activeConfirmId 
-            }, '*');
-        } else {
-            if (confirm(message)) callback(true);
-            else callback(false);
-        }
-    }
-
-    function closeModal() { document.getElementById('mainModal').classList.remove('active'); }
-
-    document.getElementById('mainForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('saveBtn');
-        btn.disabled = true;
-
-        const fields = [
-            'bien_so_xe', 'loai_hinh', 'km_sau', 'km_truoc', 'km_chenh_lech', 'moc_bao_duong',
-            'ngay_bat_dau', 'ngay_ket_thuc', 'tong_ngay', 'don_vi', 'loai_don_vi',
-            'hang_muc', 'phat_sinh', 'ket_qua',
-            'loai_thanh_toan', 'hoa_don', 'tong_tien', 'ghi_chu'
-        ];
-        
-        const ketQuaBox = document.getElementById('ket_qua');
-        const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
-        const tongTien = parseFloat(document.getElementById('tong_tien').value) || 0;
-
-        // RULE 1: Nếu chưa có ngày kết thúc, ép trạng thái về "Đang thực hiện" và cho phép lưu
-        if (!ngayKetThuc) {
-            if (ketQuaBox.value === 'Đã hoàn thành') {
-                showToast("Chưa có ngày kết thúc, hệ thống sẽ tự động chuyển về trạng thái 'Đang thực hiện'", "warning");
-                ketQuaBox.value = 'Đang thực hiện';
-            }
-        } 
-        // RULE 2: Nếu đã có ngày kết thúc (hoàn thành), bắt buộc phải có số tiền
-        else if (ngayKetThuc && tongTien <= 0) {
-            showToast("Đã có ngày hoàn thành, vui lòng nhập số tiền chi phí!", "error");
-            switchTab(3); // Mở tab Thanh toán
-            btn.disabled = false;
-            return;
-        }
-
-        const payload = { updated_at: new Date().toISOString() };
-        fields.forEach(f => {
-            const el = document.getElementById(f);
-            if (el) {
-                if (el.type === 'number' || f === 'tong_ngay' || f === 'tong_tien' || f.includes('km_')) {
-                    payload[f] = parseFloat(el.value) || 0;
-                } else {
-                    payload[f] = el.value.trim() === '' ? null : el.value.trim();
-                }
-            }
-        });
-
-        const id = document.getElementById('editId').value;
-        try {
-            if (id) {
-                const oldItem = allMaintenance.find(i => i.id == id);
-                const { error } = await _supabase.from('baoduong').update(payload).eq('id', id);
-                if (error) throw error;
-
-                if (oldItem) {
-                    logAudit('baoduong', id, 'UPDATE', oldItem, payload);
-                }
-            } else {
-                const { data, error } = await _supabase.from('baoduong').insert([payload]).select();
-                if (error) throw error;
-
-                if (data) {
-                    logAudit('baoduong', data[0].id, 'INSERT', null, payload);
-                }
-            }
-
-            // AUTO-UPDATE VEHICLE STATUS
-            // If maintenance is ongoing, set vehicle to 'bao_tri'
-            // If maintenance is finished, set vehicle to 'dang_hoat_dong'
-            const statusToSet = payload.ket_qua === 'Đã hoàn thành' ? 'dang_hoat_dong' : 'bao_tri';
-            await _supabase.from('xe').update({ tinh_trang_hoat_dong: statusToSet }).eq('bien_so_xe', payload.bien_so_xe);
-            
-            // Broadcast change for other tabs
-            if (window.parent && window.parent.postMessage) {
-              window.parent.postMessage({ type: 'dataChanged', table: 'xe' }, '*');
-            }
-
-            showToast("Đã lưu dữ liệu bảo dưỡng và cập nhật trạng thái xe!");
-            closeModal();
-            loadMaintenance();
-        } catch (error) { 
-            showToast("Lỗi lưu dữ liệu: " + error.message, "error"); 
-        } finally { 
-            btn.disabled = false; 
-        }
-    };
-
-    function editItem(id) {
-        const item = allMaintenance.find(i => i.id === id);
-        if (item) openModal(item);
-    }
-
-    async function deleteItem(id) {
-        showConfirm("Xóa bản ghi", "Bạn có chắc chắn muốn xóa phiếu bảo trì này không?", async (res) => {
-            if (res) {
-                const oldItem = allMaintenance.find(i => i.id == id);
-                const { error } = await _supabase.from('baoduong').delete().eq('id', id);
-                if (error) {
-                    showToast("Lỗi khi xóa: " + error.message, "error");
-                } else {
-                    if (oldItem) {
-                        logAudit('baoduong', id, 'DELETE', oldItem, null);
+                if (el) {
+                    if (el.type === 'number' || f === 'tong_ngay' || f === 'tong_tien' || f.includes('km_')) {
+                        payload[f] = parseFloat(el.value) || 0;
+                    } else {
+                        payload[f] = el.value.trim() === '' ? null : el.value.trim();
                     }
-                    showToast("Đã xóa bản ghi thành công");
-                    loadMaintenance();
                 }
+            });
+
+            const id = document.getElementById('editId').value;
+            try {
+                if (id) {
+                    const oldItem = allMaintenance.find(i => i.id == id);
+                    const { error } = await _supabase.from('baoduong').update(payload).eq('id', id);
+                    if (error) throw error;
+
+                    if (oldItem) {
+                        logAudit('baoduong', id, 'UPDATE', oldItem, payload);
+                    }
+                } else {
+                    const { data, error } = await _supabase.from('baoduong').insert([payload]).select();
+                    if (error) throw error;
+
+                    if (data) {
+                        logAudit('baoduong', data[0].id, 'INSERT', null, payload);
+                    }
+                }
+
+                // AUTO-UPDATE VEHICLE STATUS
+                // If maintenance is ongoing, set vehicle to 'bao_tri'
+                // If maintenance is finished, set vehicle to 'dang_hoat_dong'
+                const statusToSet = payload.ket_qua === 'Đã hoàn thành' ? 'dang_hoat_dong' : 'bao_tri';
+                await _supabase.from('xe').update({ tinh_trang_hoat_dong: statusToSet }).eq('bien_so_xe', payload.bien_so_xe);
+
+                // Broadcast change for other tabs
+                if (window.parent && window.parent.postMessage) {
+                    window.parent.postMessage({ type: 'dataChanged', table: 'xe' }, '*');
+                }
+
+                showToast("Đã lưu dữ liệu bảo dưỡng và cập nhật trạng thái xe!");
+                closeModal();
+                loadMaintenance();
+            } catch (error) {
+                showToast("Lỗi lưu dữ liệu: " + error.message, "error");
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        function editItem(id) {
+            const item = allMaintenance.find(i => i.id === id);
+            if (item) openModal(item);
+        }
+
+        async function deleteItem(id) {
+            showConfirm("Xóa bản ghi", "Bạn có chắc chắn muốn xóa phiếu bảo trì này không?", async (res) => {
+                if (res) {
+                    const oldItem = allMaintenance.find(i => i.id == id);
+                    const { error } = await _supabase.from('baoduong').delete().eq('id', id);
+                    if (error) {
+                        showToast("Lỗi khi xóa: " + error.message, "error");
+                    } else {
+                        if (oldItem) {
+                            logAudit('baoduong', id, 'DELETE', oldItem, null);
+                        }
+                        showToast("Đã xóa bản ghi thành công");
+                        loadMaintenance();
+                    }
+                }
+            });
+        }
+
+        function formatDate(d) {
+            if (!d) return '-';
+            return new Date(d).toLocaleDateString('vi-VN');
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
+        }
+
+        window.addEventListener('message', (e) => {
+            const data = e.data;
+            if (data && data.type === 'changeTheme') {
+                document.documentElement.setAttribute('data-theme', data.theme);
+            } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
+                if (activeConfirmCallback) activeConfirmCallback(data.result);
+                activeConfirmId = null;
+                activeConfirmCallback = null;
+            } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
+                loadMaintenance();
             }
         });
-    }
 
-    function formatDate(d) {
-        if (!d) return '-';
-        return new Date(d).toLocaleDateString('vi-VN');
-    }
-
-    function formatCurrency(val) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0);
-    }
-
-    window.addEventListener('message', (e) => {
-        const data = e.data;
-        if (data && data.type === 'changeTheme') {
-            document.documentElement.setAttribute('data-theme', data.theme);
-        } else if (data && data.type === 'confirmResponse' && data.requestId === activeConfirmId) {
-            if (activeConfirmCallback) activeConfirmCallback(data.result);
-            activeConfirmId = null;
-            activeConfirmCallback = null;
-        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
-            loadMaintenance();
+        async function initRealtime() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            await initialize();
+            _supabase.channel('baoduong-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'baoduong' }, () => loadMaintenance()).subscribe();
         }
-    });
-
-    async function initRealtime() {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        await initialize();
-        _supabase.channel('baoduong-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'baoduong' }, () => loadMaintenance()).subscribe();
-    }
-    document.addEventListener('DOMContentLoaded', initRealtime);
-</script>
+        document.addEventListener('DOMContentLoaded', initRealtime);
+    </script>
 
 </body>
+
 </html>
