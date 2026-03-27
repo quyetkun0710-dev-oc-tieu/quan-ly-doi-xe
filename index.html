@@ -4039,8 +4039,19 @@
       // Xử lý Gửi Push Notification (Yêu cầu từ iFrame)
       if (data.type === 'sendPush') {
         if (typeof sendPushToAll === 'function') {
-            console.log("[Push] Triggering push to all from iframe request...");
-            sendPushToAll(data.title, data.body, data.url);
+            showToast("🚀 Đang kích hoạt thông báo đẩy...", "warning");
+            console.log("[Push] Requesting push to all devices:", data.title);
+            sendPushToAll(data.title, data.body, data.url).then(res => {
+                if (res && res.count > 0) {
+                    showToast(`✅ Đã gửi tới ${res.count} thiết bị!`, "success");
+                } else if (res && res.count === 0) {
+                    showToast("⚠️ Không có thiết bị nào đang đăng ký (Hãy nhấn Chuông).", "warning");
+                } else if (res && res.error) {
+                    showToast("❌ Lỗi Edge Function: " + res.error, "error");
+                }
+            }).catch(err => {
+                showToast("❌ Lỗi mạng: " + err.message, "error");
+            });
         }
       }
 
@@ -4191,6 +4202,7 @@
     // --- Gửi push đến user cụ thể (gọi từ tab quản lý khi có sự kiện) ---
     window.sendPushToUser = async function (ma_nvTarget, title, body, url = '/') {
       try {
+        console.log("[Push] Fetching Edge Function with payload:", { ma_nv: ma_nvTarget, title });
         const resp = await fetch(EDGE_FUNCTION_URL, {
           method: 'POST',
           headers: {
@@ -4199,11 +4211,18 @@
           },
           body: JSON.stringify({ ma_nv: ma_nvTarget, title, body, url }),
         });
+        
+        if (!resp.ok) {
+            const errTxt = await resp.text();
+            throw new Error(`HTTP ${resp.status}: ${errTxt}`);
+        }
+        
         const result = await resp.json();
-        console.log('[Push] Sent:', result);
+        console.log('[Push] Response from server:', result);
         return result;
       } catch (e) {
-        console.error('[Push] Error sending:', e);
+        console.error('[Push] Exception in fetch:', e);
+        throw e;
       }
     };
 
