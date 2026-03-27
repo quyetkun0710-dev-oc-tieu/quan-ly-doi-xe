@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kế hoạch Bảo dưỡng - Fleet Core Supabase</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS -->
@@ -44,7 +46,7 @@
             background: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.2) 0px, transparent 50%),
                 radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
             background-attachment: fixed;
@@ -85,43 +87,108 @@
             align-items: center;
             gap: 12px;
         }
-          /* Filter Buttons */
+
         /* Filter Buttons */
-        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+        /* Filter Buttons */
+        .filter-bar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
         .filter-btn {
-            padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
-            transition: all 0.2s; font-size: 0.75rem; font-weight: 600;
-            display: flex; align-items: center; gap: 6px; white-space: nowrap;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
         }
+
         .filter-btn .btn-badge {
-            background: rgba(255,255,255,0.15); padding: 1px 6px; border-radius: 6px;
-            font-size: 0.8rem; font-weight: 800; min-width: 18px; text-align: center;
-            color: var(--accent); box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            min-width: 18px;
+            text-align: center;
+            color: var(--accent);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
         }
-        .filter-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
-        .filter-btn.active .btn-badge { background: white; color: #6366f1; }
-        .filter-btn:hover { background: rgba(255,255,255,0.12); }
+
+        .filter-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .filter-btn.active .btn-badge {
+            background: white;
+            color: #6366f1;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
 
         .btn-refresh {
-            background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
-            padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
-            font-size: 0.85rem; display: flex; align-items: center; gap: 8px; font-family:'Outfit',sans-serif;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Outfit', sans-serif;
         }
-        .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
-        .btn-refresh i { transition: transform 0.4s; }
-        .btn-refresh:hover i { transform: rotate(180deg); }
 
-        .control-btns { display: flex; gap: 10px; }
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+        }
 
-        .stats-row { display: none; } /* Hide old stats cards */
-        
+        .btn-refresh i {
+            transition: transform 0.4s;
+        }
+
+        .btn-refresh:hover i {
+            transform: rotate(180deg);
+        }
+
+        .control-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stats-row {
+            display: none;
+        }
+
+        /* Hide old stats cards */
+
         .my-vehicle-row {
             background: rgba(0, 242, 254, 0.05) !important;
         }
+
         .my-vehicle-row td {
             border-color: rgba(0, 242, 254, 0.3) !important;
         }
+
         .my-vehicle-badge {
             display: inline-block;
             background: var(--primary-color);
@@ -144,8 +211,13 @@
             background: var(--primary-color);
         }
 
-        .stat-card.warning::before { background: var(--warning-color); }
-        .stat-card.danger::before { background: var(--danger-color); }
+        .stat-card.warning::before {
+            background: var(--warning-color);
+        }
+
+        .stat-card.danger::before {
+            background: var(--danger-color);
+        }
 
         .stat-icon {
             width: 50px;
@@ -206,8 +278,13 @@
             background: rgba(255, 255, 255, 0.03);
         }
 
-        .bg-L2 { background: rgba(139, 92, 246, 0.1); }
-        .bg-plan { background: rgba(246, 211, 101, 0.05); }
+        .bg-L2 {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .bg-plan {
+            background: rgba(246, 211, 101, 0.05);
+        }
 
         .badge {
             padding: 4px 10px;
@@ -216,12 +293,28 @@
             font-weight: 600;
         }
 
-        .badge-danger { background: rgba(255, 8, 68, 0.2); color: #ff0844; }
-        .badge-warning { background: rgba(246, 211, 101, 0.2); color: #f6d365; }
-        .badge-success { background: rgba(102, 224, 163, 0.2); color: #66e0a3; }
+        .badge-danger {
+            background: rgba(255, 8, 68, 0.2);
+            color: #ff0844;
+        }
 
-        .text-bold { font-weight: 700; }
-        .text-accent { color: var(--primary-color); }
+        .badge-warning {
+            background: rgba(246, 211, 101, 0.2);
+            color: #f6d365;
+        }
+
+        .badge-success {
+            background: rgba(102, 224, 163, 0.2);
+            color: #66e0a3;
+        }
+
+        .text-bold {
+            font-weight: 700;
+        }
+
+        .text-accent {
+            color: var(--primary-color);
+        }
 
         /* --- Controls --- */
         .controls {
@@ -277,7 +370,10 @@
         /* --- Loading Spinner --- */
         .loading-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(15, 23, 42, 0.8);
             display: none;
             justify-content: center;
@@ -296,15 +392,24 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @media (max-width: 1024px) {
-            .stats-row { grid-template-columns: 1fr 1fr; }
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         /* Mobile Card Layout */
-        .plan-card-list { display: none; flex-direction: column; gap: 10px; }
+        .plan-card-list {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .plan-card {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -315,12 +420,18 @@
             gap: 8px;
             transition: all 0.2s;
         }
-        .plan-card.my-vehicle-row { background: rgba(0, 242, 254, 0.05); border-color: rgba(0, 242, 254, 0.3); }
+
+        .plan-card.my-vehicle-row {
+            background: rgba(0, 242, 254, 0.05);
+            border-color: rgba(0, 242, 254, 0.3);
+        }
+
         .plan-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .plan-card-bsx {
             font-size: 0.95rem;
             font-weight: 800;
@@ -329,23 +440,49 @@
             align-items: center;
             gap: 6px;
         }
-        .plan-card-status { display: flex; gap: 6px; }
+
+        .plan-card-status {
+            display: flex;
+            gap: 6px;
+        }
+
         .plan-card-body {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px 12px;
         }
-        .plan-card-item { display: flex; flex-direction: column; gap: 1px; }
-        .plan-card-label { font-size: 0.55rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-        .plan-card-value { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); }
-        .plan-card-divider {
-            border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 2px 0;
+
+        .plan-card-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
         }
+
+        .plan-card-label {
+            font-size: 0.55rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-card-value {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .plan-card-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin: 2px 0;
+        }
+
         .plan-card-bottom {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px;
         }
+
         .plan-card-alert {
             display: flex;
             align-items: center;
@@ -355,40 +492,85 @@
             font-size: 0.7rem;
             font-weight: 700;
         }
-        .plan-card-alert.badge-danger  { background: rgba(255,8,68,0.15);   color: #ff0844; }
-        .plan-card-alert.badge-warning { background: rgba(246,211,101,0.15); color: #f6d365; }
-        .plan-card-alert.badge-success { background: rgba(102,224,163,0.15); color: #66e0a3; }
+
+        .plan-card-alert.badge-danger {
+            background: rgba(255, 8, 68, 0.15);
+            color: #ff0844;
+        }
+
+        .plan-card-alert.badge-warning {
+            background: rgba(246, 211, 101, 0.15);
+            color: #f6d365;
+        }
+
+        .plan-card-alert.badge-success {
+            background: rgba(102, 224, 163, 0.15);
+            color: #66e0a3;
+        }
 
         /* Mobile Controls: compact 2-column grid */
         @media (max-width: 768px) {
-            .stats-row { 
-                grid-template-columns: repeat(3, 1fr); 
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
                 margin-bottom: 12px;
             }
+
             .stat-card {
                 padding: 8px;
                 border-radius: 12px;
                 gap: 8px;
             }
+
             .stat-icon {
                 width: 28px;
                 height: 28px;
                 font-size: 1rem;
             }
-            .stat-info h3 { font-size: 0.58rem; letter-spacing: 0; }
-            .stat-info p { font-size: 1.1rem; }
 
-            .header { flex-direction: column; gap: 1rem; align-items: stretch; }
-            .header h1 { display: none; }
+            .stat-info h3 {
+                font-size: 0.58rem;
+                letter-spacing: 0;
+            }
+
+            .stat-info p {
+                font-size: 1.1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .header h1 {
+                display: none;
+            }
+
             .controls {
                 flex-direction: column;
                 width: 100%;
                 gap: 10px;
             }
-            .search-input { width: 100%; max-width: none; }
-            .control-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-            .btn-refresh, .btn { width: 100% !important; justify-content: center; margin: 0; }
+
+            .search-input {
+                width: 100%;
+                max-width: none;
+            }
+
+            .control-btns {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .btn-refresh,
+            .btn {
+                width: 100% !important;
+                justify-content: center;
+                margin: 0;
+            }
 
             .controls label {
                 display: flex;
@@ -402,20 +584,42 @@
                 cursor: pointer;
             }
 
-            .glass-panel { padding: 10px; }
+            .glass-panel {
+                padding: 10px;
+            }
 
             /* Switch desktop table → mobile cards */
-            .table-container { display: none; }
-            .plan-card-list { display: flex; }
+            .table-container {
+                display: none;
+            }
 
-            .plan-card-value { font-size: 0.75rem; }
+            .plan-card-list {
+                display: flex;
+            }
 
-            .modal-content { padding: 1.5rem !important; width: 95% !important; max-width: 100% !important; border-radius: 20px !important; }
-            .modal-content h2 { font-size: 1.5rem !important; }
-            .form-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+            .plan-card-value {
+                font-size: 0.75rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem !important;
+                width: 95% !important;
+                max-width: 100% !important;
+                border-radius: 20px !important;
+            }
+
+            .modal-content h2 {
+                font-size: 1.5rem !important;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
@@ -423,11 +627,14 @@
 
     <div class="container">
         <div class="header">
-            <h1 id="title_main"><i class="fas fa-calendar-check"></i> KẾ HOẠCH BĐ</h1>
+            <h1 id="title_main"><i class="fas fa-calendar-check"></i> KẾ HOẠCH BD</h1>
             <div class="controls">
-                <input type="text" class="search-input" id="searchInput" placeholder="Tìm biển số xe..." onkeyup="filterTable()">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem; color:var(--text-secondary); user-select:none;">
-                    <input type="checkbox" id="chkOnlyMyVehicle" onchange="filterTable()" style="width:18px;height:18px;cursor:pointer;"> <b>Xe của tôi</b>
+                <input type="text" class="search-input" id="searchInput" placeholder="Tìm biển số xe..."
+                    onkeyup="filterTable()">
+                <label
+                    style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.9rem; color:var(--text-secondary); user-select:none;">
+                    <input type="checkbox" id="chkOnlyMyVehicle" onchange="filterTable()"
+                        style="width:18px;height:18px;cursor:pointer;"> <b>Xe của tôi</b>
                 </label>
                 <div class="control-btns">
                     <button class="btn-refresh" onclick="loadMaintenancePlan()">
@@ -445,7 +652,8 @@
                 <i class="fas fa-truck"></i> TẤT CẢ <span class="btn-badge" id="btnCountAll">0</span>
             </button>
             <button class="filter-btn" onclick="filterByStatus('overdue', this)">
-                <i class="fas fa-exclamation-triangle"></i> QUÁ HẠN <span class="btn-badge" id="btnCountOverdue">0</span>
+                <i class="fas fa-exclamation-triangle"></i> QUÁ HẠN <span class="btn-badge"
+                    id="btnCountOverdue">0</span>
             </button>
             <button class="filter-btn" onclick="filterByStatus('upcoming', this)">
                 <i class="fas fa-clock"></i> SẮP ĐẾN HẠN <span class="btn-badge" id="btnCountUpcoming">0</span>
@@ -489,7 +697,8 @@
             </div>
             <!-- Mobile Card List -->
             <div class="plan-card-list" id="planCardList">
-                <div style="text-align:center; padding:2rem; color:rgba(255,255,255,0.4);"><i class="fas fa-spinner fa-spin"></i></div>
+                <div style="text-align:center; padding:2rem; color:rgba(255,255,255,0.4);"><i
+                        class="fas fa-spinner fa-spin"></i></div>
             </div>
         </div>
     </div>
@@ -521,7 +730,7 @@
                 // 2. Process data for each vehicle
                 allPlanData = xeList.map((xe, index) => {
                     const bsx = xe.bien_so_xe;
-                    
+
                     // Get maintenance records for this car
                     const vMaintenance = (baoduongList || []).filter(b => b.bien_so_xe === bsx);
                     const L1 = vMaintenance[0] || {}; // Latest
@@ -531,12 +740,12 @@
                     const vLogs = (nhatkyList || []).filter(n => n.bien_so_xe === bsx);
                     const thirtyDaysAgo = new Date();
                     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    
+
                     const recentLogs = vLogs.filter(n => {
                         const logDate = new Date(n.ngay_van_hanh);
                         return !isNaN(logDate) && logDate >= thirtyDaysAgo;
                     });
-                    
+
                     const totalKmLast30 = recentLogs.reduce((sum, log) => sum + (Number(log.tong_km) || 0), 0);
                     const avgKmDay = totalKmLast30 / 30 || 0;
 
@@ -546,10 +755,10 @@
                     // Standard calculation: Interval is 5000km
                     const kmInterval = 5000;
                     const kmPlan = L1.km_sau ? (Number(L1.km_sau) + kmInterval) : kmInterval;
-                    
+
                     const kmRemain = kmPlan - currentOdo;
                     const daysRemain = avgKmDay > 0 ? Math.floor(kmRemain / avgKmDay) : null;
-                    
+
                     let datePlan = "—";
                     if (daysRemain !== null && isFinite(daysRemain)) {
                         const d = new Date();
@@ -691,7 +900,7 @@
             const total = data.length;
             const overdue = data.filter(i => i.kmRemain < 0).length;
             const upcoming = data.filter(i => i.kmRemain >= 0 && i.kmRemain < 500).length;
-            
+
             document.getElementById('btnCountAll').textContent = total;
             document.getElementById('btnCountOverdue').textContent = overdue;
             document.getElementById('btnCountUpcoming').textContent = upcoming;
@@ -703,7 +912,7 @@
             const myVehicle = sessionStorage.getItem('xe_phu_trach');
 
             let filtered = allPlanData;
-            
+
             if (showOnlyMyVehicle && myVehicle) {
                 filtered = filtered.filter(i => i.bsx === myVehicle);
             }
@@ -774,4 +983,5 @@
         document.addEventListener('DOMContentLoaded', initRealtime);
     </script>
 </body>
+
 </html>

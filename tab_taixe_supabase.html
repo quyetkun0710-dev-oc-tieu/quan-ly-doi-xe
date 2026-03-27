@@ -999,12 +999,34 @@
         return Math.ceil((t - today) / 86400000);
     }
 
+    function isTrue(val) {
+        if (val === null || val === undefined) return false;
+        if (typeof val === 'boolean') return val;
+        const s = String(val).toLowerCase().trim();
+        return s === 'true' || s === '1' || s === 'yes' || s === 't';
+    }
+
     function buildGplxBadge(d) {
         const days = daysUntil(d.han_gplx);
         if (days === null) return `<span class="gplx-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">GPLX: Chưa điền</span>`;
         if (days < 0) return `<span class="gplx-badge gplx-danger">✗ GPLX: Hết hạn ${Math.abs(days)} ngày</span>`;
         if (days <= 60) return `<span class="gplx-badge gplx-warn">⚠ GPLX: Còn ${days} ngày</span>`;
         return `<span class="gplx-badge gplx-ok">✓ GPLX: Còn ${days} ngày</span>`;
+    }
+
+    function buildDocBadge(d) {
+        let count = 0;
+        if (isTrue(d.hs_cccd)) count++;
+        if (isTrue(d.hs_gplx)) count++;
+        if (isTrue(d.hs_suc_khoe)) count++;
+        if (isTrue(d.hs_so_yeu)) count++;
+        if (isTrue(d.hs_cu_tru)) count++;
+        if (isTrue(d.hs_dan_su)) count++;
+
+        let color = count >= 6 ? 'var(--success)' : (count >= 3 ? 'var(--warning)' : 'var(--danger)');
+        return `<div class="gplx-badge" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:${color}">
+            <i class="fas fa-file-contract"></i> Hồ sơ: ${count}/6
+        </div>`;
     }
 
     function getAvatarColor(d) {
@@ -1065,7 +1087,10 @@
                     <div class="driver-info-basic">
                         <div class="driver-name">${d.ho_ten || '-'}</div>
                         <div class="driver-id">${d.ma_nv}</div>
-                        ${buildGplxBadge(d)}
+                        <div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:4px">
+                            ${buildGplxBadge(d)}
+                            ${buildDocBadge(d)}
+                        </div>
                     </div>
                 </div>
 
@@ -1175,7 +1200,7 @@
             
             checks.forEach(c => {
                 const el = document.getElementById(c);
-                if (el) el.checked = editData[c] === true;
+                if (el) el.checked = isTrue(editData[c]);
             });
         } else {
             document.getElementById('modalTitle').innerText = "Thêm Tài Xế Mới";

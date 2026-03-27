@@ -1077,7 +1077,30 @@
                 const savedTheme = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', savedTheme);
             });
-        </script>
+        
+  // LẮNG NGHE LỆNH ĐỒNG BỘ TỪ APP SHELL
+  window.addEventListener('message', e => {
+    const data = e.data;
+    if (data && data.type === 'dataChanged') {
+      console.log("[Sync] Lệnh đồng bộ nhận được cho:", data.table || 'tất cả');
+      if (typeof loadDrivers === 'function') loadDrivers(true);
+      else if (typeof loadVehicles === 'function') loadVehicles();
+      else if (typeof loadNotices === 'function') loadNotices(true);
+      else if (typeof loadData === 'function') loadData(true);
+      else if (typeof loadDiary === 'function') loadDiary();
+      else if (typeof loadFuel === 'function') loadFuel();
+      else if (typeof loadMaint === 'function') loadMaint();
+      else if (typeof loadCosts === 'function') loadCosts();
+      else if (typeof loadInvoices === 'function') loadInvoices();
+      else if (typeof loadSchedule === 'function') loadSchedule();
+      else if (typeof loadPoints === 'function') loadPoints();
+      else if (typeof loadPlans === 'function') loadPlans();
+      else if (typeof loadEvaluations === 'function') loadEvaluations();
+      else if (typeof loadTires === 'function') loadTires();
+      else location.reload();
+    }
+  });
+</script>
 </body>
 
 </html>

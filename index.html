@@ -2212,7 +2212,7 @@
 
       <button class="nav-item" data-tab="kehoach" onclick="openTab('kehoach','tab_kehoach_supabase.html')">
         <div class="nav-icon" style="color: #6366f1"><i class="fas fa-calendar-check"></i></div>
-        <span class="nav-label">Kế Hoạch BĐ</span>
+        <span class="nav-label">Kế Hoạch BD</span>
       </button>
 
       <button class="nav-item admin-and-above" data-tab="baocao" onclick="openTab('baocao','tab_baocao_supabase.html')">
@@ -2272,6 +2272,15 @@
                    cursor:pointer; display:flex; align-items:center; justify-content:center;
                    font-size:1rem; transition:all 0.2s; flex-shrink:0;">
             <i class="fas fa-moon"></i>
+          </button>
+
+          <!-- SYNC BUTTON (MANAGER ONLY) -->
+          <button id="btnSyncData" class="admin-and-above" onclick="syncAllData()" title="Đồng bộ dữ liệu Supabase"
+            style="background:rgba(99, 102, 241, 0.1); border:1px solid rgba(99, 102, 241, 0.2);
+                   color:var(--primary); width:40px; height:40px; border-radius:12px;
+                   cursor:pointer; display:flex; align-items:center; justify-content:center;
+                   font-size:1rem; transition:all 0.2s; flex-shrink:0; display: none;">
+            <i class="fas fa-sync-alt"></i>
           </button>
 
           <!-- PUSH NOTIFICATION BELL -->
@@ -2374,7 +2383,7 @@
           <div class="dash-card" onclick="openTab('kehoach','tab_kehoach_supabase.html')">
             <div class="dash-icon" style="color:var(--warning)"><i class="fas fa-calendar-check"></i></div>
             <div class="dash-info">
-              <h4>Kế hoạch BĐ</h4>
+              <h4>Kế hoạch BD</h4>
               <div class="dash-value" id="dashMyVehicle">-</div>
               <div class="dash-sub" id="dashVehicleStatus">Đang hoạt động</div>
             </div>
@@ -2483,7 +2492,7 @@
             <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #6366f1, #818cf8)">
               <i class="fas fa-calendar-check"></i>
             </div>
-            <div class="label">Kế Hoạch BĐ</div>
+            <div class="label">Kế Hoạch BD</div>
           </div>
 
           <div class="app-card admin-and-above" onclick="openTab('baocao','tab_baocao_supabase.html')">
@@ -2763,6 +2772,37 @@
       });
     }
 
+    async function syncAllData() {
+      const btn = document.getElementById('btnSyncData');
+      const icon = btn.querySelector('i');
+
+      // Visual feedback
+      icon.classList.add('fa-spin');
+      btn.style.opacity = '0.6';
+      btn.disabled = true;
+
+      showToast("Đang đồng bộ dữ liệu toàn hệ thống...", "info");
+
+      try {
+        // 1. Refresh Home Stats (Badges)
+        await updateHomeStats();
+
+        // 2. Broadcast reload request to all active iframes (passing null triggers all listeners)
+        broadcastDataChange(null);
+
+        // 3. Small delay to feel the action
+        await new Promise(r => setTimeout(r, 800));
+
+        showToast("Đồng bộ dữ liệu thành công!", "success");
+      } catch (err) {
+        showToast("Lỗi đồng bộ: " + err.message, "error");
+      } finally {
+        icon.classList.remove('fa-spin');
+        btn.style.opacity = '1';
+        btn.disabled = false;
+      }
+    }
+
     // ============ WEATHER LOGIC (Navigator Geolocation & Open-Meteo) ============
     async function initWeather() {
       const widget = document.getElementById('weatherWidget');
@@ -3014,6 +3054,30 @@
                 </ul>
               </div>
 
+              <div class="detail-section">
+                <h3><i class="fas fa-file-invoice"></i> Danh mục hồ sơ đã nộp</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <div style="color:${(d.hs_cccd && String(d.hs_cccd).toLowerCase() !== 'false') ? 'var(--success)' : 'var(--text-dim)'}; font-size:0.85rem">
+                    <i class="fas ${(d.hs_cccd && String(d.hs_cccd).toLowerCase() !== 'false') ? 'fa-check-circle' : 'fa-circle-notch'}"></i> Photo CCCD
+                  </div>
+                  <div style="color:${(d.hs_gplx && String(d.hs_gplx).toLowerCase() !== 'false') ? 'var(--success)' : 'var(--text-dim)'}; font-size:0.85rem">
+                    <i class="fas ${(d.hs_gplx && String(d.hs_gplx).toLowerCase() !== 'false') ? 'fa-check-circle' : 'fa-circle-notch'}"></i> Photo GPLX
+                  </div>
+                  <div style="color:${(d.hs_suc_khoe && String(d.hs_suc_khoe).toLowerCase() !== 'false') ? 'var(--success)' : 'var(--text-dim)'}; font-size:0.85rem">
+                    <i class="fas ${(d.hs_suc_khoe && String(d.hs_suc_khoe).toLowerCase() !== 'false') ? 'fa-check-circle' : 'fa-circle-notch'}"></i> Giấy khám sức khỏe
+                  </div>
+                  <div style="color:${(d.hs_so_yeu && String(d.hs_so_yeu).toLowerCase() !== 'false') ? 'var(--success)' : 'var(--text-dim)'}; font-size:0.85rem">
+                    <i class="fas ${(d.hs_so_yeu && String(d.hs_so_yeu).toLowerCase() !== 'false') ? 'fa-check-circle' : 'fa-circle-notch'}"></i> Sơ yếu lý lịch
+                  </div>
+                  <div style="color:${(d.hs_cu_tru && String(d.hs_cu_tru).toLowerCase() !== 'false') ? 'var(--success)' : 'var(--text-dim)'}; font-size:0.85rem">
+                    <i class="fas ${(d.hs_cu_tru && String(d.hs_cu_tru).toLowerCase() !== 'false') ? 'fa-check-circle' : 'fa-circle-notch'}"></i> Xác nhận cư trú
+                  </div>
+                  <div style="color:${(d.hs_dan_su && String(d.hs_dan_su).toLowerCase() !== 'false') ? 'var(--success)' : 'var(--text-dim)'}; font-size:0.85rem">
+                    <i class="fas ${(d.hs_dan_su && String(d.hs_dan_su).toLowerCase() !== 'false') ? 'fa-check-circle' : 'fa-circle-notch'}"></i> Lý lịch tư pháp
+                  </div>
+                </div>
+              </div>
+
               ${assignedXe ? `
               <div class="detail-section" style="border-left: 3px solid var(--accent)">
                 <h3><i class="fas fa-truck"></i> Xe phụ trách: ${assignedXe}</h3>
@@ -3249,24 +3313,19 @@
           }
         }
 
-        // 2. My Vehicle
+        // 2. My Vehicle & Latest ODO
         if (vehicle) {
           document.getElementById('dashMyVehicle').textContent = vehicle;
-          // Check upcoming maintenance for this vehicle
-          const { data } = await _supabase.from('baoduong')
-            .select('km_sau')
-            .eq('bien_so_xe', vehicle)
-            .eq('loai_hinh', 'Bảo dưỡng')
-            .order('ngay_ket_thuc', { ascending: false })
-            .limit(1);
 
-          if (data && data.length > 0) {
-            // Simple check - in real app would need current ODO
-            document.getElementById('dashVehicleStatus').textContent = "Kế hoạch: +" + (data[0].km_sau % 5000) + " km";
-          }
+          // Get latest ODO for this specific vehicle
+          const liveKm = latestKmMap[vehicle] || 0;
+          document.getElementById('dashVehicleStatus').innerHTML = `<i class="fas fa-tachometer-alt"></i> ${Math.round(liveKm).toLocaleString()} km`;
+          document.getElementById('dashVehicleStatus').style.color = 'var(--accent)';
+          document.getElementById('dashVehicleStatus').style.fontWeight = '700';
         } else {
           document.getElementById('dashMyVehicle').textContent = "Chưa bàn giao";
-          document.getElementById('dashVehicleStatus').textContent = "-";
+          document.getElementById('dashVehicleStatus').textContent = "---";
+          document.getElementById('dashVehicleStatus').style.color = 'var(--text-dim)';
         }
 
         // 3. Notice Count
@@ -3352,7 +3411,7 @@
       nhiemvu: { icon: '<i class="fas fa-clipboard-list"></i>', title: 'Nhiệm Vụ' },
       thongbao: { icon: '<i class="fas fa-bell"></i>', title: 'Thông Báo' },
       danhgia: { icon: '<i class="fas fa-star"></i>', title: 'Đánh Giá' },
-      kehoach: { icon: '<i class="fas fa-calendar-check"></i>', title: 'Kế Hoạch BĐ' },
+      kehoach: { icon: '<i class="fas fa-calendar-check"></i>', title: 'Kế Hoạch BD' },
       baocao: { icon: '<i class="fas fa-chart-pie"></i>', title: 'Báo Cáo' },
       lichlamviec: { icon: '<i class="fas fa-calendar-alt"></i>', title: 'Lịch Ca Trực' },
       dangkylich: { icon: '<i class="fas fa-edit"></i>', title: 'Đăng Ký Lịch' },

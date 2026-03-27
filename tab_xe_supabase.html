@@ -864,7 +864,7 @@
                         <thead>
                             <tr>
                                 <th>Biển số</th>
-                                <th>Loại xe</th>
+                                <th>KM / Loại</th>
                                 <th>Tải trọng</th>
                                 <th>TT</th>
                                 <th></th>
@@ -877,7 +877,7 @@
                 html += `
                     <tr onclick="editVehicle(${v.id})">
                         <td><div class="td-title">${v.bien_so_xe}</div><div class="td-sub">${v.ma_loai || '-'}</div></td>
-                        <td><span style="font-weight:600">${v.loai_xe || '-'}</span></td>
+                        <td><div class="td-title" style="color:var(--accent)">${(v.odo_hien_tai || 0).toLocaleString()}</div><div class="td-sub">${v.loai_xe || '-'}</div></td>
                         <td>${v.tai_trong ? v.tai_trong + 'T' : '-'}</td>
                         <td><span class="dot ${statusClass}"></span></td>
                         <td style="text-align:center">
