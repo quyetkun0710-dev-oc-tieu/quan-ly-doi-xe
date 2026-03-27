@@ -2117,6 +2117,10 @@
         <label>Mật Khẩu</label>
         <input type="password" id="loginPass" placeholder="Nhập mật khẩu..." autocomplete="current-password">
       </div>
+      <div class="login-field" style="flex-direction:row; gap:8px; align-items:center; margin-top:-10px; cursor:pointer;" onclick="document.getElementById('rememberMe').click()">
+        <input type="checkbox" id="rememberMe" style="width:18px; height:18px; accent-color:var(--primary)">
+        <label style="margin:0; font-size:0.9rem; color:var(--text-dim)">Ghi nhớ đăng nhập</label>
+      </div>
       <button class="btn-login" id="btnLogin" onclick="doLogin()">
         <i class="fas fa-sign-in-alt"></i> Đăng Nhập
       </button>
@@ -2617,12 +2621,15 @@
         USER_MNV = data.ma_nv;
         USER_NAME = data.ho_ten || data.ma_nv;
 
-        sessionStorage.setItem('logged', '1');
-        sessionStorage.setItem('role', USER_ROLE);
-        sessionStorage.setItem('mnv', USER_MNV);
-        sessionStorage.setItem('name', USER_NAME);
-        sessionStorage.setItem('xe_phu_trach', data.xe_phu_trach || '');
-        sessionStorage.setItem('user_full', JSON.stringify(data));
+        const remember = document.getElementById('rememberMe').checked;
+        const storage = remember ? localStorage : sessionStorage;
+
+        storage.setItem('logged', '1');
+        storage.setItem('role', USER_ROLE);
+        storage.setItem('mnv', USER_MNV);
+        storage.setItem('name', USER_NAME);
+        storage.setItem('xe_phu_trach', data.xe_phu_trach || '');
+        storage.setItem('user_full', JSON.stringify(data));
 
         console.log("Login success, showing app...");
         showApp();
@@ -3654,6 +3661,14 @@
     // ============ LOGOUT ============
     function doLogout() {
       sessionStorage.clear();
+      // Clear persistent login keys if they exist
+      localStorage.removeItem('logged');
+      localStorage.removeItem('role');
+      localStorage.removeItem('mnv');
+      localStorage.removeItem('name');
+      localStorage.removeItem('xe_phu_trach');
+      localStorage.removeItem('user_full');
+
       USER_ROLE = ''; USER_MNV = ''; USER_NAME = '';
       document.getElementById('profileDropdown')?.classList.remove('active');
       document.getElementById('appShell').classList.remove('active');
@@ -4039,11 +4054,12 @@
         setTimeout(() => {
           document.getElementById('loadingScreen').style.display = 'none';
 
-          const logged = sessionStorage.getItem('logged');
+          const logged = sessionStorage.getItem('logged') || localStorage.getItem('logged');
           if (logged === '1') {
-            USER_ROLE = sessionStorage.getItem('role') || 'taixe';
-            USER_MNV = sessionStorage.getItem('mnv') || '';
-            USER_NAME = sessionStorage.getItem('name') || 'Người dùng';
+            const storage = localStorage.getItem('logged') === '1' ? localStorage : sessionStorage;
+            USER_ROLE = storage.getItem('role') || 'taixe';
+            USER_MNV = storage.getItem('mnv') || '';
+            USER_NAME = storage.getItem('name') || 'Người dùng';
             showApp();
           } else {
             document.getElementById('loginScreen').classList.add('active');
