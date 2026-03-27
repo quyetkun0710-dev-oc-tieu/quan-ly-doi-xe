@@ -3542,7 +3542,12 @@
         frame.style.display = 'block';
         // Thông báo cho con biết nó vừa được "hiện" để nó có thể refresh data nếu cần
         if (frame.contentWindow) {
-          frame.contentWindow.postMessage({ type: 'tabActivated' }, '*');
+          frame.contentWindow.postMessage({ 
+            type: 'tabActivated',
+            role: USER_ROLE,
+            mnv: USER_MNV,
+            name: USER_NAME
+          }, '*');
         }
       }
     }
@@ -3552,8 +3557,16 @@
         const fw = frame.contentWindow;
         if (!fw) return;
 
+        // Fallback for file:// protocol OR cross-origin
+        // We always push the context via postMessage for maximum reliability
+        fw.postMessage({ 
+            type: 'setContext', 
+            role: USER_ROLE, 
+            mnv: USER_MNV, 
+            name: USER_NAME 
+        }, '*');
+
         // Try direct session sync (works on http/https/localhost)
-        // Wrapped in it's own try to fail gracefully on file://
         try {
           fw.sessionStorage.setItem('role', USER_ROLE);
           fw.sessionStorage.setItem('mnv', USER_MNV);
@@ -3561,9 +3574,7 @@
           fw.sessionStorage.setItem('xe_phu_trach', sessionStorage.getItem('xe_phu_trach') || '');
           fw.sessionStorage.setItem('logged', '1');
         } catch (sEx) {
-          // If file:// protocol, direct access is blocked. 
-          // We provide fallback via URL params or postMessage if needed
-          // But cleaning up the red error in console is the priority here.
+           // file:// security block handled by postMessage above
         }
 
         // Apply swipe gesture logic inside the frame
@@ -4021,7 +4032,15 @@
       // Xử lý thông báo thay đổi dữ liệu từ iFrame
       if (data.type === 'dataChanged') {
         if (typeof broadcastDataChange === 'function') {
-          broadcastDataChange(data.table);
+            broadcastDataChange(data.table);
+        }
+      }
+
+      // Xử lý Gửi Push Notification (Yêu cầu từ iFrame)
+      if (data.type === 'sendPush') {
+        if (typeof sendPushToAll === 'function') {
+            console.log("[Push] Triggering push to all from iframe request...");
+            sendPushToAll(data.title, data.body, data.url);
         }
       }
 

@@ -957,11 +957,15 @@
     let USER_MNV = sessionStorage.getItem('mnv') || '';
 
     function checkAccess() {
+        if (!USER_ROLE) {
+            USER_ROLE = sessionStorage.getItem('role') || 'driver';
+        }
         const isStaff = ['manager', 'admin'].includes(USER_ROLE.toLowerCase());
-        if (!isStaff) {
-            // Hide Add button
-            document.querySelectorAll('.btn-add').forEach(el => el.style.display = 'none');
-            // We'll handle edit/delete buttons in renderDrivers
+        const btnAdd = document.querySelector('.btn-add');
+        if (!isStaff && btnAdd) {
+            btnAdd.style.display = 'none';
+        } else if (isStaff && btnAdd) {
+            btnAdd.style.display = 'flex';
         }
         return isStaff;
     }
@@ -1453,7 +1457,14 @@
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
-        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated')) {
+        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated' || data.type === 'setContext')) {
+            if (data.role) {
+                USER_ROLE = data.role.toLowerCase();
+                USER_MNV = data.mnv || USER_MNV;
+                sessionStorage.setItem('role', USER_ROLE);
+                sessionStorage.setItem('mnv', USER_MNV);
+                checkAccess();
+            }
             loadDrivers(true);
         }
     });
@@ -1481,11 +1492,7 @@
         }
     });
 
-    function checkAccess() {
-        if (typeof USER_ROLE === 'undefined' || !USER_ROLE) {
-            window.location.href = 'index.html';
-        }
-    }
+
 </script>
 
 </body>

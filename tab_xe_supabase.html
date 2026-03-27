@@ -761,7 +761,7 @@
     const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let allVehicles = [];
-    const USER_ROLE = (sessionStorage.getItem('role') || 'driver').toLowerCase();
+    let USER_ROLE = (sessionStorage.getItem('role') || 'driver').toLowerCase();
 
     function checkAccess() {
         const isStaff = ['manager', 'admin'].includes(USER_ROLE);
@@ -1211,8 +1211,15 @@
             if (activeConfirmCallback) activeConfirmCallback(data.result);
             activeConfirmId = null;
             activeConfirmCallback = null;
-        } else if (data && data.type === 'dataChanged' && (data.table === 'xe' || data.table === 'nhatky' || !data.table)) {
-            loadVehicles();
+        } else if (data && (data.type === 'dataChanged' || data.type === 'tabActivated' || data.type === 'setContext')) {
+            if (data.role) {
+                USER_ROLE = data.role.toLowerCase();
+                sessionStorage.setItem('role', USER_ROLE);
+                checkAccess();
+            }
+            if (data.table === 'xe' || data.table === 'nhatky' || !data.table || data.type === 'tabActivated' || data.type === 'setContext') {
+                loadVehicles();
+            }
         }
     });
 

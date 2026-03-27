@@ -191,7 +191,7 @@
           <i class="fas fa-sync-alt"></i> Làm mới
         </button>
         <button class="btn-add manager-only" onclick="openModal()">
-          <i class="fas fa-plus"></i> ĐẢNG THÔNG BÁO
+          <i class="fas fa-plus"></i> ĐĂNG THÔNG BÁO
         </button>
       </div>
     </div>
@@ -339,6 +339,18 @@
     }
   }
 
+  function checkAccess() {
+    if (['manager', 'admin'].includes(ROLE)) {
+      document.querySelectorAll('.manager-only').forEach(el => {
+          el.style.display = 'flex';
+      });
+    } else {
+      document.querySelectorAll('.manager-only').forEach(el => {
+          el.style.display = 'none';
+      });
+    }
+  }
+
   window.addEventListener('message', e => {
     const data = e.data;
     if (data && data.type === 'changeTheme') {
@@ -347,7 +359,13 @@
         if (activeConfirmCallback) activeConfirmCallback(data.result);
         activeConfirmId = null;
         activeConfirmCallback = null;
-    } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
+    } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged' || data.type === 'setContext')) {
+        if (data.role) {
+            ROLE = data.role.toLowerCase();
+            USER_NAME = data.name || USER_NAME;
+            USER_MNV = data.mnv || USER_MNV;
+            checkAccess();
+        }
         loadNotices(true);
     }
   });
@@ -483,6 +501,18 @@
       const recordId = id || (res.data && res.data[0] ? res.data[0].id : 'new');
       logAudit('thongbao', recordId, id ? 'UPDATE' : 'INSERT', oldItem, payload);
       
+      if (!id) {
+          // Trigger Push Notification via Parent for NEW notices
+          if (window.parent && window.parent.postMessage) {
+              window.parent.postMessage({
+                  type: 'sendPush',
+                  title: '📢 Thông Báo Mới: ' + payload.tieu_de,
+                  body: payload.noi_dung.substring(0, 80) + (payload.noi_dung.length > 80 ? '...' : ''),
+                  url: '/?tab=thongbao'
+              }, '*');
+          }
+      }
+      
       closeModal(); 
       loadNotices();
       safeNotifyParent();
@@ -492,11 +522,7 @@
   };
 
   document.addEventListener('DOMContentLoaded', () => {
-    if (['manager', 'admin'].includes(ROLE)) {
-      document.querySelectorAll('.manager-only').forEach(el => {
-          el.style.display = 'flex';
-      });
-    }
+    checkAccess();
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     loadNotices();
