@@ -2117,7 +2117,9 @@
         <label>Mật Khẩu</label>
         <input type="password" id="loginPass" placeholder="Nhập mật khẩu..." autocomplete="current-password">
       </div>
-      <div class="login-field" style="flex-direction:row; gap:8px; align-items:center; margin-top:-10px; cursor:pointer;" onclick="document.getElementById('rememberMe').click()">
+      <div class="login-field"
+        style="flex-direction:row; gap:8px; align-items:center; margin-top:-10px; cursor:pointer;"
+        onclick="document.getElementById('rememberMe').click()">
         <input type="checkbox" id="rememberMe" style="width:18px; height:18px; accent-color:var(--primary)">
         <label style="margin:0; font-size:0.9rem; color:var(--text-dim)">Ghi nhớ đăng nhập</label>
       </div>
@@ -2499,6 +2501,8 @@
             <div class="label">Kế Hoạch BD</div>
           </div>
 
+
+
           <div class="app-card admin-and-above" onclick="openTab('baocao','tab_baocao_supabase.html')">
             <div class="icon-box" style="--icon-bg: linear-gradient(135deg, #2dd4bf, #5eead4)">
               <i class="fas fa-chart-pie"></i>
@@ -2754,6 +2758,7 @@
         .on('postgres_changes', { event: '*', schema: 'public', table: 'chiphi' }, () => broadcastDataChange('chiphi'))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'danhgia' }, () => broadcastDataChange('danhgia'))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'dangkylich' }, () => broadcastDataChange('dangkylich'))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'lich_lam_viec' }, () => broadcastDataChange('lich_lam_viec'))
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'taixe' }, (p) => {
           const myMnv = String(USER_MNV || sessionStorage.getItem('mnv') || '').trim();
           const targetMnv = String(p.new?.ma_nv || '').trim();
@@ -3490,7 +3495,8 @@
         'thongbao': ['manager', 'admin', 'taixe'],
         'diemgiao': ['manager', 'admin', 'taixe'],
         'lotrinh': ['manager', 'admin', 'taixe'],
-        'lichlamviec': ['manager', 'admin', 'taixe']
+        'lichlamviec': ['manager', 'admin', 'taixe'],
+        'dangkylich': ['manager', 'admin', 'taixe']
       };
 
       if (permissions[tabKey] && !permissions[tabKey].includes(USER_ROLE)) {
@@ -3542,7 +3548,7 @@
         frame.style.display = 'block';
         // Thông báo cho con biết nó vừa được "hiện" để nó có thể refresh data nếu cần
         if (frame.contentWindow) {
-          frame.contentWindow.postMessage({ 
+          frame.contentWindow.postMessage({
             type: 'tabActivated',
             role: USER_ROLE,
             mnv: USER_MNV,
@@ -3559,11 +3565,11 @@
 
         // Fallback for file:// protocol OR cross-origin
         // We always push the context via postMessage for maximum reliability
-        fw.postMessage({ 
-            type: 'setContext', 
-            role: USER_ROLE, 
-            mnv: USER_MNV, 
-            name: USER_NAME 
+        fw.postMessage({
+          type: 'setContext',
+          role: USER_ROLE,
+          mnv: USER_MNV,
+          name: USER_NAME
         }, '*');
 
         // Try direct session sync (works on http/https/localhost)
@@ -3574,7 +3580,7 @@
           fw.sessionStorage.setItem('xe_phu_trach', sessionStorage.getItem('xe_phu_trach') || '');
           fw.sessionStorage.setItem('logged', '1');
         } catch (sEx) {
-           // file:// security block handled by postMessage above
+          // file:// security block handled by postMessage above
         }
 
         // Apply swipe gesture logic inside the frame
@@ -4032,26 +4038,26 @@
       // Xử lý thông báo thay đổi dữ liệu từ iFrame
       if (data.type === 'dataChanged') {
         if (typeof broadcastDataChange === 'function') {
-            broadcastDataChange(data.table);
+          broadcastDataChange(data.table);
         }
       }
 
       // Xử lý Gửi Push Notification (Yêu cầu từ iFrame)
       if (data.type === 'sendPush') {
         if (typeof sendPushToAll === 'function') {
-            showToast("🚀 Đang kích hoạt thông báo đẩy...", "warning");
-            console.log("[Push] Requesting push to all devices:", data.title);
-            sendPushToAll(data.title, data.body, data.url).then(res => {
-                if (res && res.count > 0) {
-                    showToast(`✅ Đã gửi tới ${res.count} thiết bị!`, "success");
-                } else if (res && res.count === 0) {
-                    showToast("⚠️ Không có thiết bị nào đang đăng ký (Hãy nhấn Chuông).", "warning");
-                } else if (res && res.error) {
-                    showToast("❌ Lỗi Edge Function: " + res.error, "error");
-                }
-            }).catch(err => {
-                showToast("❌ Lỗi mạng: " + err.message, "error");
-            });
+          showToast("🚀 Đang kích hoạt thông báo đẩy...", "warning");
+          console.log("[Push] Requesting push to all devices:", data.title);
+          sendPushToAll(data.title, data.body, data.url).then(res => {
+            if (res && res.count > 0) {
+              showToast(`✅ Đã gửi tới ${res.count} thiết bị!`, "success");
+            } else if (res && res.count === 0) {
+              showToast("⚠️ Không có thiết bị nào đang đăng ký (Hãy nhấn Chuông).", "warning");
+            } else if (res && res.error) {
+              showToast("❌ Lỗi Edge Function: " + res.error, "error");
+            }
+          }).catch(err => {
+            showToast("❌ Lỗi mạng: " + err.message, "error");
+          });
         }
       }
 
@@ -4211,12 +4217,12 @@
           },
           body: JSON.stringify({ ma_nv: ma_nvTarget, title, body, url }),
         });
-        
+
         if (!resp.ok) {
-            const errTxt = await resp.text();
-            throw new Error(`HTTP ${resp.status}: ${errTxt}`);
+          const errTxt = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${errTxt}`);
         }
-        
+
         const result = await resp.json();
         console.log('[Push] Response from server:', result);
         return result;

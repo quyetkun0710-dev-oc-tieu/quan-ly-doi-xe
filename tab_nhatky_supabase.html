@@ -1145,7 +1145,10 @@
                 'suco_toggle', 'van_de_phat_sinh', 'tu_danh_gia', 'de_xuat_pa', 'ghi_chu'
             ];
 
-            const payload = { updated_at: new Date().toISOString() };
+            const payload = { 
+                id: Date.now() + Math.floor(Math.random() * 1000), // Fix null constraint if DB has no identity
+                updated_at: new Date().toISOString() 
+            };
             fields.forEach(f => {
                 const el = document.getElementById(f);
                 if (el) {
@@ -1166,6 +1169,7 @@
                 const uMnv = sessionStorage.getItem('mnv');
                 if (existing && !['manager', 'admin'].includes(uRole) && existing.mnv !== uMnv) {
                     showToast("Bạn không có quyền sửa nhật ký của người khác.", "error");
+                    btn.disabled = false; // Fix: Re-enable button on error
                     return;
                 }
                 const { error } = await _supabase.from('nhatky').update(payload).eq('id', id);
@@ -1176,6 +1180,8 @@
                 }
             }
             else {
+                // Chỉ thêm ID khi INSERT mới
+                payload.id = Date.now() + Math.floor(Math.random() * 1000);
                 const { data, error } = await _supabase.from('nhatky').insert([payload]).select();
                 if (error) throw error;
 

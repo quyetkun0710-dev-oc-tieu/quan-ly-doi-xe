@@ -474,12 +474,31 @@
 
     /* Request List Table */
     .req-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    .req-table th { text-align: left; padding: 12px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
-    .req-table td { padding: 12px; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
-    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; }
-    .badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-    .badge-approved { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-    .badge-rejected { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .req-table th { 
+      text-align: center; padding: 12px 10px; font-size: 0.68rem; 
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    .req-table td { 
+      padding: 12px 10px; font-size: 0.85rem; border-bottom: 1px solid var(--border); 
+      vertical-align: middle; overflow-wrap: break-word; word-break: break-word;
+      text-align: center;
+    }
+    /* Cột Nhân viên và Nội dung: căn trái */
+    .req-table td:first-child,
+    .req-table td:nth-child(4) { text-align: left; }
+    /* Cột Thao tác: căn giữa, các button xếp dọc */
+    .req-table td:last-child { 
+      text-align: center; 
+    }
+    .req-table td:last-child .btn { 
+      display: block; width: 100%; margin-bottom: 4px; 
+      padding: 5px 8px; font-size: 0.72rem; border-radius: 8px;
+    }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+    .badge-pending  { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-approved { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-rejected { background: rgba(239, 68, 68, 0.15);  color: var(--danger);  border: 1px solid rgba(239,68,68,0.3);  }
 
     /* Legend Table Below */
     .legend-container {
@@ -803,21 +822,29 @@
 
   <!-- Modal: Manage Requests -->
   <div id="modalRequests" class="modal-overlay">
-    <div class="modal-content" style="max-width: 1000px;">
+    <div class="modal-content" style="max-width: 1100px; width: 96%;">
       <div class="modal-header">
-        <h2 style="font-size:1.2rem;"><i class="fas fa-history"></i> Lịch sử & Phê duyệt yêu cầu</h2>
+        <h2 style="font-size:1.2rem;"><i class="fas fa-history"></i> Lịch sử &amp; Phê duyệt yêu cầu</h2>
         <i class="fas fa-times close-modal" onclick="closeModal('modalRequests')"></i>
       </div>
       <div style="overflow-x: auto;">
-        <table class="req-table">
+        <table class="req-table" style="min-width: 760px; table-layout: fixed; width: 100%;">
+          <colgroup>
+            <col style="width: 160px;">  <!-- Nhân viên -->
+            <col style="width: 90px;">   <!-- Loại -->
+            <col style="width: 100px;">  <!-- Ngày -->
+            <col style="width: auto;">   <!-- Nội dung (cộ co giãn) -->
+            <col style="width: 105px;">  <!-- Trạng thái -->
+            <col style="width: 120px;">  <!-- Thao tác -->
+          </colgroup>
           <thead>
             <tr>
-              <th>Nhân viên</th>
+              <th style="text-align:left; padding-left:12px;">Nhân viên</th>
               <th>Loại</th>
               <th>Ngày</th>
-              <th>Nội dung</th>
+              <th style="text-align:left; padding-left:12px;">Nội dung</th>
               <th>Trạng thái</th>
-              <th id="thAction">Thao tác</th>
+              <th id="thAction" style="text-align:center;">Thao tác</th>
             </tr>
           </thead>
           <tbody id="reqBody"></tbody>
@@ -845,7 +872,7 @@
         if (params.has('personal')) {
           isPersonalMode = params.get('personal') === 'true';
         } else {
-          isPersonalMode = (USER_ROLE !== 'manager' && USER_ROLE !== 'admin');
+          isPersonalMode = false; // Always default to team view
         }
       }
 
@@ -861,7 +888,7 @@
       }
 
       // Role-based visibility for request cards
-      if (USER_ROLE === 'admin' || USER_ROLE === 'taixe') {
+      if (USER_ROLE === 'admin' || USER_ROLE === 'taixe' || USER_ROLE === 'driver') {
         document.getElementById('cardRegister').style.display = 'flex';
       }
       // Everyone sees summary cards, but content is filtered by role in JS
@@ -882,10 +909,11 @@
         const myMNV = sessionStorage.getItem('mnv');
         drivers = allDrivers.filter(d => d.ma_nv === myMNV);
         if (drivers.length === 0) drivers = allDrivers; // Fallback if not found
-        updateBtnToggle();
       } else {
         drivers = allDrivers;
       }
+      
+      updateBtnToggle();
 
       await refreshGrid();
     }
@@ -953,13 +981,23 @@
       const partnerMnv = document.getElementById('ma_nv_doi').value;
       const partnerName = partnerMnv ? document.getElementById('ma_nv_doi').options[document.getElementById('ma_nv_doi').selectedIndex].text.split(' (')[0] : null;
 
+      const loaiNghi = document.getElementById('loai_nghi').value;
+      const ngayBu = document.getElementById('ngay_bu').value;
+
+      if (loaiNghi === 'OFF' && !partnerMnv && ngayBu) {
+        showToast("Vui lòng chọn 'Tài xế làm thay' khi có đăng ký làm bù/đổi ca!", "error");
+        btn.disabled = false; btn.innerText = 'GỬI YÊU CẦU';
+        return;
+      }
+
       const payload = {
+        id: Date.now() + Math.floor(Math.random() * 1000), // Tự tạo ID để tránh lỗi null constraint nếu DB chưa set identity
         ma_nv: targetMnv,
         ho_ten: targetName,
         thang_nam: `${document.getElementById('selMonth').value}/${document.getElementById('selYear').value}`,
         cac_ngay: document.getElementById('cac_ngay').value,
-        ngay_bu: document.getElementById('ngay_bu').value || null,
-        loai_nghi: document.getElementById('loai_nghi').value,
+        ngay_bu: ngayBu || null,
+        loai_nghi: loaiNghi,
         ly_do: document.getElementById('ly_do').value,
         ma_nv_doi: partnerMnv || null,
         ho_ten_doi: partnerName,
@@ -1022,12 +1060,102 @@
 
     async function updateReqStatus(id, newStatus) {
       if (!confirm(`Xác nhận ${newStatus === 'Da duyet' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} yêu cầu này?`)) return;
+
+      const { data: req } = await _supabase.from('dangkylich').select('*').eq('id', id).single();
+      if (!req) return;
+
       const { error } = await _supabase.from('dangkylich').update({ trang_thai: newStatus, nguoi_duyet: sessionStorage.getItem('name') }).eq('id', id);
       if (error) alert(error.message);
       else {
         showToast("Đã cập nhật trạng thái!");
+        if (newStatus === 'Da duyet') {
+          await applyScheduleChange(req);
+        }
         loadRequests();
         refreshGrid();
+      }
+    }
+
+    async function applyScheduleChange(req) {
+      let month, year;
+      if (req.thang_nam.includes('/')) {
+         [month, year] = req.thang_nam.split('/');
+      } else if (req.thang_nam.includes('-')) {
+         [year, month] = req.thang_nam.split('-');
+      } else {
+         console.error('Định dạng thang_nam không nhận dạng được:', req.thang_nam);
+         return;
+      }
+      month = String(month).padStart(2, '0');
+      year = String(year);
+
+      const padZero = (n) => String(n).padStart(2, '0');
+
+      // Lấy ca mặc định từ bảng taixe
+      const { data: driverList } = await _supabase.from('taixe').select('ma_nv, ca_lam_viec');
+      const defaultShiftMap = {};
+      (driverList || []).forEach(d => { defaultShiftMap[d.ma_nv] = d.ca_lam_viec || '1'; });
+
+      const fetchShift = async (mnv, dNum) => {
+         // Ưu tiên lấy từ state assignments hiện tại (nếu có trên màn hình manager)
+         if (assignments[mnv] && assignments[mnv][dNum]) return assignments[mnv][dNum];
+         
+         const dStr = `${year}-${month}-${padZero(dNum)}`;
+         const { data } = await _supabase.from('lich_lam_viec').select('ca').eq('ma_nv', mnv).eq('ngay', dStr).maybeSingle();
+         return data ? data.ca : (defaultShiftMap[mnv] || '1');
+      };
+      
+      const upsertShift = async (mnv, dNum, ca) => {
+         const dStr = `${year}-${month}-${padZero(dNum)}`;
+         const { error } = await _supabase.from('lich_lam_viec').upsert({
+             ngay: dStr,
+             ma_nv: mnv,
+             ca: ca,
+             nguoi_lap: sessionStorage.getItem('name') || 'system'
+         }, { onConflict: 'ma_nv,ngay' });
+         if (error) console.error('Lỗi upsert lịch:', mnv, dStr, ca, error.message);
+         // Cập nhật luôn vào state local để grid hiển thị đúng sau khi ẩn modal
+         if (assignments[mnv]) assignments[mnv][dNum] = ca;
+      };
+
+      const parseDays = (str) => (str || '').split(/[,;\s]+/).map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 31);
+
+      if (req.loai_nghi === 'OFF' && req.ma_nv_doi) {
+          // === QUY TẮC ĐỔI CA 2 CHIỀU THÔNG MINH ===
+          const xDays = parseDays(req.cac_ngay); // Ngày Lan xin nghỉ (Lan: OFF, Vị: LÀM)
+          const yDays = parseDays(req.ngay_bu);  // Ngày Lan đi làm bù (Lan: LÀM, Vị: OFF)
+
+          for (const d of xDays) {
+              const shiftX = await fetchShift(req.ma_nv, d); // Ca gốc của Lan
+              // Lan chắc chắn nghỉ ngày này
+              await upsertShift(req.ma_nv, d, 'OFF');
+              // Vị phải đi làm (nếu ca gốc Lan là OFF thì lấy ca làm mặc định của Lan)
+              const workShiftForVi = (shiftX === 'OFF' || shiftX === 'P') ? (defaultShiftMap[req.ma_nv] || '1') : shiftX;
+              await upsertShift(req.ma_nv_doi, d, workShiftForVi);
+          }
+
+          for (const d of yDays) {
+              const shiftY = await fetchShift(req.ma_nv_doi, d); // Ca gốc của Vị
+              // Lan phải đi làm bù (lấy ca gốc của Vị, nếu Vị đang OFF thì lấy ca làm mặc định của Vị)
+              const workShiftForLan = (shiftY === 'OFF' || shiftY === 'P') ? (defaultShiftMap[req.ma_nv_doi] || '1') : shiftY;
+              await upsertShift(req.ma_nv, d, workShiftForLan);
+              // Vị chắc chắn nghỉ ngày này để Lan làm thay
+              await upsertShift(req.ma_nv_doi, d, 'OFF');
+          }
+      } else {
+          // === NGHỈ PHÉP / OFF ĐƠN PHƯƠNG ===
+          const shiftMap = { 'Ca 1': '1', 'Ca 2': '2', 'Ca 3': '3', 'HC': 'HC', 'P': 'P' };
+          const finalShift = shiftMap[req.loai_nghi] ?? req.loai_nghi;
+          
+          for (const d of parseDays(req.cac_ngay)) {
+              await upsertShift(req.ma_nv, d, finalShift);
+          }
+          
+          if (req.ngay_bu) {
+             for (const d of parseDays(req.ngay_bu)) {
+                await upsertShift(req.ma_nv, d, defaultShiftMap[req.ma_nv] || '1');
+             }
+          }
       }
     }
 
@@ -1104,47 +1232,27 @@
       
       if (approvedLeaves) {
         approvedLeaves.forEach(req => {
-          const shiftMap = { 'Ca 1': '1', 'Ca 2': '2', 'Ca 3': '3' };
-          const finalShift = shiftMap[req.loai_nghi] || req.loai_nghi;
+          // Chỉ đánh dấu các ô có yêu cầu thay đổi (để hiện màu xanh)
+          // Không tự ý thay đổi giá trị ca trực ở đây nữa vì Database đã được cập nhật lúc duyệt đơn (Tránh lỗi đổi ca 2 lần)
           
-          // 1. Handle requested days (cac_ngay)
-          const days = req.cac_ngay.split(/[,;]/).map(s => s.trim());
-          days.forEach(dStr => {
-            const dNum = parseInt(dStr);
-            if (!isNaN(dNum) && dNum >= 1 && dNum <= daysInMonth) {
-              const prevRequesterShift = assignments[req.ma_nv] ? assignments[req.ma_nv][dNum] : '1';
-              const prevPartnerShift = (req.ma_nv_doi && assignments[req.ma_nv_doi]) ? assignments[req.ma_nv_doi][dNum] : '1';
-              
-              if (assignments[req.ma_nv]) {
-                assignments[req.ma_nv][dNum] = finalShift;
-                requestSource[req.ma_nv][dNum] = true;
+          if (req.cac_ngay) {
+            const days = req.cac_ngay.split(/[,;]/).map(s => s.trim());
+            days.forEach(dStr => {
+              const dNum = parseInt(dStr);
+              if (!isNaN(dNum) && dNum >= 1 && dNum <= daysInMonth) {
+                if (requestSource[req.ma_nv]) requestSource[req.ma_nv][dNum] = true;
+                if (req.ma_nv_doi && requestSource[req.ma_nv_doi]) requestSource[req.ma_nv_doi][dNum] = true;
               }
-              if (req.ma_nv_doi && assignments[req.ma_nv_doi]) {
-                assignments[req.ma_nv_doi][dNum] = prevRequesterShift;
-                requestSource[req.ma_nv_doi][dNum] = true;
-              }
-            }
-          });
+            });
+          }
 
-          // 2. Handle return/swap day (ngay_bu)
           if (req.ngay_bu && req.ma_nv_doi) {
             const buDays = req.ngay_bu.split(/[,;]/).map(s => s.trim());
             buDays.forEach(bStr => {
               const bNum = parseInt(bStr);
               if (!isNaN(bNum) && bNum >= 1 && bNum <= daysInMonth) {
-                const prevRequesterShift = assignments[req.ma_nv] ? assignments[req.ma_nv][bNum] : '1';
-                const prevPartnerShift = assignments[req.ma_nv_doi] ? assignments[req.ma_nv_doi][bNum] : '1';
-                
-                // Swap: requester takes partner's original status on this day
-                if (assignments[req.ma_nv]) {
-                  assignments[req.ma_nv][bNum] = prevPartnerShift;
-                  requestSource[req.ma_nv][bNum] = true;
-                }
-                // Partner takes requester's original status on this day
-                if (assignments[req.ma_nv_doi]) {
-                  assignments[req.ma_nv_doi][bNum] = prevRequesterShift;
-                  requestSource[req.ma_nv_doi][bNum] = true;
-                }
+                if (requestSource[req.ma_nv]) requestSource[req.ma_nv][bNum] = true;
+                if (requestSource[req.ma_nv_doi]) requestSource[req.ma_nv_doi][bNum] = true;
               }
             });
           }
@@ -1240,9 +1348,16 @@
 
       drivers.forEach((dr, index) => {
         const startDay = (index % days) + 1; // Diagonal start
-        for (let q = 0; q < sundayQuota; q++) {
+        let qCount = 0;
+        for (let q = 0; q < 31 && qCount < sundayQuota; q++) {
           let targetDay = ((startDay - 1) + (q * spacing)) % days + 1;
-          assignments[dr.ma_nv][targetDay] = 'OFF';
+          
+          // QUAN TRỌNG: Nếu ngày này đã có yêu cầu được duyệt (đang nghỉ phép/đổi ca), 
+          // ta không ghi đè để bảo toàn quyền lợi của tài xế.
+          if (!requestSource[dr.ma_nv][targetDay]) {
+            assignments[dr.ma_nv][targetDay] = 'OFF';
+            qCount++;
+          }
         }
       });
 
@@ -1259,13 +1374,17 @@
       const flat = [];
       for (const mnv in assignments) {
         for (const d in assignments[mnv]) {
+          // BẢO VỆ DỮ LIỆU: Nếu ngày này có yêu cầu đăng ký lịch đã duyệt, 
+          // ta không gửi dữ liệu từ grid lên để tránh ghi đè nhầm (vì tab Đăng ký lịch đã xử lý rồi)
+          if (requestSource[mnv] && requestSource[mnv][d]) continue;
+
           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           flat.push({ ma_nv: mnv, ngay: dateStr, ca: assignments[mnv][d] || '1', nguoi_lap: sessionStorage.getItem('mnv') });
         }
       }
 
       try {
-        const { error } = await _supabase.from('lich_lam_viec').upsert(flat, { onConflict: 'ma_nv, ngay' });
+        const { error } = await _supabase.from('lich_lam_viec').upsert(flat, { onConflict: 'ma_nv,ngay' });
         if (error) throw error;
         showToast("Dữ liệu lịch trực đã được cập nhật thành công!");
       } catch (e) {
@@ -1287,6 +1406,11 @@
         const data = e.data;
         if (data && data.type === 'changeTheme') {
             document.documentElement.setAttribute('data-theme', data.theme);
+        } else if (data && data.type === 'setContext') {
+            USER_ROLE = (data.role || 'taixe').toLowerCase();
+            if (data.mnv) sessionStorage.setItem('mnv', data.mnv);
+            if (data.name) sessionStorage.setItem('name', data.name);
+            init(); // Re-init with new context
         } else if (data && (data.type === 'tabActivated' || data.type === 'dataChanged')) {
             refreshGrid();
         }

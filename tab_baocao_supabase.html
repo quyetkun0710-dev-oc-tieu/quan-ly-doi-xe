@@ -933,6 +933,8 @@
     baoduong.forEach(b => {
         if(vStats[b.bien_so_xe]) {
             vStats[b.bien_so_xe].maintenanceCost += parseFloat(b.tong_tien) || 0;
+            // Nếu có bản ghi bảo dưỡng chưa hoàn thành, ép trạng thái xe là đang bảo trì
+            if (b.ket_qua !== 'Đã hoàn thành') vStats[b.bien_so_xe].status = 'bao_tri';
         }
     });
     chiphi.forEach(c => {
