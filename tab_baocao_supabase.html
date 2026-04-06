@@ -240,11 +240,11 @@
   <div class="date-bar">
     <div class="date-group">
       <label>Từ ngày</label>
-      <input type="date" id="fromDate">
+      <input type="date" id="fromDate" onchange="onManualDateChange()">
     </div>
     <div class="date-group">
       <label>Đến ngày</label>
-      <input type="date" id="toDate">
+      <input type="date" id="toDate" onchange="onManualDateChange()">
     </div>
     <div class="date-group">
       <label>Thời điểm</label>
@@ -254,6 +254,7 @@
         <option value="7">7 ngày qua</option>
         <option value="30">30 ngày qua</option>
         <option value="all">Tất cả các tháng</option>
+        <option value="custom" style="display:none;">Tùy chỉnh</option>
       </select>
     </div>
     <div class="control-btns">
@@ -526,7 +527,12 @@
     document.getElementById('fromDate').value = getLocalDateString(from);
     document.getElementById('toDate').value = getLocalDateString(to);
     
-    if (shouldLoad) loadReport();
+    if (shouldLoad && masterData.xe.length > 0) loadReport(); // Trigger on UI load only if initialized
+  }
+
+  function onManualDateChange() {
+    document.getElementById('quickRange').value = 'custom';
+    loadReport();
   }
 
   function scrollTo(id) {

@@ -3340,9 +3340,12 @@
           document.getElementById('dashVehicleStatus').style.color = 'var(--text-dim)';
         }
 
-        // 3. Notice Count
+        // 3. Notice Count - chỉ đếm thông báo trong 2 ngày gần nhất
+        const _noticeCutOff = new Date();
+        _noticeCutOff.setDate(_noticeCutOff.getDate() - 2);
         const { count: ncount } = await _supabase.from('thongbao')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', _noticeCutOff.toISOString());
         document.getElementById('dashNoticeCount').textContent = ncount || 0;
 
         // Sidebar & Card Badges for Notice
@@ -3352,8 +3355,8 @@
           if (bNotice) { bNotice.textContent = ncount; bNotice.classList.add('active'); }
           if (cNotice) { cNotice.textContent = ncount; cNotice.classList.add('active'); }
         } else {
-          if (bNotice) bNotice.classList.remove('active');
-          if (cNotice) cNotice.classList.remove('active');
+          if (bNotice) { bNotice.classList.remove('active'); bNotice.textContent = '0'; }
+          if (cNotice) { cNotice.classList.remove('active'); cNotice.textContent = '0'; }
         }
 
         // 4. Tire Alert Count (Danger level <= 5000km)

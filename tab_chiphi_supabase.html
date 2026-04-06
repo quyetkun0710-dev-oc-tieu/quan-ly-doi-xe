@@ -61,58 +61,134 @@
         /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         .stat-card {
-            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 24px;
-            padding: 1.5rem; backdrop-filter: blur(15px); transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-            display: flex; align-items: center; gap: 1.2rem;
+            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+            padding: 0.9rem 1.1rem; backdrop-filter: blur(15px); transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex; align-items: center; gap: 0.9rem;
         }
-        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+        .stat-card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: 0 12px 24px rgba(0,0,0,0.3); }
         .stat-icon {
-            width: 54px; height: 54px; border-radius: 16px;
+            width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; background: rgba(99, 102, 241, 0.15); color: var(--primary);
+            font-size: 1.15rem; background: rgba(99, 102, 241, 0.15); color: var(--primary);
         }
-        .stat-info .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        .stat-info .value { font-size: 1.5rem; font-weight: 800; color: white; margin-top: 2px; }
+        .stat-info .label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .stat-info .value { font-size: 1.15rem; font-weight: 800; color: white; margin-top: 2px; }
 
-        /* Controls */
-        .controls-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+        /* Date Bar - chuẩn đồng bộ với các tab khác */
+        .date-bar {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
-        .filter-group { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
-        
+        .date-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .date-group label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .date-group input,
+        .date-group select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 0.8rem;
+            border-radius: 10px;
+            color: var(--text);
+            outline: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .date-group input:focus, .date-group select:focus { border-color: var(--primary); }
+        .date-group select option { background: #1e293b; color: #f8fafc; }
+        .date-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
         .search-box {
-            position: relative; background: var(--card-bg); border: 1px solid var(--glass-border);
-            border-radius: 14px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 10px;
-            min-width: 300px;
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
         }
-        .search-box input {
-            background: transparent; border: none; color: white; outline: none; width: 100%;
-            font-size: 0.95rem; font-family: inherit;
-        }
-        .search-box i { color: var(--text-dim); }
 
-        .btn {
-            padding: 0.7rem 1.4rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem;
-            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
-            border: none; font-family: inherit;
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            outline: none;
+            width: 250px;
+            font-size: 1rem;
+            margin-left: 10px;
+            padding: 0;
         }
-        .btn-primary { 
-            background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
-        
-        .btn-glass { 
-            background: var(--glass); color: var(--text); border: 1px solid var(--glass-border);
+
+        .btn-add:hover { transform: scale(1.05) translateY(-2px); }
+
+        .btn-refresh {
+            background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+            font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
         }
-        .btn-glass:hover { background: rgba(255,255,255,0.08); }
-        .btn-glass.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .btn-refresh:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+        .btn-refresh i { transition: transform 0.4s; }
+        .btn-refresh:hover i { transform: rotate(180deg); }
+
+        .control-btns { display: flex; gap: 10px; }
+
+        /* Filter Buttons */
+        .filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1.5rem; }
+        .filter-btn {
+            padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: var(--text-dim); cursor: pointer;
+            transition: all 0.2s; font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .filter-btn:hover { background: rgba(255,255,255,0.12); color:white; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .filter-btn.active .btn-badge { background: white; color: var(--primary); }
 
         /* Expense Grid */
         .expense-grid {
@@ -192,10 +268,49 @@
         @media (max-width: 768px) {
             body { padding: 1rem; }
             .logo-area h1 { font-size: 1.8rem; }
-            .controls-bar { flex-direction: column; align-items: stretch; }
-            .search-box { min-width: 100%; }
-            .filter-group { overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-            .filter-group .btn { flex-shrink: 0; }
+
+            /* Stats grid: 3 cột nhỏ gọn trên mobile */
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+            .stat-card {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.65rem 0.7rem;
+                gap: 0.4rem;
+                border-radius: 14px;
+            }
+            .stat-icon {
+                width: 32px; height: 32px;
+                border-radius: 10px;
+                font-size: 0.9rem;
+            }
+            .stat-info .label { font-size: 0.58rem; }
+            .stat-info .value { font-size: 0.88rem; }
+
+            /* Date bar mobile */
+            .date-bar { gap: 10px; padding: 10px; }
+            .date-group { flex: 1; min-width: 100px; }
+
+            header { flex-direction: column; align-items: stretch; gap: 1rem; margin-bottom: 2rem; text-align: center; }
+            .logo-area { display: none; }
+            .controls { flex-direction: column; width: 100%; gap: 10px; }
+            .search-box { width: 100%; min-width: 100%; }
+            .search-box input { width: 100%; }
+            
+            .control-btns { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                width: 100%; 
+            }
+            .btn-refresh, .btn-add { width: 100% !important; justify-content: center; margin: 0; }
+
+            .filter-bar { overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
+            .filter-btn { flex-shrink: 0; }
+            
             .expense-grid { grid-template-columns: 1fr; }
             .modal-box { padding: 1.5rem; border-radius: 20px; width: 95%; max-height: 90vh; overflow-y: auto; }
             .form-grid { grid-template-columns: 1fr; }
@@ -227,10 +342,43 @@
                 <h1><i class="fas fa-wallet"></i> CHI PHÍ</h1>
                 <p>Quản lý các khoản chi phí phát sinh ngoài bảo dưỡng & nhiên liệu</p>
             </div>
-            <button class="btn btn-primary" onclick="openModal()">
-                <i class="fas fa-plus"></i> Ghi nhận chi phí
-            </button>
+            <div class="controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm biển số, nội dung, tài xế..." oninput="handleSearch()">
+                </div>
+                <div class="control-btns">
+                    <button class="btn-refresh" onclick="loadExpenses()">
+                        <i class="fas fa-sync-alt"></i> Làm mới
+                    </button>
+                    <button class="btn-add" onclick="openModal()">
+                        <i class="fas fa-plus"></i> GHI NHẬN CHI PHÍ
+                    </button>
+                </div>
+            </div>
         </header>
+
+        <!-- Date Bar -->
+        <div class="date-bar">
+            <div class="date-group">
+                <label>Từ ngày</label>
+                <input type="date" id="fromDate" onchange="onManualDateChange()">
+            </div>
+            <div class="date-group">
+                <label>Đến ngày</label>
+                <input type="date" id="toDate" onchange="onManualDateChange()">
+            </div>
+            <div class="date-group">
+                <label>Thời điểm</label>
+                <select id="quickRange" onchange="applyQuickRange()">
+                    <option value="month" selected>Tháng này</option>
+                    <option value="7">7 ngày qua</option>
+                    <option value="30">30 ngày qua</option>
+                    <option value="all">Tất cả các tháng</option>
+                    <option value="custom" style="display:none;">Tùy chỉnh</option>
+                </select>
+            </div>
+        </div>
 
         <!-- Stats Section -->
         <div class="stats-grid">
@@ -258,18 +406,12 @@
         </div>
 
         <!-- Controls -->
-        <div class="controls-bar">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Tìm biển số, nội dung, tài xế..." oninput="handleSearch()">
-            </div>
-            <div class="filter-group">
-                <button class="btn btn-glass active" data-filter="all" onclick="filterData('all', this)">Tất cả</button>
-                <button class="btn btn-glass" data-filter="cau_duong" onclick="filterData('cau_duong', this)">Cầu đường</button>
-                <button class="btn btn-glass" data-filter="bai_do" onclick="filterData('bai_do', this)">Bãi đỗ</button>
-                <button class="btn btn-glass" data-filter="vi_pham" onclick="filterData('vi_pham', this)">Vi phạm</button>
-                <button class="btn btn-glass" data-filter="khac" onclick="filterData('khac', this)">Khác</button>
-            </div>
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all" onclick="filterData('all', this)">Tất cả</button>
+            <button class="filter-btn" data-filter="cau_duong" onclick="filterData('cau_duong', this)">Cầu đường</button>
+            <button class="filter-btn" data-filter="bai_do" onclick="filterData('bai_do', this)">Bãi đỗ</button>
+            <button class="filter-btn" data-filter="vi_pham" onclick="filterData('vi_pham', this)">Vi phạm</button>
+            <button class="filter-btn" data-filter="khac" onclick="filterData('khac', this)">Khác</button>
         </div>
 
         <!-- Content Area -->
@@ -363,8 +505,34 @@
             'khac': { label: 'Phát sinh khác', icon: '📝', color: 'var(--text-dim)' }
         };
 
+        // ============ DATE FILTER (chuẩn đồng bộ với tab Bảo Dưỡng) ============
+        function applyQuickRange(isInit = false) {
+            const val = document.getElementById('quickRange').value;
+            const today = new Date();
+            let from = new Date();
+
+            if (val === 'all') {
+                from = new Date('2020-01-01');
+            } else if (val === 'month') {
+                from.setDate(1);
+            } else {
+                from.setDate(today.getDate() - parseInt(val));
+            }
+
+            document.getElementById('fromDate').value = from.toISOString().split('T')[0];
+            document.getElementById('toDate').value = today.toISOString().split('T')[0];
+
+            if (!isInit) loadExpenses();
+        }
+
+        function onManualDateChange() {
+            document.getElementById('quickRange').value = 'custom';
+            loadExpenses();
+        }
+
         // ============ INIT ============
         window.onload = async () => {
+            applyQuickRange(true); // Áp preset mặc định (Tháng này)
             await Promise.all([
                 loadExpenses(),
                 loadVehicles(),
@@ -388,22 +556,35 @@
         }
 
         async function loadExpenses() {
-            const { data, error } = await _supabase
-                .from('chiphi')
-                .select('*')
-                .order('ngay_thuc_hien', { ascending: false });
-            
+            const fromDate = document.getElementById('fromDate')?.value;
+            const toDate = document.getElementById('toDate')?.value;
+
+            let query = _supabase.from('chiphi').select('*').order('ngay_thuc_hien', { ascending: false });
+            if (fromDate) query = query.gte('ngay_thuc_hien', fromDate);
+            if (toDate) query = query.lte('ngay_thuc_hien', toDate);
+
+            const { data, error } = await query;
             if (error) {
-                console.error("Error loading expenses:", error);
-                // Nếu bảng chưa tồn tại, ta có thể log lỗi
-                if (error.code === '42P01') {
-                   // alert("Bảng 'chiphi' chưa tồn tại. Vui lòng tạo bảng trong Supabase Dashboard.");
-                   console.warn("Table 'chiphi' missing");
-                }
+                console.error('Error loading expenses:', error);
+                if (error.code === '42P01') console.warn("Table 'chiphi' missing");
+            }
+
+            allExpenses = data || [];
+            if (currentFilter === 'all') {
+                filteredExpenses = [...allExpenses];
+            } else {
+                filteredExpenses = allExpenses.filter(e => e.loai_chi_phi === currentFilter);
             }
             
-            allExpenses = data || [];
-            filteredExpenses = [...allExpenses];
+            const q = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            if (q) {
+                filteredExpenses = filteredExpenses.filter(e =>
+                    (e.bien_so_xe || '').toLowerCase().includes(q) ||
+                    (e.ghi_chu || '').toLowerCase().includes(q) ||
+                    (e.ho_ten_taixe || '').toLowerCase().includes(q) ||
+                    (e.ma_nv || '').toLowerCase().includes(q)
+                );
+            }
             renderGrid();
             updateStats();
         }
@@ -417,18 +598,15 @@
         }
 
         function updateStats() {
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
+            const total = allExpenses.reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
+            const toll = allExpenses.filter(e => e.loai_chi_phi === 'cau_duong').reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
+            const others = allExpenses.filter(e => e.loai_chi_phi === 'khac').reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
 
-            const thisMonth = allExpenses.filter(e => {
-                const d = new Date(e.ngay_thuc_hien);
-                return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-            });
-
-            const total = thisMonth.reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
-            const toll = thisMonth.filter(e => e.loai_chi_phi === 'cau_duong').reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
-            const others = thisMonth.filter(e => e.loai_chi_phi === 'khac').reduce((sum, e) => sum + (parseFloat(e.so_tien) || 0), 0);
+            const rangeLabels = { month: 'Tháng này', '7': '7 ngày qua', '30': '30 ngày qua', all: 'Tất cả', custom: '(Tùy chỉnh)' };
+            const val = document.getElementById('quickRange')?.value || 'month';
+            const labelText = rangeLabels[val] || '(Tùy chỉnh)';
+            const labelEl = document.querySelector('.stat-card:first-child .label');
+            if (labelEl) labelEl.textContent = 'Tổng chi ' + labelText.toLowerCase();
 
             document.getElementById('statMonthTotal').innerText = formatCurrency(total);
             document.getElementById('statTollTotal').innerText = formatCurrency(toll);

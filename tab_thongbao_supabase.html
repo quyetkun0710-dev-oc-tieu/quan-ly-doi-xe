@@ -129,6 +129,38 @@
     .btn-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--card-bg); color:var(--text-dim); border:1px solid rgba(128,128,128,0.1); cursor:pointer; transition:all 0.2s; }
     .btn-icon:hover { background:var(--primary); color:white; transform: scale(1.1); }
 
+    /* Section Divider */
+    .section-divider {
+      display: flex; align-items: center; gap: 16px; margin: 1.5rem 0 0.5rem;
+    }
+    .section-divider-line { flex: 1; height: 1px; background: rgba(128,128,128,0.15); }
+    .section-divider-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-dim); white-space: nowrap;
+      padding: 4px 14px; border-radius: 20px;
+      background: rgba(128,128,128,0.08); border: 1px solid rgba(128,128,128,0.12);
+    }
+    .section-divider-label.active-label { color: var(--accent); border-color: rgba(0,255,204,0.2); background: rgba(0,255,204,0.05); }
+    .section-divider-label.history-label { color: var(--text-dim); }
+
+    /* History cards – muted style */
+    .is-history .notice-card {
+      opacity: 0.6;
+      filter: grayscale(0.35);
+    }
+    .is-history .notice-card:hover {
+      opacity: 1;
+      filter: none;
+    }
+    .history-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-dim); background: rgba(128,128,128,0.1);
+      border: 1px solid rgba(128,128,128,0.15); border-radius: 8px;
+      padding: 2px 10px; margin-left: 8px; vertical-align: middle;
+    }
+
     /* Modal */
     .modal { position:fixed; inset:0; background:rgba(15,23,42,0.8); backdrop-filter:blur(15px); display:none; justify-content:center; align-items:center; z-index:1000; padding:1rem; }
     .modal.active { display:flex; }
@@ -205,12 +237,13 @@
     <div style="flex-grow: 1;"></div>
     <div class="search-box day-filter" style="width: auto; padding: 0.3rem 1rem;">
       <i class="fas fa-calendar-alt" style="color:var(--text-dim); font-size: 0.8rem;"></i>
-      <select id="noticeDays" onchange="loadNotices()" style="background:transparent; border:none; color:var(--text); outline:none; font-size: 0.85rem; font-weight: 600; cursor:pointer; font-family:'Outfit',sans-serif;">
-        <option value="7">7 ngày qua</option>
-        <option value="15">15 ngày qua</option>
-        <option value="30" selected>30 ngày qua</option>
-        <option value="90">90 ngày qua</option>
-        <option value="365">1 năm qua</option>
+      <select id="noticeDays" onchange="loadNotices()" style="background:#1e293b; border:none; color:#f8fafc; outline:none; font-size: 0.85rem; font-weight: 600; cursor:pointer; font-family:'Outfit',sans-serif; border-radius:8px; padding:2px 4px;">
+        <option value="2" selected style="background:#1e293b;color:#f8fafc;">2 ngày qua</option>
+        <option value="7" style="background:#1e293b;color:#f8fafc;">7 ngày qua</option>
+        <option value="15" style="background:#1e293b;color:#f8fafc;">15 ngày qua</option>
+        <option value="30" style="background:#1e293b;color:#f8fafc;">30 ngày qua</option>
+        <option value="90" style="background:#1e293b;color:#f8fafc;">90 ngày qua</option>
+        <option value="365" style="background:#1e293b;color:#f8fafc;">1 năm qua</option>
       </select>
     </div>
   </div>
@@ -264,7 +297,8 @@
   let USER_NAME = sessionStorage.getItem('name') || 'Người dùng';
   let USER_MNV = sessionStorage.getItem('mnv') || '';
   
-  const MAX_NOTICE_DAYS = 30; // Số ngày tối đa hiển thị thông báo
+  const MAX_NOTICE_DAYS = 2; // Số ngày mặc định - sau đó chuyển sang lịch sử
+  const HISTORY_DAYS = 365; // Tải lịch sử tối đa 1 năm
   
   let allNotices = [];
   let currentFilter = 'all';
@@ -287,12 +321,13 @@
   async function loadNotices(isSilent = false) {
     const feed = document.getElementById('noticeFeed');
     const daySelector = document.getElementById('noticeDays');
-    const displayDays = daySelector ? parseInt(daySelector.value) : 30;
+    const displayDays = daySelector ? parseInt(daySelector.value) : MAX_NOTICE_DAYS;
 
     if (!isSilent) feed.innerHTML = '<div style="text-align:center;padding:5rem"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>';
     
     try {
-      // Tính ngày cắt dựa vào vùng chọn
+      // Tính ngày cắt: luôn tải dữ liệu trong khoảng displayDays được chọn
+      // Thông báo trong MAX_NOTICE_DAYS (2 ngày) = hiện hành, còn lại = lịch sử
       const cutOffDate = new Date();
       cutOffDate.setDate(cutOffDate.getDate() - displayDays);
       const isoCutOff = cutOffDate.toISOString();
@@ -301,12 +336,11 @@
         .gte('created_at', isoCutOff)
         .order('created_at', { ascending: false });
 
-      // Manager và Admin đều load được hết thông báo (đã được lọc theo ngày ở trên)
       const { data, error } = await query;
       if (error) throw error;
       allNotices = data || [];
       
-      // Update stats
+      // Đếm stats theo toàn bộ khoảng ngày đang chọn
       document.getElementById('btnCountAll').innerText = allNotices.length;
       document.getElementById('btnCountHigh').innerText = allNotices.filter(n => n.muc_do === 'Khẩn cấp').length;
       document.getElementById('btnCountMedium').innerText = allNotices.filter(n => n.muc_do === 'Quan trọng').length;
@@ -403,11 +437,21 @@
       return;
     }
 
-    data.forEach((n, idx) => {
+    // Phân loại: hiện hành (trong MAX_NOTICE_DAYS ngày) và lịch sử
+    const activeCutOff = new Date();
+    activeCutOff.setDate(activeCutOff.getDate() - MAX_NOTICE_DAYS);
+
+    const activeData = data.filter(n => new Date(n.created_at) >= activeCutOff);
+    const historyData = data.filter(n => new Date(n.created_at) < activeCutOff);
+
+    let globalIdx = 0;
+
+    function createCard(n, idx, isHistory) {
       const div = document.createElement('div');
       const mucDoCls = n.muc_do === 'Khẩn cấp' ? 'mucdo-khancap' : n.muc_do === 'Quan trọng' ? 'mucdo-quantrong' : 'mucdo-binhthuong';
       const icon = n.muc_do === 'Khẩn cấp' ? '🚨' : n.muc_do === 'Quan trọng' ? '⭐' : '📢';
-      div.className = `notice-item-container ${mucDoCls}`;
+      const historyClass = isHistory ? 'is-history' : '';
+      div.className = `notice-item-container ${mucDoCls} ${historyClass}`;
       
       const isManager = ROLE === 'manager';
       const isAdminOfThis = (ROLE === 'admin' && n.nguoi_dang === USER_NAME);
@@ -419,13 +463,15 @@
         </div>
       ` : '';
 
+      const historyBadge = isHistory ? '<span class="history-badge"><i class="fas fa-archive"></i> Lịch sử</span>' : '';
+
       div.innerHTML = `
         <div class="notice-card" style="animation-delay:${idx*0.06}s">
           <div class="notice-icon-wrap">${icon}</div>
           <div class="notice-content">
             <div class="notice-header">
               <div>
-                <div class="notice-title">${n.tieu_de}</div>
+                <div class="notice-title">${n.tieu_de}${historyBadge}</div>
                 <div class="notice-meta">
                   <span><i class="fas fa-clock"></i> ${formatRelativeTime(n.created_at)}</span>
                   <span><i class="fas fa-user-circle"></i> ${n.nguoi_dang || 'Ban Quản Trị'}</span>
@@ -437,8 +483,38 @@
           </div>
         </div>
       `;
-      feed.appendChild(div);
-    });
+      return div;
+    }
+
+    // Render thông báo hiện hành
+    if (activeData.length > 0) {
+      const dividerActive = document.createElement('div');
+      dividerActive.className = 'section-divider';
+      dividerActive.innerHTML = `
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label active-label"><i class="fas fa-bell"></i> Thông báo hiện hành (${activeData.length})</div>
+        <div class="section-divider-line"></div>
+      `;
+      feed.appendChild(dividerActive);
+      activeData.forEach((n) => {
+        feed.appendChild(createCard(n, globalIdx++, false));
+      });
+    }
+
+    // Render lịch sử (nếu có)
+    if (historyData.length > 0) {
+      const dividerHistory = document.createElement('div');
+      dividerHistory.className = 'section-divider';
+      dividerHistory.innerHTML = `
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label history-label"><i class="fas fa-archive"></i> Lịch sử thông báo (${historyData.length})</div>
+        <div class="section-divider-line"></div>
+      `;
+      feed.appendChild(dividerHistory);
+      historyData.forEach((n) => {
+        feed.appendChild(createCard(n, globalIdx++, true));
+      });
+    }
   }
 
   function openModal(editData=null) {

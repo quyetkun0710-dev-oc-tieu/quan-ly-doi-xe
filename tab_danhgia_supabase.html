@@ -414,11 +414,11 @@
     <div class="date-bar">
         <div class="date-group">
             <label>Từ ngày</label>
-            <input type="date" id="fromDate">
+            <input type="date" id="fromDate" onchange="onManualDateChange()">
         </div>
         <div class="date-group">
             <label>Đến ngày</label>
-            <input type="date" id="toDate">
+            <input type="date" id="toDate" onchange="onManualDateChange()">
         </div>
         <div class="date-group">
             <label>Thời điểm</label>
@@ -427,6 +427,7 @@
                 <option value="7">7 ngày qua</option>
                 <option value="30">30 ngày qua</option>
                 <option value="all">Tất cả các tháng</option>
+                <option value="custom" style="display:none;">Tùy chỉnh</option>
             </select>
         </div>
     </div>
@@ -541,12 +542,12 @@
         if (ROLE === 'manager' || ROLE === 'admin') {
             document.querySelectorAll('.manager-only').forEach(el => el.classList.remove('manager-only'));
         }
-        applyQuickRange();
+        applyQuickRange(true);
         await loadEvaluations();
         await loadDrivers();
     }
 
-    function applyQuickRange() {
+    function applyQuickRange(isInit = false) {
         const val = document.getElementById('quickRange').value;
         const today = new Date();
         let from = new Date();
@@ -562,7 +563,12 @@
         document.getElementById('fromDate').value = from.toISOString().split('T')[0];
         document.getElementById('toDate').value = today.toISOString().split('T')[0];
         
-        if (allEvals.length > 0) loadEvaluations();
+        if (!isInit) loadEvaluations();
+    }
+
+    function onManualDateChange() {
+        document.getElementById('quickRange').value = 'custom';
+        loadEvaluations();
     }
 
     async function loadEvaluations(isSilent = false) {

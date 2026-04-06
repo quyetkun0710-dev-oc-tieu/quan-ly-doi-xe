@@ -448,11 +448,11 @@
     <div class="date-bar">
         <div class="date-group">
             <label>Từ ngày</label>
-            <input type="date" id="fromDate">
+            <input type="date" id="fromDate" onchange="onManualDateChange()">
         </div>
         <div class="date-group">
             <label>Đến ngày</label>
-            <input type="date" id="toDate">
+            <input type="date" id="toDate" onchange="onManualDateChange()">
         </div>
         <div class="date-group">
             <label>Thời điểm</label>
@@ -461,6 +461,7 @@
                 <option value="7">7 ngày qua</option>
                 <option value="30">30 ngày qua</option>
                 <option value="all">Tất cả</option>
+                <option value="custom" style="display:none;">Tùy chỉnh</option>
             </select>
         </div>
     </div>
@@ -627,7 +628,7 @@
     let allFuelData = [];
 
 
-    function applyQuickRange() {
+    function applyQuickRange(isInit = false) {
         const val = document.getElementById('quickRange').value;
         const today = new Date();
         let from = new Date();
@@ -643,7 +644,12 @@
         document.getElementById('fromDate').value = from.toISOString().split('T')[0];
         document.getElementById('toDate').value = today.toISOString().split('T')[0];
         
-        if (allFuelData.length > 0) loadFuelData();
+        if (!isInit) loadFuelData();
+    }
+
+    function onManualDateChange() {
+        document.getElementById('quickRange').value = 'custom';
+        loadFuelData();
     }
 
     async function loadFuelData(isSilent = false) {
@@ -1043,7 +1049,7 @@
     });
 
     async function initialize() {
-        applyQuickRange();
+        applyQuickRange(true);
         await loadFuelData();
         await loadVehicles();
         _supabase.channel('fuel-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'fuel' }, () => loadFuelData(true)).subscribe();
